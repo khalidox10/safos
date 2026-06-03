@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SAFOS | معاينة الموقع</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #1a1410 0%, #3d2a1c 100%);
+      min-height: 100vh;
+      color: #faf6ef;
+    }
+    .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+    
+    .header {
+      text-align: center;
+      padding: 3rem 0;
+      border-bottom: 1px solid rgba(184,147,90,0.2);
+      margin-bottom: 3rem;
+    }
+    .header h1 {
+      font-size: 3rem;
+      letter-spacing: 0.3em;
+      color: #b8935a;
+      margin-bottom: 0.5rem;
+    }
+    .header p { color: #d4b483; letter-spacing: 0.15em; }
+    
+    .preview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 2rem;
+      margin-bottom: 3rem;
+    }
+    
+    .preview-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(184,147,90,0.2);
+      border-radius: 1rem;
+      padding: 2rem;
+      transition: all 0.3s;
+    }
+    .preview-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      border-color: rgba(184,147,90,0.4);
+    }
+    .preview-card h3 {
+      color: #b8935a;
+      margin-bottom: 1rem;
+      font-size: 1.3rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .preview-card p {
+      color: #d4b483;
+      line-height: 1.8;
+      margin-bottom: 1rem;
+    }
+    .preview-card .link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #faf6ef;
+      text-decoration: none;
+      padding: 0.75rem 1.5rem;
+      background: rgba(184,147,90,0.2);
+      border-radius: 0.5rem;
+      border: 1px solid rgba(184,147,90,0.3);
+      transition: all 0.3s;
+      font-weight: 600;
+    }
+    .preview-card .link:hover {
+      background: rgba(184,147,90,0.3);
+      transform: translateX(-5px);
+    }
+    
+    .status-bar {
+      background: rgba(26,20,16,0.8);
+      border: 1px solid rgba(184,147,90,0.3);
+      border-radius: 1rem;
+      padding: 1.5rem 2rem;
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .status-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    .status-dot.draft { background: #f59e0b; }
+    .status-dot.published { background: #22c55e; }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+    .action-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 1rem 1.5rem;
+      background: rgba(184,147,90,0.1);
+      border: 1px solid rgba(184,147,90,0.3);
+      border-radius: 0.75rem;
+      color: #faf6ef;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+    .action-btn:hover {
+      background: rgba(184,147,90,0.2);
+      transform: translateY(-2px);
+    }
+    .action-btn.primary {
+      background: #b8935a;
+      color: #1a1410;
+      border-color: #b8935a;
+    }
+    .action-btn.primary:hover {
+      background: #d4b483;
+    }
+    
+    .footer {
+      text-align: center;
+      padding: 2rem;
+      margin-top: 3rem;
+      border-top: 1px solid rgba(184,147,90,0.2);
+      color: #d4b483;
+      font-size: 0.9rem;
+    }
+    
+    code {
+      background: rgba(0,0,0,0.3);
+      padding: 0.2rem 0.5rem;
+      border-radius: 0.25rem;
+      font-family: monospace;
+      color: #d4b483;
+    }
+    
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 2rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .badge-draft { background: rgba(245,158,11,0.2); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
+    .badge-published { background: rgba(34,197,94,0.2); color: #22c55e; border: 1px solid rgba(34,197,94,0.3); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>SAFOS</h1>
+      <p>بوابة المعاينة والإدارة</p>
+    </div>
+    
+    <div class="status-bar">
+      <div class="status-item">
+        <span class="status-dot draft"></span>
+        <span>الحالة: <strong>مسودة</strong> <span class="badge badge-draft">تحرير</span></span>
+      </div>
+      <div class="status-item">
+        <span>🕐 آخر تحديث: <code id="lastEdit">-</code></span>
+      </div>
+      <div class="status-item">
+        <span>🔐 محمي بكلمة مرور</span>
+      </div>
+    </div>
+    
+    <div class="preview-grid">
+      <div class="preview-card">
+        <h3>🌍 الموقع العام</h3>
+        <p>ما يراه الزبائن - النسخة المنشورة فقط</p>
+        <a href="/" class="link">
+          فتح الموقع العام →
+        </a>
+      </div>
+      
+      <div class="preview-card">
+        <h3>🔒 لوحة التحكم</h3>
+        <p>تحكم كامل في كل شيء: منتجات، نصوص، ألوان، شعارات</p>
+        <a href="/#admin" class="link">
+          دخول للوحة التحكم →
+        </a>
+      </div>
+      
+      <div class="preview-card">
+        <h3>📦 إدارة الطلبيات</h3>
+        <p>تتبع الطلبيات، تغيير الحالة، تواصل مع العملاء</p>
+        <a href="/#admin" class="link">
+          فتح إدارة الطلبيات →
+        </a>
+      </div>
+      
+      <div class="preview-card">
+        <h3> تخصيص البراند</h3>
+        <p>غيّري الاسم، الشعار، الألوان، النصوص - كل شيء!</p>
+        <a href="/#admin" class="link">
+          تخصيص البراند →
+        </a>
+      </div>
+      
+      <div class="preview-card">
+        <h3>📊 لوحة القيادة</h3>
+        <p>إحصائيات، طلبيات حديثة، المخزون، نظرة عامة</p>
+        <a href="/#admin" class="link">
+          فتح لوحة القيادة →
+        </a>
+      </div>
+      
+      <div class="preview-card">
+        <h3>📖 دليل الإدارة</h3>
+        <p>شرح مفصل لكيفية استخدام كل الميزات</p>
+        <a href="/admin-info.html" class="link">
+          عرض الدليل →
+        </a>
+      </div>
+    </div>
+    
+    <div class="quick-actions">
+      <a href="/#admin" class="action-btn primary">
+        🔐 دخول لوحة التحكم
+      </a>
+      <a href="/" class="action-btn">
+        🌍 الموقع العام
+      </a>
+      <a href="/admin-info.html" class="action-btn">
+        📖 دليل الاستخدام
+      </a>
+      <a href="https://wa.me/212612345678" class="action-btn" target="_blank">
+        📱 واتساب
+      </a>
+    </div>
+    
+    <div class="footer">
+      <p>© 2026 SAFOS. جميع الحقوق محفوظة.</p>
+      <p style="margin-top: 0.5rem; opacity: 0.7;">
+        صُنع بحب في المغرب 🇲🇦
+      </p>
+      <p style="margin-top: 1rem; font-size: 0.8rem;">
+        كلمة المرور: <code>safos1007</code> (يمكن تغييرها من الإعدادات)
+      </p>
+    </div>
+  </div>
+  
+  <script>
+    // Update last edit time
+    const lastEdit = localStorage.getItem('safos_draft_data_timestamp');
+    if (lastEdit) {
+      document.getElementById('lastEdit').textContent = new Date(lastEdit).toLocaleString('ar-MA');
+    } else {
+      document.getElementById('lastEdit').textContent = 'غير محدد';
+    }
+    
+    // Update status based on publish state
+    const status = localStorage.getItem('safos_publish_status');
+    const statusDot = document.querySelector('.status-dot');
+    if (status === 'published') {
+      statusDot.classList.remove('draft');
+      statusDot.classList.add('published');
+      statusDot.nextElementSibling.innerHTML = 'الحالة: <strong>منشور</strong> <span class="badge badge-published">عام</span>';
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SAFOS | دليل الإدارة</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #1a1410 0%, #3d2a1c 100%);
+      min-height: 100vh;
+      color: #faf6ef;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .logo {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+    .logo h1 {
+      font-size: 3rem;
+      letter-spacing: 0.3em;
+      color: #b8935a;
+    }
+    .logo p {
+      color: #d4b483;
+      margin-top: 0.5rem;
+      letter-spacing: 0.2em;
+      font-size: 0.9rem;
+    }
+    .card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(184,147,90,0.2);
+      border-radius: 1rem;
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+    }
+    .card h2 {
+      color: #b8935a;
+      margin-bottom: 1rem;
+      font-size: 1.5rem;
+    }
+    .card p {
+      line-height: 1.8;
+      color: #d4b483;
+      margin-bottom: 1rem;
+    }
+    .highlight {
+      background: rgba(184,147,90,0.1);
+      border-left: 3px solid #b8935a;
+      padding: 1rem;
+      margin: 1rem 0;
+      border-radius: 0 0.5rem 0.5rem 0;
+    }
+    .btn {
+      display: inline-block;
+      background: #b8935a;
+      color: #1a1410;
+      padding: 0.75rem 2rem;
+      border-radius: 0.5rem;
+      text-decoration: none;
+      font-weight: 600;
+      margin: 0.5rem 0.5rem 0.5rem 0;
+      transition: all 0.3s;
+    }
+    .btn:hover {
+      background: #d4b483;
+      transform: translateY(-2px);
+    }
+    .btn-outline {
+      background: transparent;
+      border: 2px solid #b8935a;
+      color: #b8935a;
+    }
+    .btn-outline:hover {
+      background: rgba(184,147,90,0.1);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin: 2rem 0;
+    }
+    .feature {
+      background: rgba(184,147,90,0.05);
+      padding: 1.5rem;
+      border-radius: 0.75rem;
+      border: 1px solid rgba(184,147,90,0.1);
+    }
+    .feature h3 {
+      color: #b8935a;
+      margin-bottom: 0.5rem;
+    }
+    .feature p {
+      font-size: 0.9rem;
+      margin: 0;
+    }
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 2rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-left: 0.5rem;
+    }
+    .badge-draft {
+      background: rgba(245,158,11,0.2);
+      color: #f59e0b;
+      border: 1px solid rgba(245,158,11,0.3);
+    }
+    .badge-published {
+      background: rgba(34,197,94,0.2);
+      color: #22c55e;
+      border: 1px solid rgba(34,197,94,0.3);
+    }
+    .footer {
+      text-align: center;
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid rgba(184,147,90,0.2);
+      color: #d4b483;
+      font-size: 0.85rem;
+    }
+    code {
+      background: rgba(0,0,0,0.3);
+      padding: 0.2rem 0.5rem;
+      border-radius: 0.25rem;
+      font-family: monospace;
+      color: #d4b483;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <h1>SAFOS</h1>
+      <p>دليل الإدارة والنشر</p>
+    </div>
+
+    <div class="card">
+      <h2>🎯 نسختان منفصلتان</h2>
+      <p>
+        تم تصميم موقع SAFOS بنظام <strong>نسختين منفصلتين تماماً</strong> لضمان راحتك وسهولة الإدارة:
+      </p>
+      
+      <div class="grid">
+        <div class="feature">
+          <h3>🔒 النسخة الخاصة <span class="badge badge-draft">مسودة</span></h3>
+          <p>لكِ وحدك - للتعديل والمعاينة قبل النشر</p>
+          <p style="margin-top: 0.75rem; font-size: 0.85rem;">
+            <strong>الرابط:</strong><br>
+            <code>https://safos.online/#admin</code>
+          </p>
+        </div>
+        
+        <div class="feature">
+          <h3>🌍 النسخة العامة <span class="badge badge-published">منشور</span></h3>
+          <p>للزبائن - ما يراه الجميع على الموقع</p>
+          <p style="margin-top: 0.75rem; font-size: 0.85rem;">
+            <strong>الرابط:</strong><br>
+            <code>https://safos.online</code>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>📋 كيفية العمل</h2>
+      
+      <div class="highlight">
+        <strong>الخطوة 1:</strong> ادخلي لوحة التحكم عبر الرابط الخاص أو أيقونة 🔒
+      </div>
+      <div class="highlight">
+        <strong>الخطوة 2:</strong> عدّلي ما تريدين (منتجات، نصوص، صور، ألوان)
+      </div>
+      <div class="highlight">
+        <strong>الخطوة 3:</strong> جميع التغييرات تُحفظ كـ <strong>مسودة</strong> (لا يراها أحد)
+      </div>
+      <div class="highlight">
+        <strong>الخطوة 4:</strong> راجعي في المعاينة
+      </div>
+      <div class="highlight">
+        <strong>الخطوة 5:</strong> اضغطي <strong>✅ نشر</strong> ليظهر للزبائن
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🔐 الدخول للوحة التحكم</h2>
+      <p>
+        <strong>كلمة المرور:</strong> <code style="font-size: 1.1rem;">admin123</code>
+      </p>
+      <p style="margin-top: 1rem;">
+        <strong>3 طرق للدخول:</strong>
+      </p>
+      <ul style="margin-right: 1.5rem; line-height: 2;">
+        <li>الرابط المباشر: <code>https://safos.online/#admin</code></li>
+        <li>شريط الإدارة العلوي → 🔒 لوحة التحكم</li>
+        <li>أسفل الصفحة (Footer) → خدمة العملاء → لوحة التحكم</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>💾 النسخ الاحتياطي</h2>
+      <p>
+        من شريط الإدارة العلوي، يمكنكِ:
+      </p>
+      <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem;">
+        <a href="#" class="btn">📥 تصدير البيانات</a>
+        <a href="#" class="btn btn-outline">📤 استيراد بيانات</a>
+      </div>
+      <p style="margin-top: 1rem; font-size: 0.9rem;">
+        ⚠️ <strong>مهم:</strong> احفظي نسخة احتياطية قبل أي تحديث كبير!
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>🌐 النشر على safos.online</h2>
+      <p>لجعل التغييرات تظهر للزبائن:</p>
+      <ol style="margin-right: 1.5rem; line-height: 2.2;">
+        <li>اضغطي <strong>✅ نشر</strong> في شريط الإدارة</li>
+        <li>شغّلي الأمر: <code>npm run build</code></li>
+        <li>ارفعي مجلد <code>dist/</code> على الاستضافة</li>
+        <li>الزبائن سيرون التحديثات على <code>https://safos.online</code></li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h2>📱 الروابط السريعة</h2>
+      <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+        <a href="https://safos.online" class="btn" target="_blank">🌍 الموقع العام (للزبائن)</a>
+        <a href="https://safos.online/#admin" class="btn btn-outline" target="_blank">🔒 لوحة التحكم (لكِ)</a>
+        <a href="https://wa.me/212612345678" class="btn btn-outline" target="_blank">📱 واتساب</a>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p>© 2026 SAFOS. جميع الحقوق محفوظة.</p>
+      <p style="margin-top: 0.5rem; opacity: 0.7;">
+        صُنع بحب في المغرب 🇲
+      </p>
+    </div>
+  </div>
+</body>
+</html>
