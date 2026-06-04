@@ -1,0 +1,146 @@
+@import "tailwindcss";
+
+@theme {
+  --color-cream: #faf6ef;
+  --color-cream-dark: #f0e8d8;
+  --color-sand: #e8dcc4;
+  --color-camel: #c9a574;
+  --color-gold: #b8935a;
+  --color-gold-light: #d4b483;
+  --color-espresso: #2b1d12;
+  --color-espresso-soft: #3d2a1c;
+  --color-cocoa: #5c4330;
+  --color-ink: #1a1410;
+
+  --font-display: "Playfair Display", "Cormorant Garamond", serif;
+  --font-arabic: "Cairo", system-ui, sans-serif;
+}
+
+html, body {
+  background-color: #faf6ef;
+  color: #2b1d12;
+  font-family: "Cairo", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  scroll-behavior: smooth;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+.font-display {
+  font-family: "Playfair Display", "Cormorant Garamond", serif;
+  letter-spacing: 0.01em;
+}
+
+.font-arabic {
+  font-family: "Cairo", system-ui, sans-serif;
+}
+
+.font-italic {
+  font-family: "Playfair Display", serif;
+  font-style: italic;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #faf6ef;
+}
+::-webkit-scrollbar-thumb {
+  background: #b8935a;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #8f6f3f;
+}
+
+/* Decorative underline */
+.gold-underline {
+  position: relative;
+  display: inline-block;
+}
+.gold-underline::after {
+  content: "";
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  bottom: -8px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #b8935a, transparent);
+}
+
+/* Animated gradient text */
+.text-shimmer {
+  background: linear-gradient(90deg, #b8935a 0%, #d4b483 50%, #b8935a 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 6s linear infinite;
+}
+
+@keyframes shimmer {
+  to { background-position: 200% center; }
+}
+
+/* Marquee */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.animate-marquee {
+  animation: marquee 40s linear infinite;
+}
+
+/* Float animation */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-12px); }
+}
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Fade in up */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up {
+  animation: fadeInUp 0.9s ease-out forwards;
+}
+
+/* Grain texture */
+.grain {
+  position: relative;
+}
+.grain::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
+  opacity: 0.08;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+}
+
+/* Button hover underline */
+.link-underline {
+  position: relative;
+}
+.link-underline::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  right: 0;
+  width: 0;
+  height: 1px;
+  background: currentColor;
+  transition: width 0.4s ease;
+}
+.link-underline:hover::after {
+  width: 100%;
+}
