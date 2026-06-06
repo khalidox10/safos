@@ -1,4 +1,3 @@
-```tsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 // استيراد الدوال المعتمدة في بنية مشروعك بالضبط لمنع مشاكل تسجيل الخروج والرفع المباشر
