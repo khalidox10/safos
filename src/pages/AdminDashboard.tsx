@@ -1,728 +1,786 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+// استيراد الدوال وعميل سوبابيس المعتمدين في بنية مشروعك بالضبط
 import { supabase } from '../lib/supabase';
 import { uploadFile, BUCKETS } from '../lib/supabase';
 import { logout } from '../lib/useAuth';
-import {
-  X, Package, Settings, Save, Trash2, Plus,
-  LogOut, Lock, Check, AlertCircle, Image as ImageIcon
+import { 
+  LayoutDashboard, 
+  ShoppingBag, 
+  Settings as SettingsIcon, 
+  LogOut, 
+  Search, 
+  Filter, 
+  CheckCircle, 
+  Clock, 
+  AlertCircle, 
+  X, 
+  DollarSign, 
+  TrendingUp, 
+  Edit3, 
+  Trash2, 
+  Eye, 
+  Phone, 
+  MapPin, 
+  Save, 
+  Menu,
+  ChevronRight,
+  RefreshCw,
+  Download,
+  Send,
+  Printer,
+  Upload,
+  Globe,
+  Plus,
+  Palette,
+  Image as ImageIcon,
+  Lock
 } from 'lucide-react';
 
-type Tab = 'products' | 'settings' | 'password';
-
-const TABS: { id: Tab; label: string; icon: any }[] = [
-  { id: 'products', label: '📦 المنتجات', icon: Package },
-  { id: 'settings', label: '⚙️ إعدادات الموقع', icon: Settings },
-  { id: 'password', label: '🔐 تغيير كلمة المرور', icon: Lock },
-];
+// قاموس الترجمات للغات التلقائية واليدوية لصفحة الزبون
+const translations = {
+  ar: {
+    thankYou: "تم تسجيل طلبكِ بنجاح، سنتواصل معكِ قريباً لتأكيد طلبيتك",
+    subtotal: "المجموع الفرعي",
+    total: "المجموع الإجمالي",
+    shipping: "الشحن والتوصيل",
+    free: "مجاني",
+    orderNow: "تأكيد الطلب السريع",
+    addToCart: "إضافة إلى السلة",
+    careGuide: "دليل العناية بالحقيبة",
+    dimensions: "مقاسات الحقيبة الدقيقة",
+    description: "الوصف والتفاصيل",
+    color: "الألوان المتوفرة"
+  },
+  fr: {
+    thankYou: "Votre commande a été enregistrée avec succès, nous vous contacterons bientôt pour confirmer votre commande.",
+    subtotal: "Sous-total",
+    total: "Total global",
+    shipping: "Livraison",
+    free: "Gratuite",
+    orderNow: "Confirmer la commande",
+    addToCart: "Ajouter au panier",
+    careGuide: "Guide d'entretien",
+    dimensions: "Dimensions de l'article",
+    description: "Description & Détails",
+    color: "Couleurs disponibles"
+  }
+};
 
 interface Product {
   id: string;
   name: string;
   name_en: string;
   price: number;
-  old_price: number | null;
+  old_price: number | null; // سنحافظ عليه برمجياً كـ null للحفاظ على السعر الفردي الفاخر
   image_url: string;
   color: string;
   tag: string | null;
   category: string;
   stock: number;
+  description?: string;
+  materials_dimensions?: string;
+  care_guide?: string;
+  additional_images?: string[];
+  video_url?: string;
 }
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<Tab>('products');
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'orders' | 'products' | 'settings'>('dashboard');
+  const [activeSettingsSection, setActiveSettingsSection] = useState<'identity' | 'hero' | 'about' | 'pillars' | 'testimonials' | 'policies'>('identity');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  
+  // لغة واجهة العميل الافتراضية
+  const [lang, setLang] = useState<'ar' | 'fr'>('ar');
 
-  // Products state
+  // حالة رصد أخطاء الربط بسوبابيس
+  const [connectionError, setConnectionError] = useState<string | null>(null);
+
+  // البيانات من قاعدة البيانات
+  const [orders, setOrders] = useState<any[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [showProductForm, setShowProductForm] = useState(false);
-
-  // Settings state
   const [settings, setSettings] = useState<any>({
-    brand: { name: 'SAFOS', subtitle: 'Embroidered Atelier', logo_letter: 'S' },
-    contact: { phone: '', email: '', address: '', instagram: '', facebook: '' }
+    site_name: 'SAFOS',
+    site_subtitle: 'Embroidered Atelier',
+    logo_letter: 'S',
+    logo_url: '',
+    hero_title: '',
+    hero_subtitle: '',
+    hero_description: '',
+    hero_image_url: '',
+    announcement_text: '',
+    phone: '',
+    whatsapp: '',
+    email: '',
+    address: '',
+    instagram: '',
+    facebook: '',
+    tiktok: '',
+    primary_color: '#000000',
+    secondary_color: '#D4AF37',
+    accent_color: '#A37A3E',
+    currency: 'MAD',
+    currency_symbol: 'د.م',
+    about_title: '',
+    about_text: '',
+    about_image: '',
+    p1_title: '', p1_desc: '',
+    p2_title: '', p2_desc: '',
+    p3_title: '', p3_desc: '',
+    t1_name: '', t1_text: '', t1_rating: '5',
+    t2_name: '', t2_text: '', t2_rating: '5',
+    shipping_policy: '',
+    refund_policy: '',
+    copyright_text: ''
   });
-  const [logoFile, setLogoFile] = useState<File | null>(null);
 
-  // Password state
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  // حالات البحث والتصفية للطلبيات
+  const [orderSearch, setOrderSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [paymentFilter, setPaymentFilter] = useState('all');
 
+  // النوافذ المنبثقة
+  const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [isAddingProduct, setIsAddingProduct] = useState(false);
+
+  // نموذج إضافة منتج جديد متوافق مع الكانفاس وبدون سعر قديم
+  const [newProduct, setNewProduct] = useState<any>({
+    name: '',
+    name_en: '',
+    price: 0,
+    old_price: null, // دائماً فارغ للحفاظ على السعر الفردي الفاخر
+    stock: 5,
+    image_url: '',
+    category: 'classic',
+    color: '',
+    tag: '',
+    description: '',
+    materials_dimensions: '',
+    care_guide: '',
+    additional_images: [],
+    video_url: ''
+  });
+
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  // الكشف التلقائي عن لغة المتصفح أو الهاتف يدوياً وآلياً
   useEffect(() => {
-    loadProducts();
-    loadSettings();
+    const savedLang = localStorage.getItem('safos-lang');
+    if (savedLang === 'ar' || savedLang === 'fr') {
+      setLang(savedLang as any);
+    } else {
+      const userLang = navigator.language || (navigator as any).userLanguage || '';
+      if (userLang.startsWith('ar')) {
+        setLang('ar');
+      } else {
+        setLang('fr');
+      }
+    }
   }, []);
 
-  async function loadProducts() {
+  const handleLangChange = (newLang: 'ar' | 'fr') => {
+    setLang(newLang);
+    localStorage.setItem('safos-lang', newLang);
+  };
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        if (!supabase) {
+          throw new Error("لم يتم العثور على عميل سوبابيس الموحد. يرجى التحقق من ملف src/lib/supabase.ts");
+        }
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) throw error;
+        if (!session) {
+          navigate('/admin/login');
+        } else {
+          fetchData();
+        }
+      } catch (err: any) {
+        setConnectionError(err.message || 'حدث خطأ في الاتصال بقاعدة البيانات.');
+        setLoading(false);
+      }
+    };
+    checkAuth();
+  }, []);
+
+  // جلب البيانات من الخادم
+  const fetchData = async () => {
     setLoading(true);
-    const { data, error } = await supabase.from('products').select('*').order('created_at', { ascending: false });
-    if (error) {
-      showMessage('error', 'فشل تحميل المنتجات');
-    } else {
-      setProducts(data || []);
+    setConnectionError(null);
+    try {
+      const { data: ordersData, error: ordersError } = await supabase
+        .from('orders')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (ordersError) throw ordersError;
+      setOrders(ordersData || []);
+
+      const { data: productsData, error: productsError } = await supabase
+        .from('products')
+        .select('*')
+        .order('name');
+      if (productsError) throw productsError;
+      setProducts(productsData || []);
+
+      const { data: settingsData, error: settingsError } = await supabase
+        .from('store_settings')
+        .select('*');
+      if (settingsError) throw settingsError;
+
+      if (settingsData && settingsData.length > 0) {
+        const brand = settingsData.find(s => s.key === 'brand')?.value || {};
+        const colors = settingsData.find(s => s.key === 'colors')?.value || {};
+        const contact = settingsData.find(s => s.key === 'contact')?.value || {};
+        const hero = settingsData.find(s => s.key === 'hero')?.value || {};
+        const about = settingsData.find(s => s.key === 'about')?.value || {};
+        const pillars = settingsData.find(s => s.key === 'pillars')?.value || {};
+        const testimonials = settingsData.find(s => s.key === 'testimonials')?.value || {};
+        const policies = settingsData.find(s => s.key === 'policies')?.value || {};
+
+        setSettings({
+          site_name: brand.name || 'SAFOS',
+          site_subtitle: brand.subtitle || 'Embroidered Atelier',
+          logo_letter: brand.logo_letter || 'S',
+          logo_url: brand.logo_url || '',
+          hero_title: hero.title || '',
+          hero_subtitle: hero.subtitle || '',
+          hero_description: hero.description || '',
+          hero_image_url: hero.image || '',
+          announcement_text: hero.announcement_text || '',
+          phone: contact.phone || '',
+          whatsapp: contact.whatsapp || '',
+          email: contact.email || '',
+          address: contact.address || '',
+          instagram: contact.instagram || '',
+          facebook: contact.facebook || '',
+          tiktok: contact.tiktok || '',
+          primary_color: colors.primary || '#000000',
+          secondary_color: colors.secondary || '#D4AF37',
+          accent_color: colors.accent || '#A37A3E',
+          currency: contact.currency || 'MAD',
+          currency_symbol: contact.currency_symbol || 'د.م',
+          about_title: about.title || '',
+          about_text: about.text || '',
+          about_image: about.image || '',
+          p1_title: pillars.p1_title || '', p1_desc: pillars.p1_desc || '',
+          p2_title: pillars.p2_title || '', p2_desc: pillars.p2_desc || '',
+          p3_title: pillars.p3_title || '', p3_desc: pillars.p3_desc || '',
+          t1_name: testimonials.t1_name || '', t1_text: testimonials.t1_text || '', t1_rating: testimonials.t1_rating || '5',
+          t2_name: testimonials.t2_name || '', t2_text: testimonials.t2_text || '', t2_rating: testimonials.t2_rating || '5',
+          shipping_policy: policies.shipping || '',
+          refund_policy: policies.refund || '',
+          copyright_text: policies.copyright || ''
+        });
+      }
+    } catch (err: any) {
+      showToast(err.message || 'فشل تحميل البيانات من السحابة', 'error');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-  }
+  };
 
-  async function loadSettings() {
-    const { data, error } = await supabase.from('store_settings').select('*');
-    if (!error && data) {
-      const settingsObj: any = {};
-      data.forEach((row: any) => {
-        settingsObj[row.key] = row.value;
-      });
-      setSettings(settingsObj);
-    }
-  }
+  const showToast = (message: string, type: 'success' | 'error') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 4000);
+  };
 
-  function showMessage(type: 'success' | 'error', text: string) {
-    setMessage({ type, text });
-    setTimeout(() => setMessage(null), 4000);
-  }
-
+  // 📥 دالة تسجيل الخروج المعتمدة في بنية مشروعك الخاص ( useAuth )
   async function handleLogout() {
     await logout();
     navigate('/admin/login');
   }
 
-  // Product Functions
-  async function handleSaveProduct(e: React.FormEvent) {
+  // 📥 دالة رفع الصور المعتمدة فالمشروع لرفع جميع ملفات وأقسام الموقع من جهازك مباشرة
+  async function handleImageUpload(file: File, bucketName: string): Promise<string> {
+    const fileName = `safos-${Date.now()}-${file.name.replace(/\s+/g, '_')}`;
+    const { url, error } = await uploadFile(bucketName, file, fileName);
+    if (error || !url) {
+      throw new Error(error || 'فشل رفع الصورة');
+    }
+    return url;
+  }
+
+  // 📥 ميزة تحميل صور الحقائب مباشرة على الكمبيوتر أو الهاتف
+  const handleDownloadImage = async (imageUrl: string, fileName: string) => {
+    if (!imageUrl) return;
+    try {
+      showToast('جاري التحميل على جهازك...', 'success');
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${fileName.replace(/\s+/g, '_')}_safos.jpg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      window.open(imageUrl, '_blank');
+    }
+  };
+
+  // 💬 ميزة مشاركة تفاصيل الطلب هاتفياً عبر واتساب لتأكيد الـ COD
+  const handleShareOnWhatsApp = (order: any) => {
+    if (!order) return;
+    const cleanPhone = order.customer_phone.replace(/\s+/g, '');
+    const itemsList = order.items && Array.isArray(order.items)
+      ? order.items.map((i: any) => `- ${i.productName || i.product_name} (Qty: ${i.qty || i.quantity})`).join('%0A')
+      : '';
+    
+    const message = `السلام عليكم لالة/سيدي *${order.customer_name}*،%0A%0Aشرفتنا باختيارك لعلامة *SAFOS* للحقائب الكانفاس المطرزة الفاخرة. 🎒✨%0A%0Aنؤكد لكم طلبيتكم بنجاح.%0A*المنتجات المطلوبة:*%0A${itemsList}%0A*المجموع الإجمالي:* ${order.total} درهم.%0A%0Aسيتم إرسال طلبيتكم مع الموزع قريباً. هل العنوان بالمدينة *${order.customer_city}* صحيح ومؤكد؟ %0A%0Aشكراً جزيلاً لثقتكم.`;
+    window.open(`https://api.whatsapp.com/send?phone=${cleanPhone}&text=${message}`, '_blank');
+  };
+
+  const handlePrintInvoice = () => {
+    window.print();
+  };
+
+  const handleUpdateOrderStatus = async (orderId: string, newStatus: string) => {
+    setActionLoading(`order-status-${orderId}`);
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({ status: newStatus })
+        .eq('id', orderId);
+      if (error) throw error;
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
+      showToast('تم تحديث حالة الطلب بنجاح', 'success');
+    } catch (err: any) {
+      showToast(err.message, 'error');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleDeleteOrder = async (orderId: string) => {
+    if (!window.confirm('هل أنت متأكد من حذف هذا الطلب بشكل نهائي؟')) return;
+    setActionLoading(`delete-order-${orderId}`);
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .delete()
+        .eq('id', orderId);
+      if (error) throw error;
+      setOrders(prev => prev.filter(o => o.id !== orderId));
+      showToast('تم حذف الطلب بنجاح', 'success');
+    } catch (err: any) {
+      showToast(err.message, 'error');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleAddProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setActionLoading('add-product');
+    try {
+      const { error } = await supabase
+        .from('products')
+        .insert([newProduct]);
+      if (error) throw error;
+      showToast('تمت إضافة منتج الكانفاس الفاخر بنجاح', 'success');
+      setIsAddingProduct(false);
+      setNewProduct({
+        name: '', name_en: '', price: 0, old_price: null, stock: 5, image_url: '', category: 'classic',
+        color: '', tag: '', description: '', materials_dimensions: '', care_guide: '', additional_images: [], video_url: ''
+      });
+      fetchData();
+    } catch (err: any) {
+      showToast(err.message, 'error');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleSaveProductEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingProduct) return;
-
-    setLoading(true);
-    const { error } = editingProduct.id
-      ? await supabase.from('products').update({
-          name: editingProduct.name,
-          name_en: editingProduct.name_en,
-          price: editingProduct.price,
-          old_price: editingProduct.old_price,
-          image_url: editingProduct.image_url,
-          color: editingProduct.color,
-          tag: editingProduct.tag,
-          category: editingProduct.category,
-          stock: editingProduct.stock,
-        }).eq('id', editingProduct.id)
-      : await supabase.from('products').insert([{
-          name: editingProduct.name,
-          name_en: editingProduct.name_en,
-          price: editingProduct.price,
-          old_price: editingProduct.old_price,
-          image_url: editingProduct.image_url,
-          color: editingProduct.color,
-          tag: editingProduct.tag,
-          category: editingProduct.category,
-          stock: editingProduct.stock,
-        }]);
-
-    if (error) {
-      showMessage('error', 'فشل حفظ المنتج');
-    } else {
-      showMessage('success', 'تم حفظ المنتج بنجاح');
-      setShowProductForm(false);
-      setEditingProduct(null);
-      loadProducts();
-    }
-    setLoading(false);
-  }
-
-  async function handleDeleteProduct(id: string) {
-    if (!confirm('هل أنت متأكد من حذف هذا المنتج؟')) return;
-    
-    const { error } = await supabase.from('products').delete().eq('id', id);
-    if (error) {
-      showMessage('error', 'فشل حذف المنتج');
-    } else {
-      showMessage('success', 'تم حذف المنتج');
-      loadProducts();
-    }
-  }
-
-  async function handleProductImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-      showMessage('error', 'الرجاء اختيار ملف صورة');
-      return;
-    }
-
-    if (file.size > 2 * 1024 * 1024) {
-      showMessage('error', 'حجم الصورة يجب أن يكون أقل من 2MB');
-      return;
-    }
-
-    setLoading(true);
-    const fileName = `product-${Date.now()}-${file.name}`;
-    const { url, error } = await uploadFile(BUCKETS.PRODUCT_IMAGES, file, fileName);
-
-    if (error || !url) {
-      showMessage('error', 'فشل رفع الصورة');
-    } else {
-      if (editingProduct) {
-        setEditingProduct({ ...editingProduct, image_url: url });
-      }
-      showMessage('success', 'تم رفع الصورة بنجاح');
-    }
-    setLoading(false);
-  }
-
-  // Settings Functions
-  async function handleSaveSettings() {
-    setLoading(true);
-    
-    // Save each setting key
-    for (const key of Object.keys(settings)) {
-      const { error } = await supabase.from('store_settings').upsert({
-        key,
-        value: settings[key],
-        updated_at: new Date().toISOString()
-      });
-      if (error) {
-        showMessage('error', `فشل حفظ ${key}`);
-        setLoading(false);
-        return;
-      }
-    }
-
-    // Upload logo if selected
-    if (logoFile) {
-      const fileName = `logo-${Date.now()}-${logoFile.name}`;
-      const { url, error } = await uploadFile(BUCKETS.LOGOS, logoFile, fileName);
-      if (!error && url) {
-        setSettings({ ...settings, brand: { ...settings.brand, logo_url: url } });
-      }
-    }
-
-    showMessage('success', 'تم حفظ الإعدادات بنجاح');
-    setLoading(false);
-  }
-
-  async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-      showMessage('error', 'الرجاء اختيار ملف صورة');
-      return;
-    }
-
-    setLogoFile(file);
-    showMessage('success', 'تم اختيار الشعار، اضغط حفظ لتطبيقه');
-  }
-
-  // Password Functions
-  async function handleChangePassword(e: React.FormEvent) {
-    e.preventDefault();
-    
-    if (newPassword.length < 6) {
-      showMessage('error', 'كلمة المرور يجب أن تكون 6 أحرف على الأقل');
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      showMessage('error', 'كلمتا المرور غير متطابقتين');
-      return;
-    }
-
-    setLoading(true);
+    setActionLoading(`save-prod-${editingProduct.id}`);
     try {
-      // First sign in with current password to verify
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: 'admin@safos.ma',
-        password: currentPassword
-      });
-
-      if (signInError) throw signInError;
-
-      // Then update password
-      const { error: updateError } = await supabase.auth.updateUser({
-        password: newPassword
-      });
-
-      if (updateError) throw updateError;
-
-      showMessage('success', 'تم تغيير كلمة المرور بنجاح');
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
+      const { error } = await supabase
+        .from('products')
+        .update(editingProduct)
+        .eq('id', editingProduct.id);
+      if (error) throw error;
+      showToast('تم حفظ تعديلات الحقيبة بنجاح', 'success');
+      setEditingProduct(null);
+      fetchData();
     } catch (err: any) {
-      showMessage('error', err.message || 'فشل تغيير كلمة المرور');
+      showToast(err.message, 'error');
+    } finally {
+      setActionLoading(null);
     }
-    setLoading(false);
+  };
+
+  const handleDeleteProduct = async (productId: string) => {
+    if (!window.confirm('هل تريد حذف هذه حقيبة الكانفاس نهائياً من العرض؟')) return;
+    setActionLoading(`del-prod-${productId}`);
+    try {
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', productId);
+      if (error) throw error;
+      showToast('تم حذف المنتج بنجاح', 'success');
+      fetchData();
+    } catch (err: any) {
+      showToast(err.message, 'error');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleSaveSettings = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setActionLoading('settings');
+    try {
+      const updates = [
+        {
+          key: 'brand',
+          value: { name: settings.site_name, subtitle: settings.site_subtitle, logo_letter: settings.logo_letter, logo_url: settings.logo_url }
+        },
+        {
+          key: 'colors',
+          value: { primary: settings.primary_color, secondary: settings.secondary_color, accent: settings.accent_color }
+        },
+        {
+          key: 'contact',
+          value: {
+            phone: settings.phone, whatsapp: settings.whatsapp, email: settings.email, address: settings.address,
+            instagram: settings.instagram, facebook: settings.facebook, tiktok: settings.tiktok, currency: settings.currency, currency_symbol: settings.currency_symbol
+          }
+        },
+        {
+          key: 'hero',
+          value: { title: settings.hero_title, subtitle: settings.hero_subtitle, description: settings.hero_description, image: settings.hero_image_url, announcement_text: settings.announcement_text }
+        },
+        {
+          key: 'about',
+          value: { title: settings.about_title, text: settings.about_text, image: settings.about_image }
+        },
+        {
+          key: 'pillars',
+          value: {
+            p1_title: settings.p1_title, p1_desc: settings.p1_desc,
+            p2_title: settings.p2_title, p2_desc: settings.p2_desc,
+            p3_title: settings.p3_title, p3_desc: settings.p3_desc
+          }
+        },
+        {
+          key: 'testimonials',
+          value: {
+            t1_name: settings.t1_name, t1_text: settings.t1_text, t1_rating: settings.t1_rating,
+            t2_name: settings.t2_name, t2_text: settings.t2_text, t2_rating: settings.t2_rating
+          }
+        },
+        {
+          key: 'policies',
+          value: { shipping: settings.shipping_policy, refund: settings.refund_policy, copyright: settings.copyright_text }
+        }
+      ];
+
+      for (const item of updates) {
+        const { error } = await supabase
+          .from('store_settings')
+          .upsert(item, { onConflict: 'key' });
+        if (error) throw error;
+      }
+
+      showToast('تمت مزامنة وحفظ جميع إعدادات الهوية الفاخرة بنجاح', 'success');
+      fetchData();
+    } catch (err: any) {
+      showToast(err.message, 'error');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const totalRevenue = orders
+    .filter(o => o.status !== 'cancelled' && o.payment_status === 'paid')
+    .reduce((sum, o) => sum + (Number(o.total) || 0), 0);
+  const pendingOrdersCount = orders.filter(o => o.status === 'pending').length;
+  const lowStockProducts = products.filter(p => p.stock < 3);
+
+  const filteredOrders = orders.filter(order => {
+    const matchesSearch = 
+      (order.order_number?.toLowerCase() || '').includes(orderSearch.toLowerCase()) ||
+      (order.customer_name?.toLowerCase() || '').includes(orderSearch.toLowerCase()) ||
+      (order.customer_phone || '').includes(orderSearch);
+    
+    const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
+    const matchesPayment = paymentFilter === 'all' || order.payment_status === paymentFilter;
+
+    return matchesSearch && matchesStatus && matchesPayment;
+  });
+
+  const settingsSections: { id: 'identity' | 'hero' | 'about' | 'pillars' | 'testimonials' | 'policies'; label: string; icon: any }[] = [
+    { id: 'identity', label: 'الشعار والهوية', icon: Globe },
+    { id: 'hero', label: 'البانر الترحيبي والفرعي', icon: ImageIcon },
+    { id: 'about', label: 'قصة الماركة (من نحن)', icon: Clock },
+    { id: 'pillars', label: 'ركائز الفخامة (لماذا نحن)', icon: AlertCircle },
+    { id: 'testimonials', label: 'آراء العميلات والتقييمات', icon: CheckCircle },
+    { id: 'policies', label: 'السياسات وتذييل الصفحة', icon: SettingsIcon },
+  ];
+
+  if (connectionError) {
+    return (
+      <div className="min-h-screen bg-[#0A0A0A] text-zinc-100 flex items-center justify-center p-6">
+        <div className="bg-zinc-950 border border-red-500/20 p-8 rounded-3xl max-w-md w-full text-center space-y-4 shadow-2xl">
+          <div className="mx-auto w-12 h-12 bg-red-500/10 text-red-400 rounded-full flex items-center justify-center">
+            <AlertCircle size={24} />
+          </div>
+          <h2 className="text-lg font-light text-zinc-100">فشل الاتصال بـ Supabase</h2>
+          <p className="text-xs text-zinc-400 leading-relaxed">{connectionError}</p>
+          <div className="pt-4 border-t border-zinc-900">
+            <button onClick={() => window.location.reload()} className="w-full bg-zinc-900 hover:bg-zinc-800 text-zinc-200 py-2.5 rounded-xl text-xs font-semibold transition-all">إعادة محاولة الاتصال</button>
+          </div>
+        </div>
+      </div>
+    );
   }
-
-
 
   return (
-    <div className="min-h-screen bg-[#f5f0e8]">
-      {/* Top Bar */}
-      <div className="bg-[#1a1410] text-[#faf6ef] px-6 py-4 flex items-center justify-between shadow-lg">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full border border-[#b8935a] flex items-center justify-center">
-            <span className="font-display text-[#b8935a] text-lg font-bold">S</span>
+    <div className="min-h-screen bg-[#0A0A0A] text-zinc-100 flex font-sans antialiased selection:bg-amber-500/30 print:bg-white print:text-black">
+      
+      {/* القائمة الجانبية الفاخرة */}
+      <aside className="print:hidden fixed inset-y-0 right-0 z-30 w-64 bg-black border-l border-zinc-900 flex flex-col justify-between transition-transform duration-300 transform lg:translate-x-0 lg:static lg:translate-x-0">
+        <div>
+          <div className="p-8 border-b border-zinc-900 text-center">
+            <h1 className="text-2xl font-bold tracking-[0.3em] text-[#D4AF37]">{settings.site_name}</h1>
+            <p className="text-[10px] uppercase tracking-widest text-zinc-500 mt-1">{settings.site_subtitle}</p>
           </div>
-          <div>
-            <div className="font-display text-lg tracking-[0.2em]">SAFOS</div>
-            <div className="text-[9px] tracking-[0.2em] text-[#b8935a] uppercase">Admin Panel</div>
-          </div>
-        </div>
-        <button onClick={handleLogout} className="flex items-center gap-2 px-4 py-2 text-xs hover:bg-white/10 rounded-lg transition">
-          <LogOut size={14} /> خروج
-        </button>
-      </div>
 
-      {/* Message */}
-      {message && (
-        <div className={`mx-6 mt-4 p-4 rounded-lg flex items-center gap-3 ${
-          message.type === 'success' 
-            ? 'bg-green-50 border border-green-200 text-green-800' 
-            : 'bg-red-50 border border-red-200 text-red-800'
-        }`}>
-          {message.type === 'success' ? <Check size={18} /> : <AlertCircle size={18} />}
-          <span className="text-sm font-medium">{message.text}</span>
-        </div>
-      )}
-
-      <div className="flex">
-        {/* Sidebar */}
-        <aside className="w-64 bg-white border-l border-[#b8935a]/10 min-h-screen">
-          <nav className="p-4 space-y-1">
-            {TABS.map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`w-full flex items-center gap-3 px-4 py-3 text-sm rounded-lg transition ${
-                  activeTab === tab.id
-                    ? 'bg-[#b8935a] text-[#1a1410] font-semibold'
-                    : 'text-[#5c4330] hover:bg-[#b8935a]/10'
-                }`}
-              >
-                <tab.icon size={16} />
-                {tab.label}
-              </button>
-            ))}
-          </nav>
-        </aside>
-
-        {/* Main Content */}
-        <main className="flex-1 p-8">
-          {/* Products Tab */}
-          {activeTab === 'products' && (
-            <div>
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="font-display text-2xl text-[#1a1410]">إدارة المنتجات</h2>
+          <nav className="p-4 space-y-2">
+            {[
+              { id: 'dashboard', label: 'الإحصائيات العامة', icon: LayoutDashboard },
+              { id: 'orders', label: 'إدارة الطلبات', icon: ShoppingBag, badge: pendingOrdersCount > 0 ? pendingOrdersCount : undefined },
+              { id: 'products', label: 'مخزون المنتجات', icon: TrendingUp, badge: lowStockProducts.length > 0 ? lowStockProducts.length : undefined },
+              { id: 'settings', label: 'تخصيص الموقع بالكامل', icon: SettingsIcon },
+            ].map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
                 <button
+                  key={tab.id}
                   onClick={() => {
-                    setEditingProduct({
-                      id: '', name: '', name_en: '', price: 0, old_price: null,
-                      image_url: '', color: '', tag: null, category: 'chevron', stock: 0
-                    });
-                    setShowProductForm(true);
+                    setActiveTab(tab.id as any);
+                    setIsSidebarOpen(false);
                   }}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-[#b8935a] text-white text-xs tracking-wider rounded-lg hover:bg-[#1a1410] transition"
+                  className={`w-full flex items-center justify-between p-3.5 rounded-xl transition-all duration-300 text-sm ${
+                    isActive ? 'bg-gradient-to-l from-amber-500/10 to-amber-500/0 text-[#D4AF37] border-r-2 border-[#D4AF37] font-semibold shadow-[0_0_15px_rgba(212,175,55,0.03)]' : 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-950'
+                  }`}
                 >
-                  <Plus size={14} /> إضافة منتج
+                  <div className="flex items-center space-x-3 space-x-reverse">
+                    <Icon size={18} className={isActive ? 'text-[#D4AF37]' : 'text-zinc-400'} />
+                    <span>{tab.label}</span>
+                  </div>
+                  {tab.badge !== undefined && (
+                    <span className={`px-2 py-0.5 text-xs rounded-full ${isActive ? 'bg-amber-500 text-black font-bold' : 'bg-zinc-800 text-zinc-300'}`}>
+                      {tab.badge}
+                    </span>
+                  )}
                 </button>
-              </div>
+              );
+            })}
+          </nav>
+        </div>
 
-              {loading && <div className="text-center py-12 text-[#5c4330]">جاري التحميل...</div>}
+        <div className="p-4 border-t border-zinc-900 space-y-3">
+          {/* محدد اللغات اليدوي للمعاينة السريعة في الهيدر */}
+          <div className="flex items-center justify-center space-x-2 space-x-reverse bg-zinc-950 p-2 rounded-xl border border-zinc-900">
+            <button onClick={() => handleLangChange('ar')} className={`flex-1 py-1 px-3 text-xs rounded-lg transition-all ${lang === 'ar' ? 'bg-[#D4AF37] text-black font-bold' : 'text-zinc-400'}`}>العربية</button>
+            <button onClick={() => handleLangChange('fr')} className={`flex-1 py-1 px-3 text-xs rounded-lg transition-all ${lang === 'fr' ? 'bg-[#D4AF37] text-black font-bold' : 'text-zinc-400'}`}>FR / EN</button>
+          </div>
+          <button onClick={handleLogout} className="w-full flex items-center space-x-3 space-x-reverse p-3 text-red-400 hover:text-red-300 hover:bg-red-500/5 rounded-xl transition-all duration-200 text-sm">
+            <LogOut size={18} />
+            <span>تسجيل الخروج</span>
+          </button>
+        </div>
+      </aside>
 
-              {!loading && products.length === 0 && (
-                <div className="text-center py-12 bg-white rounded-xl border border-[#b8935a]/10">
-                  <Package size={48} className="mx-auto mb-4 text-[#b8935a]/40" />
-                  <p className="text-[#5c4330]">لا توجد منتجات</p>
-                </div>
-              )}
+      {/* المحتوى الرئيسي */}
+      <main className="flex-1 min-w-0 p-6 lg:p-10 overflow-y-auto print:p-0">
+        <div className="print:hidden flex items-center justify-between mb-8 pb-4 border-b border-zinc-900">
+          <div>
+            <h2 className="text-2xl font-light text-zinc-100">
+              {activeTab === 'dashboard' && 'الإحصائيات العامة'}
+              {activeTab === 'orders' && 'سجل المبيعات والطلبات'}
+              {activeTab === 'products' && 'إدارة المنتجات وتعديل الخصائص'}
+              {activeTab === 'settings' && 'تخصيص كامل لأقسام المتجر'}
+            </h2>
+          </div>
+          <button onClick={fetchData} className="p-2.5 bg-zinc-950 border border-zinc-900 text-zinc-400 hover:text-amber-500 rounded-xl">
+            <RefreshCw size={18} className={loading ? 'animate-spin text-amber-500' : ''} />
+          </button>
+        </div>
 
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {products.map(product => (
-                  <div key={product.id} className="bg-white rounded-xl border border-[#b8935a]/10 overflow-hidden shadow-sm">
-                    <div className="aspect-square bg-[#e8dcc4] relative">
-                      {product.image_url ? (
-                        <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="flex items-center justify-center h-full text-[#b8935a]/40">
-                          <ImageIcon size={48} />
-                        </div>
-                      )}
-                      {product.tag && (
-                        <span className="absolute top-3 right-3 bg-[#1a1410] text-[#faf6ef] text-[10px] px-2.5 py-1 rounded">
-                          {product.tag}
-                        </span>
-                      )}
-                    </div>
-                    <div className="p-4">
-                      <div className="text-[10px] tracking-widest text-[#b8935a] uppercase mb-1">{product.name_en}</div>
-                      <div className="font-display text-lg text-[#1a1410] mb-1">{product.name}</div>
-                      <div className="text-xs text-[#5c4330] mb-2">{product.color}</div>
-                      <div className="flex items-center justify-between">
-                        <span className="font-display text-[#b8935a]">{product.price} د.م</span>
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => {
-                              setEditingProduct(product);
-                              setShowProductForm(true);
-                            }}
-                            className="text-xs px-3 py-1.5 border border-[#b8935a]/30 hover:bg-[#b8935a]/10 rounded transition"
-                          >
-                            تعديل
-                          </button>
-                          <button
-                            onClick={() => handleDeleteProduct(product.id)}
-                            className="text-xs p-1.5 border border-red-200 text-red-600 hover:bg-red-50 rounded transition"
-                          >
-                            <Trash2 size={12} />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Product Form Modal */}
-              {showProductForm && editingProduct && (
-                <div className="fixed inset-0 z-[100] bg-black/50 flex items-center justify-center p-4" onClick={() => setShowProductForm(false)}>
-                  <div className="bg-[#faf6ef] max-w-2xl w-full max-h-[90vh] overflow-y-auto rounded-xl shadow-2xl" onClick={e => e.stopPropagation()}>
-                    <div className="sticky top-0 bg-[#faf6ef] p-5 border-b border-[#b8935a]/20 flex justify-between items-center">
-                      <h3 className="font-display text-xl">{editingProduct.id ? 'تعديل منتج' : 'إضافة منتج جديد'}</h3>
-                      <button onClick={() => setShowProductForm(false)} className="w-9 h-9 flex items-center justify-center hover:bg-black/5 rounded-full">
-                        <X size={20} />
-                      </button>
-                    </div>
-
-                    <form onSubmit={handleSaveProduct} className="p-5 space-y-4">
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="text-xs text-[#5c4330] mb-1.5 block">الاسم بالعربية *</label>
-                          <input
-                            type="text"
-                            value={editingProduct.name}
-                            onChange={e => setEditingProduct({ ...editingProduct, name: e.target.value })}
-                            className="w-full px-3.5 py-2.5 border border-[#b8935a]/25 rounded-lg focus:outline-none focus:border-[#b8935a] text-sm"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label className="text-xs text-[#5c4330] mb-1.5 block">الاسم بالإنجليزي *</label>
-                          <input
-                            type="text"
-                            value={editingProduct.name_en}
-                            onChange={e => setEditingProduct({ ...editingProduct, name_en: e.target.value })}
-                            className="w-full px-3.5 py-2.5 border border-[#b8935a]/25 rounded-lg focus:outline-none focus:border-[#b8935a] text-sm"
-                            required
-                          />
-                        </div>
-                      </div>
-
-                      <div className="grid md:grid-cols-3 gap-4">
-                        <div>
-                          <label className="text-xs text-[#5c4330] mb-1.5 block">السعر (د.م) *</label>
-                          <input
-                            type="number"
-                            value={editingProduct.price}
-                            onChange={e => setEditingProduct({ ...editingProduct, price: Number(e.target.value) })}
-                            className="w-full px-3.5 py-2.5 border border-[#b8935a]/25 rounded-lg focus:outline-none focus:border-[#b8935a] text-sm"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label className="text-xs text-[#5c4330] mb-1.5 block">السعر القديم</label>
-                          <input
-                            type="number"
-                            value={editingProduct.old_price || ''}
-                            onChange={e => setEditingProduct({ ...editingProduct, old_price: e.target.value ? Number(e.target.value) : null })}
-                            className="w-full px-3.5 py-2.5 border border-[#b8935a]/25 rounded-lg focus:outline-none focus:border-[#b8935a] text-sm"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-xs text-[#5c4330] mb-1.5 block">المخزون</label>
-                          <input
-                            type="number"
-                            value={editingProduct.stock}
-                            onChange={e => setEditingProduct({ ...editingProduct, stock: Number(e.target.value) })}
-                            className="w-full px-3.5 py-2.5 border border-[#b8935a]/25 rounded-lg focus:outline-none focus:border-[#b8935a] text-sm"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="text-xs text-[#5c4330] mb-1.5 block">الفئة</label>
-                          <select
-                            value={editingProduct.category}
-                            onChange={e => setEditingProduct({ ...editingProduct, category: e.target.value })}
-                            className="w-full px-3.5 py-2.5 border border-[#b8935a]/25 rounded-lg focus:outline-none focus:border-[#b8935a] text-sm"
-                          >
-                            <option value="chevron">شيفرون</option>
-                            <option value="clutch">كلتش</option>
-                            <option value="chain">بسلسلة</option>
-                            <option value="crossbody">كروس</option>
-                            <option value="classic">كلاسيك</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label className="text-xs text-[#5c4330] mb-1.5 block">اللون</label>
-                          <input
-                            type="text"
-                            value={editingProduct.color}
-                            onChange={e => setEditingProduct({ ...editingProduct, color: e.target.value })}
-                            className="w-full px-3.5 py-2.5 border border-[#b8935a]/25 rounded-lg focus:outline-none focus:border-[#b8935a] text-sm"
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="text-xs text-[#5c4330] mb-1.5 block">الوسم (Tag)</label>
-                        <input
-                          type="text"
-                          value={editingProduct.tag || ''}
-                          onChange={e => setEditingProduct({ ...editingProduct, tag: e.target.value || null })}
-                          className="w-full px-3.5 py-2.5 border border-[#b8935a]/25 rounded-lg focus:outline-none focus:border-[#b8935a] text-sm"
-                          placeholder="جديد / الأكثر مبيعاً / محدود"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="text-xs text-[#5c4330] mb-1.5 block">صورة المنتج</label>
-                        <div className="space-y-3">
-                          <div className="relative">
-                            <input
-                              type="file"
-                              accept="image/*"
-                              onChange={handleProductImageUpload}
-                              disabled={loading}
-                              className="w-full px-4 py-2.5 border border-[#b8935a]/25 rounded-lg text-sm file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#b8935a] file:text-[#faf6ef]"
-                            />
-                            {loading && (
-                              <div className="absolute inset-0 bg-white/80 flex items-center justify-center rounded-lg">
-                                <div className="w-5 h-5 border-2 border-[#b8935a]/30 border-t-[#b8935a] rounded-full animate-spin" />
-                              </div>
-                            )}
-                          </div>
-                          {editingProduct.image_url && (
-                            <div className="relative">
-                              <img src={editingProduct.image_url} alt="Product" className="h-48 w-full object-cover rounded-lg border" />
-                              <button
-                                type="button"
-                                onClick={() => setEditingProduct({ ...editingProduct, image_url: '' })}
-                                className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600"
-                              >
-                                <X size={14} />
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="flex gap-3 pt-4 border-t border-[#b8935a]/20 justify-end">
-                        <button
-                          type="button"
-                          onClick={() => setShowProductForm(false)}
-                          className="px-5 py-2.5 border border-[#1a1410] text-xs tracking-wider rounded-lg hover:bg-[#1a1410] hover:text-[#faf6ef] transition"
-                        >
-                          إلغاء
-                        </button>
-                        <button
-                          type="submit"
-                          disabled={loading}
-                          className="px-5 py-2.5 bg-[#1a1410] text-[#faf6ef] text-xs tracking-wider rounded-lg hover:bg-[#b8935a] transition inline-flex items-center gap-2 disabled:opacity-50"
-                        >
-                          <Save size={13} /> {editingProduct.id ? 'حفظ التعديلات' : 'إضافة منتج'}
-                        </button>
-                      </div>
-                    </form>
-                  </div>
-                </div>
-              )}
+        {loading ? (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 animate-pulse">
+              {[...Array(4)].map((_, i) => <div key={i} className="h-28 bg-zinc-950 rounded-2xl" />)}
             </div>
-          )}
-
-          {/* Settings Tab */}
-          {activeTab === 'settings' && (
-            <div className="max-w-3xl">
-              <h2 className="font-display text-2xl text-[#1a1410] mb-6">إعدادات الموقع</h2>
-              
-              <div className="bg-white rounded-xl border border-[#b8935a]/10 p-6 space-y-6">
-                <div>
-                  <h3 className="font-semibold text-[#1a1410] mb-4">معلومات البراند</h3>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-xs text-[#5c4330] mb-1.5 block">اسم البراند</label>
-                      <input
-                        type="text"
-                        value={settings.brand?.name || ''}
-                        onChange={e => setSettings({ ...settings, brand: { ...settings.brand, name: e.target.value } })}
-                        className="w-full px-3.5 py-2.5 border border-[#b8935a]/25 rounded-lg focus:outline-none focus:border-[#b8935a] text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs text-[#5c4330] mb-1.5 block">الشعار الفرعي</label>
-                      <input
-                        type="text"
-                        value={settings.brand?.subtitle || ''}
-                        onChange={e => setSettings({ ...settings, brand: { ...settings.brand, subtitle: e.target.value } })}
-                        className="w-full px-3.5 py-2.5 border border-[#b8935a]/25 rounded-lg focus:outline-none focus:border-[#b8935a] text-sm"
-                      />
-                    </div>
+          </div>
+        ) : (
+          <>
+            {/* 1. الإحصائيات العامة */}
+            {activeTab === 'dashboard' && (
+              <div className="space-y-8 print:hidden">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <div className="bg-zinc-950 border border-zinc-900 p-6 rounded-2xl">
+                    <span className="text-xs text-zinc-500">إجمالي الأرباح المدفوعة</span>
+                    <div className="mt-4 text-3xl font-light">{totalRevenue.toLocaleString()} <span className="text-xs text-amber-500">درهم</span></div>
+                  </div>
+                  <div className="bg-zinc-950 border border-zinc-900 p-6 rounded-2xl">
+                    <span className="text-xs text-zinc-500">الطلبات المعلقة</span>
+                    <div className="mt-4 text-3xl font-light text-amber-500">{pendingOrdersCount}</div>
+                  </div>
+                  <div className="bg-zinc-950 border border-zinc-900 p-6 rounded-2xl">
+                    <span className="text-xs text-red-400">نقص المخزون (&lt;3)</span>
+                    <div className="mt-4 text-3xl font-light text-red-400">{lowStockProducts.length}</div>
+                  </div>
+                  <div className="bg-zinc-950 border border-zinc-900 p-6 rounded-2xl">
+                    <span className="text-xs text-zinc-500">مجموع التشكيلة</span>
+                    <div className="mt-4 text-3xl font-light">{products.length}</div>
                   </div>
                 </div>
 
-                <div>
-                  <h3 className="font-semibold text-[#1a1410] mb-4">رفع الشعار (Logo)</h3>
-                  <div className="flex items-start gap-6">
-                    <div className="w-32 h-32 border-2 border-[#b8935a]/30 rounded-xl overflow-hidden bg-white flex items-center justify-center">
-                      {settings.brand?.logo_url ? (
-                        <img src={settings.brand.logo_url} alt="Logo" className="w-full h-full object-contain p-4" />
-                      ) : (
-                        <div className="text-4xl text-[#b8935a]/40">👜</div>
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleLogoUpload}
-                        className="w-full px-4 py-2.5 border border-[#b8935a]/25 rounded-lg text-sm file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#b8935a] file:text-[#faf6ef]"
-                      />
-                      {logoFile && (
-                        <p className="text-xs text-[#5c4330] mt-2">
-                          تم اختيار: {logoFile.name} - اضغط حفظ لتطبيقه
-                        </p>
-                      )}
-                    </div>
+                <div className="bg-zinc-950 border border-zinc-900 p-6 rounded-2xl">
+                  <h3 className="text-lg font-light text-zinc-200">تحليل الأداء المالي</h3>
+                  <div className="h-48 w-full relative mt-8 flex items-end justify-between border-b border-zinc-800">
+                    <div className="w-12 bg-zinc-900 h-24 rounded-t-lg mx-auto" />
+                    <div className="w-12 bg-zinc-900 h-36 rounded-t-lg mx-auto" />
+                    <div className="w-12 bg-gradient-to-t from-amber-500/5 to-amber-500/20 border border-amber-500/30 h-44 rounded-t-lg mx-auto" />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 2. سجل المبيعات والطلبات */}
+            {activeTab === 'orders' && (
+              <div className="space-y-6 print:hidden">
+                <div className="bg-zinc-950 border border-zinc-900 p-5 rounded-2xl flex flex-col md:flex-row gap-4 items-center justify-between">
+                  <input
+                    type="text"
+                    placeholder="البحث بالاسم، الهاتف، أو رقم الطلب..."
+                    value={orderSearch}
+                    onChange={(e) => setOrderSearch(e.target.value)}
+                    className="w-full md:w-96 p-2.5 bg-black border border-zinc-900 rounded-xl text-zinc-200"
+                  />
+                  <div className="flex gap-3">
+                    <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="bg-black border border-zinc-900 text-zinc-300 py-2 px-3 rounded-xl text-xs">
+                      <option value="all">كل حالات الشحن</option>
+                      <option value="pending">قيد الانتظار</option>
+                      <option value="confirmed">مؤكد</option>
+                      <option value="shipped">تم الشحن</option>
+                      <option value="delivered">تم التوصيل</option>
+                      <option value="cancelled">ملغى</option>
+                    </select>
                   </div>
                 </div>
 
-                <div>
-                  <h3 className="font-semibold text-[#1a1410] mb-4">معلومات التواصل</h3>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-xs text-[#5c4330] mb-1.5 block">الهاتف</label>
-                      <input
-                        type="text"
-                        value={settings.contact?.phone || ''}
-                        onChange={e => setSettings({ ...settings, contact: { ...settings.contact, phone: e.target.value } })}
-                        className="w-full px-3.5 py-2.5 border border-[#b8935a]/25 rounded-lg focus:outline-none focus:border-[#b8935a] text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs text-[#5c4330] mb-1.5 block">البريد الإلكتروني</label>
-                      <input
-                        type="email"
-                        value={settings.contact?.email || ''}
-                        onChange={e => setSettings({ ...settings, contact: { ...settings.contact, email: e.target.value } })}
-                        className="w-full px-3.5 py-2.5 border border-[#b8935a]/25 rounded-lg focus:outline-none focus:border-[#b8935a] text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs text-[#5c4330] mb-1.5 block">العنوان</label>
-                      <input
-                        type="text"
-                        value={settings.contact?.address || ''}
-                        onChange={e => setSettings({ ...settings, contact: { ...settings.contact, address: e.target.value } })}
-                        className="w-full px-3.5 py-2.5 border border-[#b8935a]/25 rounded-lg focus:outline-none focus:border-[#b8935a] text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs text-[#5c4330] mb-1.5 block">انستغرام</label>
-                      <input
-                        type="text"
-                        value={settings.contact?.instagram || ''}
-                        onChange={e => setSettings({ ...settings, contact: { ...settings.contact, instagram: e.target.value } })}
-                        className="w-full px-3.5 py-2.5 border border-[#b8935a]/25 rounded-lg focus:outline-none focus:border-[#b8935a] text-sm"
-                        placeholder="safos.bags"
-                      />
-                    </div>
-                  </div>
+                <div className="bg-zinc-950 border border-zinc-900 rounded-2xl overflow-hidden shadow-2xl">
+                  <table className="w-full text-right text-sm">
+                    <thead className="bg-[#0D0D0D] text-zinc-500 text-[10px] uppercase border-b border-zinc-900">
+                      <tr>
+                        <th className="py-4 px-6">رقم الطلب</th>
+                        <th className="py-4 px-6">العميل</th>
+                        <th className="py-4 px-6 text-left">قيمة الطلب</th>
+                        <th className="py-4 px-6 text-center">حالة الشحن</th>
+                        <th className="py-4 px-6 text-center">الإجراءات</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-900">
+                      {filteredOrders.map((order) => (
+                        <tr key={order.id} className="hover:bg-zinc-900/30">
+                          <td className="py-4 px-6 font-mono text-xs text-amber-500">{order.order_number}</td>
+                          <td className="py-4 px-6 font-medium text-zinc-100">{order.customer_name}</td>
+                          <td className="py-4 px-6 text-left">{order.total} درهم</td>
+                          <td className="py-4 px-6 text-center">
+                            <select
+                              value={order.status}
+                              onChange={(e) => handleUpdateOrderStatus(order.id, e.target.value)}
+                              className="text-xs py-1 px-2.5 rounded bg-black border border-zinc-800"
+                            >
+                              <option value="pending">قيد الانتظار</option>
+                              <option value="confirmed">مؤكد</option>
+                              <option value="shipped">تم الشحن</option>
+                              <option value="delivered">تم التوصيل</option>
+                              <option value="cancelled">ملغى</option>
+                            </select>
+                          </td>
+                          <td className="py-4 px-6 text-center flex items-center justify-center space-x-2 space-x-reverse">
+                            <button onClick={() => setSelectedOrder(order)} className="p-1.5 bg-zinc-900 text-zinc-300 rounded-lg"><Eye size={14} /></button>
+                            <button onClick={() => handleShareOnWhatsApp(order)} className="p-1.5 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 rounded-lg" title="مشاركة على واتساب لتأكيد الـ COD"><Send size={14} /></button>
+                            <button onClick={() => handleDeleteOrder(order.id)} className="p-1.5 bg-red-500/5 text-red-400 rounded-lg"><Trash2 size={14} /></button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
+              </div>
+            )}
 
-                <div className="flex justify-end pt-4 border-t border-[#b8935a]/20">
-                  <button
-                    onClick={handleSaveSettings}
-                    disabled={loading}
-                    className="px-6 py-3 bg-[#1a1410] text-[#faf6ef] text-xs tracking-wider rounded-lg hover:bg-[#b8935a] transition inline-flex items-center gap-2 disabled:opacity-50"
-                  >
-                    <Save size={13} /> حفظ الإعدادات
+            {/* 3. إدارة السلع والمنتجات بالكامل */}
+            {activeTab === 'products' && (
+              <div className="space-y-6 print:hidden">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg font-light text-zinc-300">حقائب الكانفاس</h3>
+                  <button onClick={() => setIsAddingProduct(true)} className="bg-[#D4AF37] hover:bg-amber-500 text-black text-xs font-semibold py-2 px-4 rounded-xl flex items-center space-x-1.5 space-x-reverse">
+                    <Plus size={16} />
+                    <span>إضافة حقيبة كانفاس جديدة</span>
                   </button>
                 </div>
-              </div>
-            </div>
-          )}
 
-          {/* Password Tab */}
-          {activeTab === 'password' && (
-            <div className="max-w-xl">
-              <h2 className="font-display text-2xl text-[#1a1410] mb-6">تغيير كلمة المرور</h2>
-              
-              <div className="bg-white rounded-xl border border-[#b8935a]/10 p-6">
-                <form onSubmit={handleChangePassword} className="space-y-5">
-                  <div>
-                    <label className="text-xs text-[#5c4330] mb-1.5 block">كلمة المرور الحالية</label>
-                    <input
-                      type="password"
-                      value={currentPassword}
-                      onChange={e => setCurrentPassword(e.target.value)}
-                      className="w-full px-3.5 py-2.5 border border-[#b8935a]/25 rounded-lg focus:outline-none focus:border-[#b8935a] text-sm"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs text-[#5c4330] mb-1.5 block">كلمة المرور الجديدة</label>
-                    <input
-                      type="password"
-                      value={newPassword}
-                      onChange={e => setNewPassword(e.target.value)}
-                      className="w-full px-3.5 py-2.5 border border-[#b8935a]/25 rounded-lg focus:outline-none focus:border-[#b8935a] text-sm"
-                      minLength={6}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs text-[#5c4330] mb-1.5 block">تأكيد كلمة المرور الجديدة</label>
-                    <input
-                      type="password"
-                      value={confirmPassword}
-                      onChange={e => setConfirmPassword(e.target.value)}
-                      className="w-full px-3.5 py-2.5 border border-[#b8935a]/25 rounded-lg focus:outline-none focus:border-[#b8935a] text-sm"
-                      required
-                    />
-                  </div>
-
-                  <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg">
-                    <div className="flex gap-2 text-xs text-amber-800">
-                      <AlertCircle size={14} className="shrink-0 mt-0.5" />
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {products.map((product) => (
+                    <div key={product.id} className="bg-zinc-950 border border-zinc-900 rounded-2xl overflow-hidden p-5 flex flex-col justify-between hover:border-zinc-850 transition-all">
                       <div>
-                        <strong>ملاحظات مهمة:</strong>
-                        <ul className="mt-1.5 space-y-1">
-                          <li>• كلمة المرور يجب أن تكون 6 أحرف على الأقل</li>
-                          <li>• احفظ كلمة المرور الجديدة في مكان آمن</li>
-                          <li>• لا يمكن استرجاعها في حال نسيانها</li>
-                        </ul>
+                        <div className="w-full h-48 bg-zinc-900 rounded-xl overflow-hidden mb-4 relative">
+                          {product.image_url ? (
+                            <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-zinc-600 text-xs font-light">لا توجد صورة</div>
+                          )}
+                          {product.image_url && (
+                            <button
+                              onClick={() => handleDownloadImage(product.image_url, product.name)}
+                              className="absolute bottom-3 right-3 bg-black/70 hover:bg-amber-500 hover:text-black text-white p-2.5 rounded-full shadow-lg"
+                              title="تحميل الصورة على جهازك"
+                            >
+                              <Download size={14} />
+                            </button>
+                          )}
+                        </div>
+                        <h4 className="text-base font-light text-zinc-100">{product.name}</h4>
+                        <p className="text-xs text-[#D4AF37] font-mono mt-1">{product.price} درهم</p>
+                      </div>
+
+                      <div className="border-t border-zinc-900 pt-4 mt-4 flex gap-2">
+                        <button onClick={() => setEditingProduct(product)} className="flex-1 bg-zinc-900 hover:bg-zinc-850 text-zinc-200 py-2 rounded-xl text-xs font-semibold flex items-center justify-center space-x-1.5 space-x-reverse">
+                          <Edit3 size={14} />
+                          <span>تعديل التفاصيل</span>
+                        </button>
+                        <button onClick={() => handleDeleteProduct(product.id)} className="p-2 bg-red-500/5 hover:bg-red-500/15 text-red-400 rounded-xl"><Trash2 size={14} /></button>
                       </div>
                     </div>
-                  </div>
-
-                  <div className="flex justify-end pt-4 border-t border-[#b8935a]/20">
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="px-6 py-3 bg-[#1a1410] text-[#faf6ef] text-xs tracking-wider rounded-lg hover:bg-[#b8935a] transition inline-flex items-center gap-2 disabled:opacity-50"
-                    >
-                      <Lock size={13} /> تغيير كلمة المرور
-                    </button>
-                  </div>
-                </form>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
-        </main>
-      </div>
-    </div>
-  );
-}
+            )}
+
+            {/* 4. تخصيص كامل لأقسام المتجر */}
+            {activeTab === 'settings' && (
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                <div className="lg:col-span-1 space-y-2">
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-500 px-3 mb-4">أقسام واجهة المتجر</h3>
+                  {settingsSections.map((sec) => {
+                    const Icon = sec.icon;
+                    const isSecActive = activeSettingsSection === sec.id;
+                    return (
