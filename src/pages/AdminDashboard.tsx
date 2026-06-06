@@ -784,3 +784,635 @@ export default function AdminDashboard() {
                     const Icon = sec.icon;
                     const isSecActive = activeSettingsSection === sec.id;
                     return (
+                      <button
+                        key={sec.id}
+                        onClick={() => setActiveSettingsSection(sec.id)}
+                        className={`w-full flex items-center space-x-3 space-x-reverse p-3.5 rounded-xl text-xs transition-all ${
+                          isSecActive ? 'bg-zinc-900 text-amber-500 font-semibold' : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-950/50'
+                        }`}
+                      >
+                        <Icon size={16} />
+                        <span>{sec.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="lg:col-span-3 bg-zinc-950 border border-zinc-900 rounded-3xl p-6 lg:p-8 shadow-2xl">
+                  <form onSubmit={handleSaveSettings} className="space-y-6">
+                    
+                    {activeSettingsSection === 'identity' && (
+                      <div className="space-y-5 animate-fadeIn">
+                        <div>
+                          <h4 className="text-base font-light text-zinc-100">هوية المتجر الفاخرة والألوان</h4>
+                          <p className="text-xs text-zinc-500 mt-1">تعديل الاسم والوصوف الرئيسية للماركة والألوان</p>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="text-xs text-zinc-400 block mb-1.5">اسم المتجر الأساسي</label>
+                            <input type="text" value={settings.site_name} onChange={(e) => setSettings({ ...settings, site_name: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
+                          </div>
+                          <div>
+                            <label className="text-xs text-zinc-400 block mb-1.5">سلوجن / العنوان الفرعي للماركة</label>
+                            <input type="text" value={settings.site_subtitle} onChange={(e) => setSettings({ ...settings, site_subtitle: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                          <div>
+                            <label className="text-xs text-zinc-400 block mb-1.5">الحرف الرمزي للشعار</label>
+                            <input type="text" maxLength={1} value={settings.logo_letter} onChange={(e) => setSettings({ ...settings, logo_letter: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm text-center font-bold" />
+                          </div>
+                          <div className="md:col-span-3">
+                            <label className="text-xs text-zinc-400 block mb-1.5">شعار المتجر (الشعار الحالي: {settings.logo_url ? 'مرفوع' : 'لا يوجد'})</label>
+                            <div className="flex items-center space-x-4 space-x-reverse">
+                              <label className="cursor-pointer bg-zinc-900 hover:bg-zinc-800 text-zinc-300 py-2.5 px-4 rounded-xl text-xs border border-zinc-800 transition-all flex items-center space-x-2 space-x-reverse">
+                                <Upload size={14} />
+                                <span>رفع شعار من جهازك</span>
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  className="hidden"
+                                  onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                      try {
+                                        const url = await handleImageUpload(file, BUCKETS.LOGOS);
+                                        setSettings({ ...settings, logo_url: url });
+                                        showToast('تم رفع الشعار بنجاح، احفظ التغييرات لحفظها نهائياً', 'success');
+                                      } catch (err: any) {
+                                        showToast(err.message, 'error');
+                                      }
+                                    }
+                                  }}
+                                />
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-zinc-900 pt-4">
+                          <div>
+                            <label className="text-xs text-zinc-400 block mb-1.5">اللون الأساسي (Primary)</label>
+                            <input type="color" value={settings.primary_color} onChange={(e) => setSettings({ ...settings, primary_color: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
+                          </div>
+                          <div>
+                            <label className="text-xs text-zinc-400 block mb-1.5">اللون الثانوي / الذهبي</label>
+                            <input type="color" value={settings.secondary_color} onChange={(e) => setSettings({ ...settings, secondary_color: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {activeSettingsSection === 'hero' && (
+                      <div className="space-y-5 animate-fadeIn">
+                        <div>
+                          <h4 className="text-base font-light text-zinc-100">الشاشة الترحيبية (Hero Banner)</h4>
+                          <p className="text-xs text-zinc-500 mt-1">تعديل البانر الترويجي لمتجر SAFOS والرفع من جهازك</p>
+                        </div>
+                        <div>
+                          <label className="text-xs text-zinc-400 block mb-1.5">العنوان الرئيسي العريض</label>
+                          <textarea value={settings.hero_title} onChange={(e) => setSettings({ ...settings, hero_title: e.target.value })} className="w-full h-20 bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="text-xs text-zinc-400 block mb-1.5">صورة البانر الرئيسي</label>
+                            <label className="cursor-pointer w-full bg-zinc-900 hover:bg-zinc-800 text-zinc-300 p-3 rounded-xl text-xs border border-zinc-800 flex items-center justify-center space-x-2 space-x-reverse">
+                              <Upload size={14} />
+                              <span>رفع صورة البانر من جهازك</span>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={async (e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) {
+                                    try {
+                                      const url = await handleImageUpload(file, BUCKETS.PRODUCT_IMAGES);
+                                      setSettings({ ...settings, hero_image_url: url });
+                                      showToast('تم رفع صورة البانر بنجاح', 'success');
+                                    } catch (err: any) {
+                                      showToast(err.message, 'error');
+                                    }
+                                  }
+                                }}
+                              />
+                            </label>
+                          </div>
+                          <div>
+                            <label className="text-xs text-zinc-400 block mb-1.5">شريط الإعلانات المتحرك فالموقع</label>
+                            <input type="text" value={settings.announcement_text} onChange={(e) => setSettings({ ...settings, announcement_text: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm text-amber-500 font-medium" />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="text-xs text-zinc-400 block mb-1.5">الوصف التفصيلي (Hero Description)</label>
+                          <textarea value={settings.hero_description} onChange={(e) => setSettings({ ...settings, hero_description: e.target.value })} className="w-full h-20 bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
+                        </div>
+                      </div>
+                    )}
+
+                    {activeSettingsSection === 'about' && (
+                      <div className="space-y-5 animate-fadeIn">
+                        <div>
+                          <h4 className="text-base font-light text-zinc-100">قصة الماركة (Brand Story)</h4>
+                          <p className="text-xs text-zinc-500 mt-1">قصة الحرفة اليدوية لكتان الكانفاس بورشة SAFOS</p>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="text-xs text-zinc-400 block mb-1.5">عنوان قصة ورشتنا الفنية</label>
+                            <input type="text" value={settings.about_title} onChange={(e) => setSettings({ ...settings, about_title: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
+                          </div>
+                          <div>
+                            <label className="text-xs text-zinc-400 block mb-1.5">صورة ورشة التطريز اليدوي</label>
+                            <label className="cursor-pointer w-full bg-zinc-900 hover:bg-zinc-800 text-zinc-300 p-3 rounded-xl text-xs border border-zinc-800 flex items-center justify-center space-x-2 space-x-reverse">
+                              <Upload size={14} />
+                              <span>رفع صورة الورشة من جهازك</span>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={async (e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) {
+                                    try {
+                                      const url = await handleImageUpload(file, BUCKETS.PRODUCT_IMAGES);
+                                      setSettings({ ...settings, about_image: url });
+                                      showToast('تم رفع صورة قصة الماركة بنجاح', 'success');
+                                    } catch (err: any) {
+                                      showToast(err.message, 'error');
+                                    }
+                                  }
+                                }}
+                              />
+                            </label>
+                          </div>
+                        </div>
+                        <div>
+                          <label className="text-xs text-zinc-400 block mb-1.5">قصة ورشتنا الفنية بالتفصيل</label>
+                          <textarea value={settings.about_text} onChange={(e) => setSettings({ ...settings, about_text: e.target.value })} className="w-full h-32 bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
+                        </div>
+                      </div>
+                    )}
+
+                    {activeSettingsSection === 'pillars' && (
+                      <div className="space-y-5 animate-fadeIn">
+                        <div>
+                          <h4 className="text-base font-light text-zinc-100">ركائز ومميزات الفخامة الثلاث</h4>
+                          <p className="text-xs text-zinc-500 mt-1">تخصيص العناوين والوصف للمميزات الثلاثة لـ الكانفاس المتقن</p>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-b border-zinc-900 pb-4">
+                          <div>
+                            <label className="text-xs text-zinc-400 block mb-1.5">عنوان الركيزة 1</label>
+                            <input type="text" value={settings.p1_title} onChange={(e) => setSettings({ ...settings, p1_title: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
+                          </div>
+                          <div className="md:col-span-2">
+                            <label className="text-xs text-zinc-400 block mb-1.5">وصف الركيزة 1</label>
+                            <input type="text" value={settings.p1_desc} onChange={(e) => setSettings({ ...settings, p1_desc: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-b border-zinc-900 pb-4">
+                          <div>
+                            <label className="text-xs text-zinc-400 block mb-1.5">عنوان الركيزة 2</label>
+                            <input type="text" value={settings.p2_title} onChange={(e) => setSettings({ ...settings, p2_title: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
+                          </div>
+                          <div className="md:col-span-2">
+                            <label className="text-xs text-zinc-400 block mb-1.5">وصف الركيزة 2</label>
+                            <input type="text" value={settings.p2_desc} onChange={(e) => setSettings({ ...settings, p2_desc: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-b border-zinc-900 pb-4">
+                          <div>
+                            <label className="text-xs text-zinc-400 block mb-1.5">عنوان الركيزة 3</label>
+                            <input type="text" value={settings.p3_title} onChange={(e) => setSettings({ ...settings, p3_title: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
+                          </div>
+                          <div className="md:col-span-2">
+                            <label className="text-xs text-zinc-400 block mb-1.5">وصف الركيزة 3</label>
+                            <input type="text" value={settings.p3_desc} onChange={(e) => setSettings({ ...settings, p3_desc: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {activeSettingsSection === 'testimonials' && (
+                      <div className="space-y-5 animate-fadeIn">
+                        <div>
+                          <h4 className="text-base font-light text-zinc-100">آراء وتقييمات العميلات الحقيقية</h4>
+                          <p className="text-xs text-zinc-500 mt-1">تعديل مراجعات عينات الزبناء الوفيات للمتجر لجلب المصداقية</p>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 border-b border-zinc-900 pb-4">
+                          <div>
+                            <label className="text-xs text-zinc-400 block mb-1.5">اسم العميل 1</label>
+                            <input type="text" value={settings.t1_name} onChange={(e) => setSettings({ ...settings, t1_name: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
+                          </div>
+                          <div className="md:col-span-2">
+                            <label className="text-xs text-zinc-400 block mb-1.5">مراجعة العميل 1</label>
+                            <input type="text" value={settings.t1_text} onChange={(e) => setSettings({ ...settings, t1_text: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
+                          </div>
+                          <div className="md:col-span-1">
+                            <label className="text-xs text-zinc-400 block mb-1.5">التقييم (النجوم)</label>
+                            <select value={settings.t1_rating} onChange={(e) => setSettings({ ...settings, t1_rating: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm">
+                              <option value="5">5 نجوم</option>
+                              <option value="4">4 نجوم</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 border-b border-zinc-900 pb-4">
+                          <div>
+                            <label className="text-xs text-zinc-400 block mb-1.5">اسم العميل 2</label>
+                            <input type="text" value={settings.t2_name} onChange={(e) => setSettings({ ...settings, t2_name: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
+                          </div>
+                          <div className="md:col-span-2">
+                            <label className="text-xs text-zinc-400 block mb-1.5">مراجعة العميل 2</label>
+                            <input type="text" value={settings.t2_text} onChange={(e) => setSettings({ ...settings, t2_text: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
+                          </div>
+                          <div className="md:col-span-1">
+                            <label className="text-xs text-zinc-400 block mb-1.5">التقييم (النجوم)</label>
+                            <select value={settings.t2_rating} onChange={(e) => setSettings({ ...settings, t2_rating: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm">
+                              <option value="5">5 نجوم</option>
+                              <option value="4">4 نجوم</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {activeSettingsSection === 'policies' && (
+                      <div className="space-y-5 animate-fadeIn">
+                        <div>
+                          <h4 className="text-base font-light text-zinc-100">السياسات وتذييل الصفحة</h4>
+                          <p className="text-xs text-zinc-500 mt-1">تعديل سياسات الشحن وسياسة الاسترجاع وحقوق الملكية للمتجر</p>
+                        </div>
+                        <div>
+                          <label className="text-xs text-zinc-400 block mb-1.5">سياسة الشحن والتوصيل المجاني للمدن المغربية</label>
+                          <textarea value={settings.shipping_policy} onChange={(e) => setSettings({ ...settings, shipping_policy: e.target.value })} className="w-full h-24 bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
+                        </div>
+                        <div>
+                          <label className="text-xs text-zinc-400 block mb-1.5">سياسة الاستبدال والاسترجاع (7 أيام)</label>
+                          <textarea value={settings.refund_policy} onChange={(e) => setSettings({ ...settings, refund_policy: e.target.value })} className="w-full h-24 bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
+                        </div>
+                        <div>
+                          <label className="text-xs text-zinc-400 block mb-1.5">حقوق الملكية وتذييل الصفحة (Copyright)</label>
+                          <input type="text" value={settings.copyright_text} onChange={(e) => setSettings({ ...settings, copyright_text: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="border-t border-zinc-900 pt-6 mt-6 flex justify-end">
+                      <button type="submit" disabled={actionLoading === 'settings'} className="bg-[#D4AF37] hover:bg-amber-500 text-black font-semibold py-3 px-8 rounded-xl flex items-center space-x-2 space-x-reverse transition-all">
+                        <Save size={18} />
+                        <span>{actionLoading === 'settings' ? 'جاري الحفظ والمزامنة...' : 'مزامنة وحفظ التعديلات حياً'}</span>
+                      </button>
+                    </div>
+
+                  </form>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </main>
+
+      {/* ------------------ أ. نافذة إضافة منتج جديد بالكامل (Add Product Modal) ------------------ */}
+      {isAddingProduct && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-zinc-950 border border-zinc-900 rounded-3xl w-full max-w-xl overflow-hidden shadow-2xl">
+            <div className="flex justify-between items-center p-6 bg-[#0F0F0F] border-b border-zinc-900">
+              <h3 className="text-base font-light text-zinc-100">إضافة حقيبة كانفاس جديدة للتشكيلة</h3>
+              <button onClick={() => setIsAddingProduct(false)} className="text-zinc-500 hover:text-zinc-300"><X size={20} /></button>
+            </div>
+            <form onSubmit={handleAddProduct} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs text-zinc-400 block mb-1">اسم الحقيبة بالعربية *</label>
+                  <input type="text" required value={newProduct.name} onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-sm" placeholder="مثال: حقيبة صفاء الكانفاس" />
+                </div>
+                <div>
+                  <label className="text-xs text-zinc-400 block mb-1">الاسم بالإنجليزي (EN) *</label>
+                  <input type="text" required value={newProduct.name_en} onChange={(e) => setNewProduct({ ...newProduct, name_en: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-sm font-mono" placeholder="Safaa Canvas Bag" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs text-zinc-400 block mb-1">السعر الموحد (درهم) *</label>
+                  <input type="number" required value={newProduct.price} onChange={(e) => setNewProduct({ ...newProduct, price: Number(e.target.value) })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-sm font-mono" />
+                </div>
+                <div>
+                  <label className="text-xs text-zinc-400 block mb-1">المخزون المتوفر</label>
+                  <input type="number" value={newProduct.stock} onChange={(e) => setNewProduct({ ...newProduct, stock: Number(e.target.value) })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-sm font-mono" />
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="text-xs text-zinc-400 block mb-1">الصنف (Category)</label>
+                  <select value={newProduct.category} onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs text-zinc-300">
+                    <option value="classic">Classic Tote</option>
+                    <option value="mini">Mini Tote</option>
+                    <option value="travel">Travel Canvas</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs text-zinc-400 block mb-1">الألوان المتوفرة</label>
+                  <input type="text" value={newProduct.color} onChange={(e) => setNewProduct({ ...newProduct, color: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" placeholder="بيج × أسود" />
+                </div>
+                <div>
+                  <label className="text-xs text-zinc-400 block mb-1">التاغ الترويجي</label>
+                  <input type="text" value={newProduct.tag} onChange={(e) => setNewProduct({ ...newProduct, tag: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" placeholder="جديد، الأكثر مبيعاً" />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-zinc-900 pt-4">
+                <div>
+                  <label className="text-xs text-zinc-400 block mb-1">رفع الصورة الرئيسية من جهازك</label>
+                  <label className="cursor-pointer w-full bg-zinc-900 hover:bg-zinc-800 text-zinc-300 p-2.5 rounded-xl text-xs border border-zinc-850 flex items-center justify-center space-x-2 space-x-reverse">
+                    <Upload size={14} />
+                    <span>تحميل من جهازك</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          try {
+                            const url = await handleImageUpload(file, BUCKETS.PRODUCT_IMAGES);
+                            setNewProduct({ ...newProduct, image_url: url });
+                            showToast('تم رفع الصورة بنجاح', 'success');
+                          } catch (err: any) {
+                            showToast(err.message, 'error');
+                          }
+                        }
+                      }}
+                    />
+                  </label>
+                </div>
+                <div>
+                  <label className="text-xs text-zinc-400 block mb-1">رفع صور إضافية للمعرض</label>
+                  <label className="cursor-pointer w-full bg-zinc-900 hover:bg-zinc-800 text-zinc-300 p-2.5 rounded-xl text-xs border border-zinc-850 flex items-center justify-center space-x-2 space-x-reverse">
+                    <Upload size={14} />
+                    <span>تحميل صورة إضافية</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          try {
+                            const url = await handleImageUpload(file, BUCKETS.PRODUCT_IMAGES);
+                            setNewProduct((prev: any) => ({
+                              ...prev,
+                              additional_images: [...prev.additional_images, url]
+                            }));
+                            showToast('تمت إضافة صورة للمعرض', 'success');
+                          } catch (err: any) {
+                            showToast(err.message, 'error');
+                          }
+                        }
+                      }}
+                    />
+                  </label>
+                </div>
+              </div>
+              <div>
+                <label className="text-xs text-zinc-400 block mb-1">رابط الفيديو الترويجي (يوتيوب أو فيديو مباشر)</label>
+                <input type="text" value={newProduct.video_url} onChange={(e) => setNewProduct({ ...newProduct, video_url: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs font-mono" />
+              </div>
+              <div>
+                <label className="text-xs text-zinc-400 block mb-1">وصف الحقيبة وخصائص ثوب الكانفاس</label>
+                <textarea value={newProduct.description} onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })} className="w-full h-16 bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" />
+              </div>
+              <div>
+                <label className="text-xs text-zinc-400 block mb-1">مقاسات الحقيبة الدقيقة (Dimensions)</label>
+                <input type="text" value={newProduct.materials_dimensions} onChange={(e) => setNewProduct({ ...newProduct, materials_dimensions: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" placeholder="Mini: 24cm x 20cm" />
+              </div>
+              <div>
+                <label className="text-xs text-zinc-400 block mb-1">دليل تنظيف والعناية بالحقيبة</label>
+                <textarea value={newProduct.care_guide} onChange={(e) => setNewProduct({ ...newProduct, care_guide: e.target.value })} className="w-full h-16 bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" />
+              </div>
+              <div className="border-t border-zinc-900 pt-4 flex justify-end space-x-2 space-x-reverse">
+                <button type="button" onClick={() => setIsAddingProduct(false)} className="bg-zinc-900 text-zinc-300 py-2.5 px-6 rounded-xl text-xs">إلغاء</button>
+                <button type="submit" disabled={actionLoading === 'add-product'} className="bg-[#D4AF37] text-black py-2.5 px-6 rounded-xl text-xs font-bold">إضافة التشكيلة</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ------------------ ب. نافذة تعديل تفاصيل المنتج بالكامل (Edit Product Modal) ------------------ */}
+      {editingProduct && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-zinc-950 border border-zinc-900 rounded-3xl w-full max-w-xl overflow-hidden shadow-2xl">
+            <div className="flex justify-between items-center p-6 bg-[#0F0F0F] border-b border-zinc-900">
+              <h3 className="text-base font-light text-zinc-100">تعديل مواصفات الحقيبة</h3>
+              <button onClick={() => setEditingProduct(null)} className="text-zinc-500 hover:text-zinc-300"><X size={20} /></button>
+            </div>
+            <form onSubmit={handleSaveProductEdit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs text-zinc-400 block mb-1">اسم الحقيبة بالعربية</label>
+                  <input type="text" value={editingProduct.name} onChange={(e) => setEditingProduct({ ...editingProduct, name: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-sm" />
+                </div>
+                <div>
+                  <label className="text-xs text-zinc-400 block mb-1">الاسم بالإنجليزي (EN)</label>
+                  <input type="text" value={editingProduct.name_en} onChange={(e) => setEditingProduct({ ...editingProduct, name_en: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-sm font-mono" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs text-zinc-400 block mb-1">السعر الموحد (درهم)</label>
+                  <input type="number" value={editingProduct.price} onChange={(e) => setEditingProduct({ ...editingProduct, price: Number(e.target.value) })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-sm font-mono" />
+                </div>
+                <div>
+                  <label className="text-xs text-zinc-400 block mb-1">المخزون المتوفر</label>
+                  <input type="number" value={editingProduct.stock} onChange={(e) => setEditingProduct({ ...editingProduct, stock: Number(e.target.value) })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-sm font-mono" />
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="text-xs text-zinc-400 block mb-1">الصنف</label>
+                  <select value={editingProduct.category} onChange={(e) => setEditingProduct({ ...editingProduct, category: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs text-zinc-300">
+                    <option value="classic">Classic Tote</option>
+                    <option value="mini">Mini Tote</option>
+                    <option value="travel">Travel Canvas</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs text-zinc-400 block mb-1">الألوان</label>
+                  <input type="text" value={editingProduct.color || ''} onChange={(e) => setEditingProduct({ ...editingProduct, color: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" />
+                </div>
+                <div>
+                  <label className="text-xs text-zinc-400 block mb-1">التاغ</label>
+                  <input type="text" value={editingProduct.tag || ''} onChange={(e) => setEditingProduct({ ...editingProduct, tag: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-zinc-900 pt-4">
+                <div>
+                  <label className="text-xs text-zinc-400 block mb-1">رفع صورة رئيسية جديدة</label>
+                  <label className="cursor-pointer w-full bg-zinc-900 hover:bg-zinc-800 text-zinc-300 p-2.5 rounded-xl text-xs border border-zinc-850 flex items-center justify-center space-x-2 space-x-reverse">
+                    <Upload size={14} />
+                    <span>تحميل من جهازك</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          try {
+                            const url = await handleImageUpload(file, BUCKETS.PRODUCT_IMAGES);
+                            setEditingProduct({ ...editingProduct, image_url: url });
+                            showToast('تم تغيير الصورة الرئيسية', 'success');
+                          } catch (err: any) {
+                            showToast(err.message, 'error');
+                          }
+                        }
+                      }}
+                    />
+                  </label>
+                </div>
+                <div>
+                  <label className="text-xs text-zinc-400 block mb-1">رفع صور إضافية للمعرض</label>
+                  <label className="cursor-pointer w-full bg-zinc-900 hover:bg-zinc-800 text-zinc-300 p-2.5 rounded-xl text-xs border border-zinc-850 flex items-center justify-center space-x-2 space-x-reverse">
+                    <Upload size={14} />
+                    <span>تحميل صورة إضافية</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          try {
+                            const url = await handleImageUpload(file, BUCKETS.PRODUCT_IMAGES);
+                            setEditingProduct((prev: any) => ({
+                              ...prev,
+                              additional_images: [...(prev.additional_images || []), url]
+                            }));
+                            showToast('تمت إضافة صورة للمعرض', 'success');
+                          } catch (err: any) {
+                            showToast(err.message, 'error');
+                          }
+                        }
+                      }}
+                    />
+                  </label>
+                </div>
+              </div>
+              <div>
+                <label className="text-xs text-[#5c4330] mb-1.5 block">رابط الفيديو الترويجي</label>
+                <input type="text" value={editingProduct.video_url || ''} onChange={(e) => setEditingProduct({ ...editingProduct, video_url: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs font-mono" />
+              </div>
+              <div>
+                <label className="text-xs text-[#5c4330] mb-1.5 block">الوصف التفصيلي لثوب الكانفاس</label>
+                <textarea value={editingProduct.description || ''} onChange={(e) => setEditingProduct({ ...editingProduct, description: e.target.value })} className="w-full h-16 bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" />
+              </div>
+              <div>
+                <label className="text-xs text-[#5c4330] mb-1.5 block">أبعاد الحقيبة الدقيقة (Dimensions)</label>
+                <input type="text" value={editingProduct.materials_dimensions || ''} onChange={(e) => setEditingProduct({ ...editingProduct, materials_dimensions: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" />
+              </div>
+              <div>
+                <label className="text-xs text-[#5c4330] mb-1.5 block">طرق تنظيف الكانفاس والتطريز</label>
+                <textarea value={editingProduct.care_guide || ''} onChange={(e) => setEditingProduct({ ...editingProduct, care_guide: e.target.value })} className="w-full h-16 bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" />
+              </div>
+              <div className="border-t border-zinc-900 pt-4 flex justify-end space-x-2 space-x-reverse">
+                <button type="button" onClick={() => setEditingProduct(null)} className="bg-zinc-900 text-zinc-300 py-2.5 px-6 rounded-xl text-xs">إلغاء</button>
+                <button type="submit" disabled={actionLoading === `save-prod-${editingProduct.id}`} className="bg-[#D4AF37] text-black py-2.5 px-6 rounded-xl text-xs font-bold">حفظ التغييرات</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ------------------ ج. نافذة تفاصيل ومعالجة الطلبات المنبثقة والجاهزة للطباعة ------------------ */}
+      {selectedOrder && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-md flex items-center justify-center p-4 print:absolute print:inset-0 print:bg-white print:p-0">
+          <div className="relative bg-zinc-950 border border-zinc-900 rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl print:border-0 print:bg-white print:text-black print:shadow-none">
+            
+            <div className="flex justify-between items-center p-6 border-b border-zinc-900 bg-[#0F0F0F] print:hidden">
+              <div>
+                <span className="text-xs text-amber-500 font-mono font-bold">{selectedOrder.order_number}</span>
+                <h3 className="text-base font-light text-zinc-200 mt-0.5">تفاصيل ومعالجة الطلب للعميل</h3>
+              </div>
+              <button onClick={() => setSelectedOrder(null)} className="p-2 hover:bg-zinc-900 text-zinc-500 rounded-full"><X size={20} /></button>
+            </div>
+
+            <div className="p-6 space-y-6 print:p-8">
+              {/* ترويسة الفاتورة المخصصة للطباعة وتجهيز الشحنات */}
+              <div className="hidden print:block text-center border-b pb-6 mb-6">
+                <h1 className="text-3xl font-bold tracking-[0.2em] text-black">{settings.site_name}</h1>
+                <p className="text-xs uppercase tracking-widest text-gray-500">{settings.site_subtitle}</p>
+                <div className="text-right mt-6 text-xs text-gray-600">
+                  <p>رقم الفاتورة: #{selectedOrder.order_number}</p>
+                  <p>التاريخ: {new Date(selectedOrder.created_at).toLocaleDateString('ar-MA')}</p>
+                </div>
+              </div>
+
+              <div className="bg-[#0D0D0D] border border-zinc-900 p-4 rounded-2xl grid grid-cols-1 md:grid-cols-2 gap-4 print:bg-white print:border-gray-200 print:text-black">
+                <div>
+                  <h4 className="text-[10px] text-zinc-500 uppercase mb-1">اسم العميل بالكامل</h4>
+                  <p className="text-sm font-semibold print:text-black">{selectedOrder.customer_name}</p>
+                </div>
+                <div>
+                  <h4 className="text-[10px] text-zinc-500 uppercase mb-1">المدينة وعنوان الشحن</h4>
+                  <p className="text-sm print:text-black">{selectedOrder.customer_city} • {selectedOrder.customer_address}</p>
+                </div>
+                <div>
+                  <h4 className="text-[10px] text-zinc-500 uppercase mb-1">الهاتف للتواصل</h4>
+                  <p className="text-sm font-mono print:text-black">{selectedOrder.customer_phone}</p>
+                </div>
+                <div>
+                  <h4 className="text-[10px] text-zinc-500 uppercase mb-1">طريقة الدفع</h4>
+                  <p className="text-sm print:text-black">الدفع عند الاستلام (COD)</p>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="text-xs font-medium text-zinc-400 mb-3 print:text-black">الحقائب الفاخرة المشمولة:</h4>
+                <div className="space-y-2 max-h-40 overflow-y-auto">
+                  {selectedOrder.items && Array.isArray(selectedOrder.items) && selectedOrder.items.map((item: any, idx: number) => (
+                    <div key={idx} className="flex justify-between items-center p-3 bg-[#0F0F0F] border border-zinc-900 rounded-xl print:bg-white print:border-gray-200">
+                      <div>
+                        <span className="text-sm font-light text-zinc-200 print:text-black">{item.productName || item.product_name}</span>
+                        <span className="text-xs text-zinc-500 block mt-0.5">الكمية: {item.qty || item.quantity} حقيبة</span>
+                      </div>
+                      <span className="text-sm text-[#D4AF37] font-semibold print:text-black">{(Number(item.price) * Number(item.qty || item.quantity)).toLocaleString()} درهم</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="border-t border-zinc-900 pt-4 flex justify-between items-center print:border-gray-200">
+                <span className="text-sm text-zinc-400 print:text-black">المجموع الإجمالي للطلبية:</span>
+                <span className="text-xl font-light text-[#D4AF37] print:text-black print:font-bold">{Number(selectedOrder.total).toLocaleString()} درهم</span>
+              </div>
+
+              {selectedOrder.notes && (
+                <div className="p-3 bg-zinc-900/50 rounded-xl text-xs text-zinc-400 print:hidden">
+                  <span className="font-semibold block mb-1">ملاحظات الزبون الإضافية:</span>
+                  {selectedOrder.notes}
+                </div>
+              )}
+
+              {/* تذييل الفاتورة للزبون المطبوع */}
+              <div className="hidden print:block text-center text-[10px] text-gray-400 border-t pt-8 mt-8">
+                شكرًا لكم على تسوقكم من SAFOS • حقائب كانفاس مصنوعة يدويًا بفخر مغربي 🇲🇦
+              </div>
+            </div>
+
+            <div className="p-6 bg-[#0F0F0F] border-t border-zinc-900 flex flex-wrap gap-3 justify-between items-center print:hidden">
+              <div className="flex gap-2">
+                <button onClick={() => handleShareOnWhatsApp(selectedOrder)} className="bg-emerald-500 hover:bg-emerald-600 text-black font-semibold py-2 px-4 rounded-xl text-xs flex items-center space-x-1.5 space-x-reverse">
+                  <Send size={14} />
+                  <span>تأكيد وشحن عبر واتساب</span>
+                </button>
+                <button onClick={handlePrintInvoice} className="bg-zinc-900 hover:bg-zinc-800 text-zinc-100 py-2 px-4 rounded-xl text-xs flex items-center space-x-1.5 space-x-reverse border border-zinc-800">
+                  <Printer size={14} />
+                  <span>تحميل / طباعة الفاتورة</span>
+                </button>
+              </div>
+              <button onClick={() => setSelectedOrder(null)} className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-850 text-zinc-400 py-2 px-5 rounded-xl text-xs">إغلاق</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+}
