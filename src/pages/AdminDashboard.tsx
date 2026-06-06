@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-// استيراد عميل سوبابيس الموحد من مشروعك لتفادي مشاكل التهيئة
+// استيراد عميل سوبابيس الموحد من مشروعك
 import { supabase } from '../lib/supabase';
 import { 
   LayoutDashboard, 
@@ -10,7 +10,6 @@ import {
   Filter, 
   CheckCircle, 
   Clock, 
-  Truck, 
   AlertCircle, 
   X, 
   DollarSign, 
@@ -34,7 +33,7 @@ import {
   Image as ImageIcon
 } from 'lucide-react';
 
-// قاموس الترجمات لتطبيق ميزة اللغات التلقائية واليدوية في صفحة الزبون الافتراضية
+// قاموس الترجمات الآلي واليدوي
 const translations = {
   ar: {
     thankYou: "تم تسجيل طلبكِ بنجاح، سنتواصل معكِ قريباً لتأكيد طلبيتك",
@@ -72,7 +71,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   
-  // لغة لوحة التحكم الحالية (العربية/الفرنسية) للمعاينة
+  // لغة واجهة العميل الافتراضية
   const [lang, setLang] = useState<'ar' | 'fr'>('ar');
 
   // حالة رصد أخطاء الربط بسوبابيس لتجنب الصفحة البيضاء
@@ -116,12 +115,12 @@ export default function AdminDashboard() {
     copyright_text: ''
   });
 
-  // حالات البحث والتصفية
+  // حالات البحث والتصفية للطلبيات
   const [orderSearch, setOrderSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [paymentFilter, setPaymentFilter] = useState('all');
 
-  // نوافذ التحكم المنبثقة
+  // النوافذ المنبثقة
   const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
   const [editingProduct, setEditingProduct] = useState<any | null>(null);
   const [isAddingProduct, setIsAddingProduct] = useState(false);
@@ -145,7 +144,6 @@ export default function AdminDashboard() {
 
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
-  // الكشف التلقائي عن اللغة من الهاتف/المتصفح مع إمكانية التغيير يدوياً
   useEffect(() => {
     const savedLang = localStorage.getItem('safos-lang');
     if (savedLang === 'ar' || savedLang === 'fr') {
@@ -186,7 +184,7 @@ export default function AdminDashboard() {
     checkAuth();
   }, []);
 
-  // جلب كافة تفاصيل الموقع والبراند
+  // جلب البيانات من الخادم
   const fetchData = async () => {
     setLoading(true);
     setConnectionError(null);
@@ -267,7 +265,7 @@ export default function AdminDashboard() {
     setTimeout(() => setToast(null), 4000);
   };
 
-  // 📥 تفعيل ميزة الرفع الفعلي للصور من جهازك لـ Supabase Storage
+  // رفع الصور المباشر لـ Supabase Storage
   const handleUploadToStorage = async (file: File, folder: string): Promise<string> => {
     try {
       const fileExt = file.name.split('.').pop();
@@ -291,7 +289,7 @@ export default function AdminDashboard() {
     }
   };
 
-  // 📥 ميزة تحميل صور الحقائب مباشرة على الكمبيوتر أو الهاتف
+  // تحميل الصور مباشرة على جهاز المستخدم
   const handleDownloadImage = async (imageUrl: string, fileName: string) => {
     if (!imageUrl) return;
     try {
@@ -311,7 +309,7 @@ export default function AdminDashboard() {
     }
   };
 
-  // 💬 ميزة مشاركة تفاصيل الطلب السريع على الواتساب بنقرة واحدة
+  // مشاركة الطلب هاتفياً عبر واتساب لتأكيد الـ COD
   const handleShareOnWhatsApp = (order: any) => {
     if (!order) return;
     const cleanPhone = order.customer_phone.replace(/\s+/g, '');
@@ -323,7 +321,10 @@ export default function AdminDashboard() {
     window.open(`https://api.whatsapp.com/send?phone=${cleanPhone}&text=${message}`, '_blank');
   };
 
-  // التحكم بالطلبات
+  const handlePrintInvoice = () => {
+    window.print();
+  };
+
   const handleUpdateOrderStatus = async (orderId: string, newStatus: string) => {
     setActionLoading(`order-status-${orderId}`);
     try {
@@ -359,7 +360,6 @@ export default function AdminDashboard() {
     }
   };
 
-  // إضافة منتج جديد بالكامل
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     setActionLoading('add-product');
@@ -382,7 +382,6 @@ export default function AdminDashboard() {
     }
   };
 
-  // تعديل وحفظ منتج بالكامل
   const handleSaveProductEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingProduct) return;
@@ -421,7 +420,6 @@ export default function AdminDashboard() {
     }
   };
 
-  // حفظ تفاصيل المتجر بالكامل ومزامنتها مع الخادم في جدول store_settings
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
     setActionLoading('settings');
@@ -504,6 +502,16 @@ export default function AdminDashboard() {
 
     return matchesSearch && matchesStatus && matchesPayment;
   });
+
+  // قائمة إعدادات الأقسام بنوع ثابت لضمان عدم حدوث أي خطأ في تصنيف الأنواع
+  const settingsSections: { id: 'identity' | 'hero' | 'about' | 'pillars' | 'testimonials' | 'policies'; label: string; icon: any }[] = [
+    { id: 'identity', label: 'الشعار والهوية', icon: Globe },
+    { id: 'hero', label: 'البانر الترحيبي والفرعي', icon: ImageIcon },
+    { id: 'about', label: 'قصة الماركة (من نحن)', icon: Clock },
+    { id: 'pillars', label: 'ركائز الفخامة (لماذا نحن)', icon: AlertCircle },
+    { id: 'testimonials', label: 'آراء العميلات والتقييمات', icon: CheckCircle },
+    { id: 'policies', label: 'السياسات وتذييل الصفحة', icon: SettingsIcon },
+  ];
 
   if (connectionError) {
     return (
@@ -742,7 +750,7 @@ export default function AdminDashboard() {
                       <div className="border-t border-zinc-900 pt-4 mt-4 flex gap-2">
                         <button onClick={() => setEditingProduct(product)} className="flex-1 bg-zinc-900 hover:bg-zinc-850 text-zinc-200 py-2 rounded-xl text-xs font-semibold flex items-center justify-center space-x-1.5 space-x-reverse">
                           <Edit3 size={14} />
-                          <span>تعديل</span>
+                          <span>تعديل التفاصيل</span>
                         </button>
                         <button onClick={() => handleDeleteProduct(product.id)} className="p-2 bg-red-500/5 hover:bg-red-500/15 text-red-400 rounded-xl"><Trash2 size={14} /></button>
                       </div>
@@ -757,20 +765,13 @@ export default function AdminDashboard() {
               <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                 <div className="lg:col-span-1 space-y-2">
                   <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-500 px-3 mb-4">أقسام واجهة المتجر</h3>
-                  {[
-                    { id: 'identity', label: 'الشعار والهوية', icon: Globe },
-                    { id: 'hero', label: 'البانر الترحيبي والفرعي', icon: ImageIcon },
-                    { id: 'about', label: 'قصة الماركة (من نحن)', icon: Clock },
-                    { id: 'pillars', label: 'ركائز الفخامة (لماذا نحن)', icon: AlertCircle },
-                    { id: 'testimonials', label: 'آراء العميلات والتقييمات', icon: CheckCircle },
-                    { id: 'policies', label: 'السياسات وتذييل الصفحة', icon: SettingsIcon },
-                  ].map((sec) => {
+                  {settingsSections.map((sec) => {
                     const Icon = sec.icon;
                     const isSecActive = activeSettingsSection === sec.id;
                     return (
                       <button
                         key={sec.id}
-                        onClick={() => setActiveSettingsSection(sec.id as any)}
+                        onClick={() => setActiveSettingsSection(sec.id)}
                         className={`w-full flex items-center space-x-3 space-x-reverse p-3.5 rounded-xl text-xs transition-all ${
                           isSecActive ? 'bg-zinc-900 text-amber-500 font-semibold' : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-950/50'
                         }`}
@@ -930,18 +931,36 @@ export default function AdminDashboard() {
                           <h4 className="text-base font-light text-zinc-100">ركائز ومميزات الفخامة الثلاث</h4>
                           <p className="text-xs text-zinc-500 mt-1">تخصيص العناوين والوصف للمميزات الثلاثة لـ الكانفاس المتقن</p>
                         </div>
-                        {[1, 2, 3].map((num) => (
-                          <div key={num} className="grid grid-cols-1 md:grid-cols-3 gap-4 border-b border-zinc-900 pb-4">
-                            <div className="md:col-span-1">
-                              <label className="text-xs text-zinc-400 block mb-1.5">عنوان الركيزة {num}</label>
-                              <input type="text" value={settings[`p${num}_title`]} onChange={(e) => setSettings({ ...settings, [`p${num}_title`]: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                            </div>
-                            <div className="md:col-span-2">
-                              <label className="text-xs text-zinc-400 block mb-1.5">وصف الركيزة {num}</label>
-                              <input type="text" value={settings[`p${num}_desc`]} onChange={(e) => setSettings({ ...settings, [`p${num}_desc`]: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                            </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-b border-zinc-900 pb-4">
+                          <div>
+                            <label className="text-xs text-zinc-400 block mb-1.5">عنوان الركيزة 1</label>
+                            <input type="text" value={settings.p1_title} onChange={(e) => setSettings({ ...settings, p1_title: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
                           </div>
-                        ))}
+                          <div className="md:col-span-2">
+                            <label className="text-xs text-zinc-400 block mb-1.5">وصف الركيزة 1</label>
+                            <input type="text" value={settings.p1_desc} onChange={(e) => setSettings({ ...settings, p1_desc: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-b border-zinc-900 pb-4">
+                          <div>
+                            <label className="text-xs text-zinc-400 block mb-1.5">عنوان الركيزة 2</label>
+                            <input type="text" value={settings.p2_title} onChange={(e) => setSettings({ ...settings, p2_title: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
+                          </div>
+                          <div className="md:col-span-2">
+                            <label className="text-xs text-zinc-400 block mb-1.5">وصف الركيزة 2</label>
+                            <input type="text" value={settings.p2_desc} onChange={(e) => setSettings({ ...settings, p2_desc: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-b border-zinc-900 pb-4">
+                          <div>
+                            <label className="text-xs text-zinc-400 block mb-1.5">عنوان الركيزة 3</label>
+                            <input type="text" value={settings.p3_title} onChange={(e) => setSettings({ ...settings, p3_title: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
+                          </div>
+                          <div className="md:col-span-2">
+                            <label className="text-xs text-zinc-400 block mb-1.5">وصف الركيزة 3</label>
+                            <input type="text" value={settings.p3_desc} onChange={(e) => setSettings({ ...settings, p3_desc: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
+                          </div>
+                        </div>
                       </div>
                     )}
 
@@ -951,25 +970,40 @@ export default function AdminDashboard() {
                           <h4 className="text-base font-light text-zinc-100">آراء وتقييمات العميلات الحقيقية</h4>
                           <p className="text-xs text-zinc-500 mt-1">تعديل مراجعات عينات الزبناء الوفيات للمتجر لجلب المصداقية</p>
                         </div>
-                        {[1, 2].map((num) => (
-                          <div key={num} className="grid grid-cols-1 md:grid-cols-4 gap-4 border-b border-zinc-900 pb-4">
-                            <div className="md:col-span-1">
-                              <label className="text-xs text-zinc-400 block mb-1.5">اسم العميل {num}</label>
-                              <input type="text" value={settings[`t${num}_name`]} onChange={(e) => setSettings({ ...settings, [`t${num}_name`]: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                            </div>
-                            <div className="md:col-span-2">
-                              <label className="text-xs text-zinc-400 block mb-1.5">مراجعة العميل {num}</label>
-                              <input type="text" value={settings[`t${num}_text`]} onChange={(e) => setSettings({ ...settings, [`t${num}_text`]: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                            </div>
-                            <div className="md:col-span-1">
-                              <label className="text-xs text-zinc-400 block mb-1.5">التقييم (النجوم)</label>
-                              <select value={settings[`t${num}_rating`]} onChange={(e) => setSettings({ ...settings, [`t${num}_rating`]: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm">
-                                <option value="5">5 نجوم</option>
-                                <option value="4">4 نجوم</option>
-                              </select>
-                            </div>
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 border-b border-zinc-900 pb-4">
+                          <div>
+                            <label className="text-xs text-zinc-400 block mb-1.5">اسم العميل 1</label>
+                            <input type="text" value={settings.t1_name} onChange={(e) => setSettings({ ...settings, t1_name: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
                           </div>
-                        ))}
+                          <div className="md:col-span-2">
+                            <label className="text-xs text-zinc-400 block mb-1.5">مراجعة العميل 1</label>
+                            <input type="text" value={settings.t1_text} onChange={(e) => setSettings({ ...settings, t1_text: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
+                          </div>
+                          <div className="md:col-span-1">
+                            <label className="text-xs text-zinc-400 block mb-1.5">التقييم (النجوم)</label>
+                            <select value={settings.t1_rating} onChange={(e) => setSettings({ ...settings, t1_rating: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm">
+                              <option value="5">5 نجوم</option>
+                              <option value="4">4 نجوم</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 border-b border-zinc-900 pb-4">
+                          <div>
+                            <label className="text-xs text-zinc-400 block mb-1.5">اسم العميل 2</label>
+                            <input type="text" value={settings.t2_name} onChange={(e) => setSettings({ ...settings, t2_name: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
+                          </div>
+                          <div className="md:col-span-2">
+                            <label className="text-xs text-zinc-400 block mb-1.5">مراجعة العميل 2</label>
+                            <input type="text" value={settings.t2_text} onChange={(e) => setSettings({ ...settings, t2_text: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
+                          </div>
+                          <div className="md:col-span-1">
+                            <label className="text-xs text-zinc-400 block mb-1.5">التقييم (النجوم)</label>
+                            <select value={settings.t2_rating} onChange={(e) => setSettings({ ...settings, t2_rating: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm">
+                              <option value="5">5 نجوم</option>
+                              <option value="4">4 نجوم</option>
+                            </select>
+                          </div>
+                        </div>
                       </div>
                     )}
 
@@ -1030,7 +1064,7 @@ export default function AdminDashboard() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs text-zinc-400 block mb-1">السعر الموحد (درهم) - سعر فاخر موحد</label>
+                  <label className="text-xs text-zinc-400 block mb-1">السعر الموحد (درهم)</label>
                   <input type="number" required value={newProduct.price} onChange={(e) => setNewProduct({ ...newProduct, price: Number(e.target.value) })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-sm font-mono" />
                 </div>
                 <div>
@@ -1078,10 +1112,10 @@ export default function AdminDashboard() {
                   </label>
                 </div>
                 <div>
-                  <label className="text-xs text-zinc-400 block mb-1">روابط الصور الإضافية للمعرض (مصفوفة روابط)</label>
+                  <label className="text-xs text-zinc-400 block mb-1">رفع صور إضافية للمعرض</label>
                   <label className="cursor-pointer w-full bg-zinc-900 hover:bg-zinc-800 text-zinc-300 p-2.5 rounded-xl text-xs border border-zinc-850 flex items-center justify-center space-x-2 space-x-reverse">
                     <Upload size={14} />
-                    <span>تحميل صورة إضافية من جهازك</span>
+                    <span>تحميل صورة إضافية</span>
                     <input
                       type="file"
                       accept="image/*"
@@ -1110,8 +1144,8 @@ export default function AdminDashboard() {
                 <textarea value={newProduct.description} onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })} className="w-full h-16 bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" />
               </div>
               <div>
-                <label className="text-xs text-zinc-400 block mb-1">مقاسات الحقيبة الدقيقة (مثال: Medium: 36cm x 27.5cm)</label>
-                <input type="text" value={newProduct.materials_dimensions} onChange={(e) => setNewProduct({ ...newProduct, materials_dimensions: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" />
+                <label className="text-xs text-zinc-400 block mb-1">مقاسات الحقيبة الدقيقة (Dimensions)</label>
+                <input type="text" value={newProduct.materials_dimensions} onChange={(e) => setNewProduct({ ...newProduct, materials_dimensions: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" placeholder="Mini: 24cm x 20cm" />
               </div>
               <div>
                 <label className="text-xs text-zinc-400 block mb-1">دليل تنظيف والعناية بالحقيبة</label>
