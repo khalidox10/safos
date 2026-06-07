@@ -10,7 +10,7 @@ export default function App() {
     <StoreProvider>
       <Router>
         <Routes>
-          {/* 🟢 الصفحة الرئيسية الفاخرة لمتجر SAFOS للحقائب المطرزة */}
+          {/* الصفحة الرئيسية الفاخرة لمتجر SAFOS للحقائب المطرزة */}
           <Route path="/" element={<HomePage />} />
           
           {/* مسار لوحة التحكم الإدارية الشاملة */}
