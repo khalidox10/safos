@@ -24,11 +24,12 @@ const translations = {
     city: "المدينة وعنوان الشحن *",
     address: "العنوان بالتفصيل *",
     notes: "ملاحظات إضافية (اختياري)",
-    phoneError: "يرجى التأكد من رقم الهاتف، يجب أن يتكون من 10 أرقام (مثال: 0612345678).",
+    phoneError: "يرجى التأكد من رقم الهاتف، يجب أن يتكون من 10 أرقام ويتبعه مقدمة مغربية (مثال: 0612345678).",
     fieldsError: "الرجاء ملء جميع الحقول المطلوبة.",
     secTitle: "لماذا تختارين SAFOS؟",
     freeShipping: "شحن مجاني وسريع",
-    warranty: "جودة يدوية مضمونة"
+    warranty: "جودة يدوية مضمونة",
+    reviewsTitle: "آراء وتجارب العميلات الفعليات"
   },
   fr: {
     thankYou: "Votre commande a été enregistrée avec succès, nous vous contacterons bientôt pour confirmer votre commande.",
@@ -50,7 +51,8 @@ const translations = {
     fieldsError: "Veuillez remplir tous les champs obligatoires.",
     secTitle: "Pourquoi choisir SAFOS ?",
     freeShipping: "Livraison gratuite et rapide",
-    warranty: "Qualité artisanale garantie"
+    warranty: "Qualité artisanale garantie",
+    reviewsTitle: "Avis de nos clientes"
   },
   en: {
     thankYou: "Your order has been registered successfully, we will contact you soon to confirm your order.",
@@ -72,7 +74,8 @@ const translations = {
     fieldsError: "Please fill in all required fields.",
     secTitle: "Why choose SAFOS?",
     freeShipping: "Free & Fast Shipping",
-    warranty: "Guaranteed Handmade Quality"
+    warranty: "Guaranteed Handmade Quality",
+    reviewsTitle: "Customer Reviews"
   }
 };
 
@@ -87,7 +90,10 @@ export default function ProductPage() {
   const [quantity, setQty] = useState<number>(1);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
 
-  // حالات فتح الأكورديون (Shopify Dropdowns)
+  // جلب التقييمات الحية
+  const [reviews, setReviews] = useState<any[]>([]);
+
+  // حالات فتح الأكورديون
   const [openAccordion, setOpenAccordion] = useState<'desc' | 'dims' | 'care' | null>('desc');
 
   // نموذج الطلب
@@ -124,18 +130,56 @@ export default function ProductPage() {
     localStorage.setItem('safos-lang', newLang);
   };
 
+  // 📥 جلب الخطوط حياً
+  useEffect(() => {
+    const titleFont = settings.colors?.title_font || 'Playfair Display';
+    const bodyFont = settings.colors?.body_font || 'Montserrat';
+    const linkId = 'safos-google-fonts';
+    let link = document.getElementById(linkId) as HTMLLinkElement;
+    if (!link) {
+      link = document.createElement('link');
+      link.id = linkId;
+      link.rel = 'stylesheet';
+      document.head.appendChild(link);
+    }
+    link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(titleFont)}:wght@300;400;700&family=${encodeURIComponent(bodyFont)}:wght@300;400;500;700&display=swap`;
+  }, [settings]);
+
   useEffect(() => {
     if (products.length > 0 && id) {
       const found = products.find(p => p.id === id);
       if (found) {
         setProduct(found);
         setActiveImage(found.image_url);
+        fetchProductReviews(found.id);
       }
     }
   }, [products, id]);
 
+  const fetchProductReviews = async (productId: string) => {
+    try {
+      const { data } = await supabase
+        .from('reviews')
+        .select('*')
+        .eq('product_id', productId)
+        .eq('is_approved', true)
+        .order('created_at', { ascending: false });
+      setReviews(data || []);
+    } catch (err) {
+      console.error('Error loading reviews:', err);
+    }
+  };
+
   const toggleAccordion = (section: 'desc' | 'dims' | 'care') => {
     setOpenAccordion(openAccordion === section ? null : section);
+  };
+
+  // 🟢 ميزة الهبوط الانسيابي والسلس للأسفل عند الضغط على "اطلبي الآن"
+  const scrollToCheckoutForm = () => {
+    const element = document.getElementById('checkout-form');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   // معالجة وفحص رقم الهاتف بدقة بـ 10 أرقام مغربية قبل إرسال الطلب
@@ -148,7 +192,6 @@ export default function ProductPage() {
       return;
     }
 
-    // تنظيف رقم الهاتف وفحصه ليكون 10 أرقام مغربية يبدأ بـ 06 أو 07 أو 05
     const cleanPhone = phone.replace(/[^0-9]/g, '');
     if (cleanPhone.length !== 10 || !['05', '06', '07'].includes(cleanPhone.substring(0, 2))) {
       setErrorMessage(translations[lang].phoneError);
@@ -195,6 +238,14 @@ export default function ProductPage() {
 
   const t = translations[lang];
 
+  // تصفية وحفظ الألوان والخطوط الحية
+  const primaryTheme = settings.colors?.primary || '#0A0A0A';
+  const secondaryTheme = settings.colors?.secondary || '#D4AF37';
+  const titleColor = settings.colors?.title_color || '#FFFFFF';
+  const textColor = settings.colors?.text_color || '#A1A1AA';
+  const titleFont = settings.colors?.title_font || 'Playfair Display, sans-serif';
+  const bodyFont = settings.colors?.body_font || 'Montserrat, sans-serif';
+
   // شاشة الشكر الفاخرة والقصيرة جداً التي تظهر عند الشراء الناجح
   if (orderSuccess) {
     return (
@@ -216,11 +267,28 @@ export default function ProductPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] text-zinc-100 font-sans antialiased selection:bg-amber-500/30">
+    <div 
+      style={{
+        '--primary-theme': primaryTheme,
+        '--secondary-theme': secondaryTheme,
+        '--title-color': titleColor,
+        '--text-color': textColor,
+        '--title-font': titleFont,
+        '--body-font': bodyFont
+      } as React.CSSProperties}
+      className="min-h-screen bg-[#0A0A0A] text-zinc-100 antialiased selection:bg-amber-500/30"
+      style={{ fontFamily: 'var(--body-font)' }}
+    >
       
-      {/* هيدر مبسط يحتوي على أزرار تبديل اللغة */}
+      {/* هيدر مبسط يحتوي على أزرار تبديل اللغة واللوجو كصورة مجهزة بمشروعك */}
       <header className="p-6 border-b border-zinc-900 flex justify-between items-center max-w-7xl mx-auto">
-        <h1 className="text-xl font-bold tracking-[0.2em] text-[#D4AF37] cursor-pointer" onClick={() => navigate('/')}>SAFOS</h1>
+        <div className="cursor-pointer" onClick={() => navigate('/')}>
+          {settings.brand?.logo_url ? (
+            <img src={settings.brand.logo_url} alt="SAFOS Logo" className="h-10 object-contain" />
+          ) : (
+            <h1 className="text-xl font-bold tracking-[0.2em] text-[#D4AF37] cursor-pointer" onClick={() => navigate('/')}>SAFOS</h1>
+          )}
+        </div>
         <div className="flex bg-zinc-950 p-1.5 rounded-xl border border-zinc-900">
           <button onClick={() => handleLangChange('ar')} className={`py-1 px-3.5 text-xs rounded-lg transition-all ${lang === 'ar' ? 'bg-[#D4AF37] text-black font-bold' : 'text-zinc-400'}`}>العربية</button>
           <button onClick={() => handleLangChange('fr')} className={`py-1 px-3.5 text-xs rounded-lg transition-all ${lang === 'fr' ? 'bg-[#D4AF37] text-black font-bold' : 'text-zinc-400'}`}>FR</button>
@@ -279,45 +347,37 @@ export default function ProductPage() {
         </div>
 
         {/* العمود الأيمن: تفاصيل المنتج وأزرار الطلب السريع والأكورديون */}
-        <div className="space-y-6">
+        <div className="space-y-6 text-right">
           <div>
             <span className="text-xs uppercase tracking-widest text-zinc-500">{settings.brand?.name_ar || 'SAFOS'} • {settings.brand?.subtitle_ar || 'Atelier'}</span>
-            <h2 className="text-3xl font-light text-zinc-100 tracking-wide mt-1">
+            <h1 className="text-3xl font-light tracking-wide mt-1" style={{ fontFamily: 'var(--title-font)', color: 'var(--title-color)' }}>
               {lang === 'ar' ? product.name : lang === 'fr' ? product.name_fr : product.name_en}
-            </h2>
+            </h1>
             <div className="mt-3 text-2xl font-light" style={{ color: 'var(--secondary-theme, #D4AF37)' }}>
               {product.price.toLocaleString()} {lang === 'ar' ? settings.contact?.currency_symbol : settings.contact?.currency}
             </div>
           </div>
 
-          {/* محدد الألوان والكمية */}
-          <div className="border-t border-zinc-900 pt-6 space-y-4">
+          {/* محدد الألوان */}
+          <div className="border-t border-zinc-900 pt-6">
             {product.color && (
               <div>
                 <span className="text-xs text-zinc-500 block mb-2">{t.color}:</span>
                 <span className="text-xs bg-zinc-900 py-1.5 px-3 rounded-lg border border-zinc-800 text-zinc-300 font-medium">{product.color}</span>
               </div>
             )}
-            <div className="flex items-center space-x-4 space-x-reverse">
-              <span className="text-xs text-zinc-500">{t.quantity}:</span>
-              <div className="flex items-center bg-zinc-950 border border-zinc-900 rounded-xl overflow-hidden">
-                <button onClick={() => setQty(Math.max(1, quantity - 1))} className="px-3.5 py-2 hover:bg-zinc-900 text-zinc-400">-</button>
-                <span className="px-4 font-mono text-sm text-zinc-200">{quantity}</span>
-                <button onClick={() => setQty(quantity + 1)} className="px-3.5 py-2 hover:bg-zinc-900 text-zinc-400">+</button>
-              </div>
-            </div>
           </div>
 
-          {/* أزرار الشراء الفاخرة للـ Shopify Page */}
+          {/* 🟢 زر الشراء المجهز بالانزلاق السلس والناعم للأسفل (Smooth Scroll) */}
           <div className="space-y-3 pt-4 border-t border-zinc-900">
-            <a 
-              href="#checkout-form"
-              className="w-full py-4 bg-[#D4AF37] hover:bg-amber-500 text-black font-semibold rounded-xl flex items-center justify-center space-x-2 space-x-reverse transition-all text-sm shadow-[0_0_20px_rgba(212,175,55,0.15)]"
+            <button 
+              onClick={scrollToCheckoutForm}
+              className="w-full py-4 text-black font-semibold rounded-xl flex items-center justify-center space-x-2 space-x-reverse transition-all text-sm shadow-lg transform hover:scale-[1.01]"
               style={{ backgroundColor: 'var(--secondary-theme, #D4AF37)' }}
             >
               <ShoppingBag size={18} />
               <span>{t.buyNow}</span>
-            </a>
+            </button>
           </div>
 
           {/* الأكورديون المطوي والمقاد بالكامل من لوحة التحكم */}
@@ -330,7 +390,7 @@ export default function ProductPage() {
                 <span className="text-zinc-500">{openAccordion === 'desc' ? '-' : '+'}</span>
               </button>
               {openAccordion === 'desc' && (
-                <p className="mt-3 text-xs text-zinc-400 leading-relaxed font-light animate-fadeIn">
+                <p className="mt-3 text-xs text-zinc-400 leading-relaxed font-light animate-fadeIn" style={{ color: 'var(--text-color)' }}>
                   {lang === 'ar' ? product.description : lang === 'fr' ? product.description_fr : product.description_en}
                 </p>
               )}
@@ -344,7 +404,7 @@ export default function ProductPage() {
                   <span className="text-zinc-500">{openAccordion === 'dims' ? '-' : '+'}</span>
                 </button>
                 {openAccordion === 'dims' && (
-                  <p className="mt-3 text-xs text-zinc-400 leading-relaxed font-light animate-fadeIn">
+                  <p className="mt-3 text-xs text-zinc-400 leading-relaxed font-light animate-fadeIn" style={{ color: 'var(--text-color)' }}>
                     {lang === 'ar' ? product.materials_dimensions : lang === 'fr' ? product.materials_dimensions_en : product.materials_dimensions_en}
                   </p>
                 )}
@@ -359,7 +419,7 @@ export default function ProductPage() {
                   <span className="text-zinc-500">{openAccordion === 'care' ? '-' : '+'}</span>
                 </button>
                 {openAccordion === 'care' && (
-                  <p className="mt-3 text-xs text-zinc-400 leading-relaxed font-light animate-fadeIn">
+                  <p className="mt-3 text-xs text-zinc-400 leading-relaxed font-light animate-fadeIn" style={{ color: 'var(--text-color)' }}>
                     {lang === 'ar' ? product.care_guide : lang === 'fr' ? product.care_guide_fr : product.care_guide_en}
                   </p>
                 )}
@@ -380,7 +440,7 @@ export default function ProductPage() {
 
           <form onSubmit={handlePlaceOrder} className="space-y-4">
             {errorMessage && (
-              <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-xs flex items-center space-x-2 space-x-reverse">
+              <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-xs flex items-center space-x-2 space-x-reverse animate-shake">
                 <AlertCircle size={16} />
                 <span>{errorMessage}</span>
               </div>
@@ -436,6 +496,23 @@ export default function ProductPage() {
               </div>
             </div>
 
+            {/* 🟢 تفعيل كابسولة تحديد الكمية مع حساب السعر حياً داخل نموذج معلومات الشحن */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center bg-black/40 border border-zinc-900 p-4 rounded-2xl">
+              <div className="flex items-center space-x-4 space-x-reverse justify-end">
+                <span className="text-xs text-zinc-400">{t.quantity}:</span>
+                <div className="flex items-center bg-zinc-950 border border-zinc-900 rounded-xl overflow-hidden">
+                  <button type="button" onClick={() => setQty(Math.max(1, quantity - 1))} className="px-3.5 py-2 hover:bg-zinc-900 text-zinc-400">-</button>
+                  <span className="px-4 font-mono text-sm text-zinc-200">{quantity}</span>
+                  <button type="button" onClick={() => setQty(quantity + 1)} className="px-3.5 py-2 hover:bg-zinc-900 text-zinc-400">+</button>
+                </div>
+              </div>
+              <div className="text-left font-light text-sm" style={{ color: 'var(--secondary-theme)' }}>
+                <span>{t.total}: </span>
+                <span className="font-mono font-semibold">{(product.price * quantity).toLocaleString()}</span>
+                <span> درهم</span>
+              </div>
+            </div>
+
             <div>
               <label className="text-xs text-zinc-400 block mb-1.5">{t.notes}</label>
               <textarea 
@@ -449,14 +526,49 @@ export default function ProductPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-4 bg-[#D4AF37] hover:bg-amber-500 text-black font-semibold rounded-xl transition-all text-sm disabled:opacity-50"
+              className="w-full py-4 text-black font-semibold rounded-xl transition-all text-sm disabled:opacity-50"
               style={{ backgroundColor: 'var(--secondary-theme, #D4AF37)' }}
             >
               {isSubmitting ? 'جاري إرسال الطلب...' : t.buyNow}
             </button>
+
+            {/* 🟢 زر الطلب المباشر الإضافي عبر الواتساب أسفل نموذج الشحن لزيادة نسبة المبيعات */}
+            {settings.contact?.whatsapp && (
+              <a 
+                href={`https://api.whatsapp.com/send?phone=${settings.contact.whatsapp.replace(/\s+/g, '')}&text=${encodeURIComponent(`السلام عليكم فريق SAFOS، أريد طلب حقيبة الكانفاس الفاخرة *${product.name}* (الكمية: ${quantity}) المتوفرة بسعر ${product.price} درهم. أرجو التواصل معي لتأكيد تفاصيل الشحن والطلب.`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-4 bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-400 font-semibold rounded-xl flex items-center justify-center space-x-2 space-x-reverse transition-all text-sm border border-emerald-500/20"
+              >
+                <Phone size={16} />
+                <span>{lang === 'ar' ? 'أو اطلبي مباشرة بنقرة واحدة عبر الواتساب' : lang === 'fr' ? 'Ou commander directement via WhatsApp' : 'Or order directly via WhatsApp'}</span>
+              </a>
+            )}
+
           </form>
         </div>
       </section>
+
+      {/* 🟢 قسم المراجعات والتقييمات الحية الخاص بكل منتج أسفل الصفحة */}
+      {reviews.length > 0 && (
+        <section className="py-16 max-w-4xl mx-auto px-6 border-b border-zinc-900/40">
+          <h3 className="text-lg font-light text-zinc-200 mb-8 text-center" style={{ fontFamily: 'var(--title-font)' }}>{t.reviewsTitle}</h3>
+          <div className="space-y-4">
+            {reviews.map((rev) => (
+              <div key={rev.id} className="bg-zinc-950 border border-zinc-900 p-6 rounded-2xl space-y-3">
+                <div className="flex items-center text-amber-500">
+                  {[...Array(rev.rating)].map((_, i) => <Star key={i} size={12} fill="currentColor" />)}
+                </div>
+                <p className="text-xs font-light leading-relaxed" style={{ color: 'var(--text-color)' }}>{rev.comment}</p>
+                <div className="flex justify-between items-center text-[10px] text-zinc-600">
+                  <span className="font-semibold text-zinc-400">{rev.customer_name}</span>
+                  <span>{new Date(rev.created_at).toLocaleDateString('ar-MA')}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* فوتر بسيط وفاخر يحتوي على حقوق الملكية */}
       <footer className="py-8 px-6 text-center text-xs text-zinc-600 border-t border-zinc-900">
