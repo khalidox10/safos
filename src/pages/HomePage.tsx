@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 import { 
   ShoppingBag, ArrowLeft, Star, Heart, Phone, 
-  MapPin, Globe, Shield, Truck, Sparkles, MessageCircle, Menu, X
+  MapPin, Globe, Shield, Truck, Sparkles, MessageCircle,
+  ChevronRight, Menu, X
 } from 'lucide-react';
 
 const homeTranslations = {
@@ -104,7 +105,7 @@ export default function HomePage() {
       className="min-h-screen bg-[#0A0A0A] text-zinc-100 font-sans antialiased selection:bg-amber-500/30"
     >
       
-      {/* 🟢 شريط الإعلانات الفوقاني (Announcement Bar) */}
+      {/* شريط الإعلانات الفوقاني (Announcement Bar) */}
       {settings.hero?.announcement_text_ar && settings.show_announcement_bar !== false && (
         <div className="text-center py-2.5 px-4 text-xs font-semibold tracking-wider transition-all" style={{ backgroundColor: 'var(--secondary-theme)', color: '#000000' }}>
           {lang === 'ar' ? settings.hero.announcement_ar : lang === 'fr' ? settings.hero.announcement_fr : settings.hero.announcement_en}
@@ -126,7 +127,7 @@ export default function HomePage() {
             <img src={settings.brand.logo_url} alt="SAFOS Logo" className="h-10 object-contain" />
           ) : (
             <>
-              <h1 className="text-2xl font-bold tracking-[0.3em]" style={{ color: 'var(--secondary-theme)' }}>
+              <h1 className="text-2xl font-bold tracking-[0.2em]" style={{ color: 'var(--secondary-theme)' }}>
                 {lang === 'ar' ? settings.brand?.name_ar : lang === 'fr' ? settings.brand?.name_fr : settings.brand?.name_en}
               </h1>
               <p className="text-[9px] uppercase tracking-widest text-zinc-500 mt-0.5">
@@ -159,7 +160,7 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* 🟢 القائمة الجانبية المنزلقة لـ 3 شريطات على الهاتف (Mobile Drawer Menu) */}
+      {/* القائمة الجانبية المنزلقة لـ 3 شريطات على الهاتف */}
       {isMenuOpen && (
         <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex flex-col justify-between p-6 animate-fadeIn lg:hidden">
           <div className="flex justify-between items-center pb-6 border-b border-zinc-900">
@@ -184,17 +185,17 @@ export default function HomePage() {
       )}
 
       {/* 1. البانر الترحيبي العريض الفاخر (Hero Section) */}
-      <section className="relative overflow-hidden py-16 lg:py-24 max-w-7xl mx-auto px-6 border-b border-zinc-900/40 animate-fadeIn">
+      <section className="relative overflow-hidden py-16 lg:py-24 max-w-7xl mx-auto px-6 border-b border-zinc-900/40">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-6 text-right">
-            <span className="text-xs uppercase tracking-widest text-zinc-500 animate-slideUp" style={{ color: 'var(--secondary-theme)' }}>{lang === 'ar' ? 'صنع يدوي فاخر بمراكش' : 'Atelier Brodé de luxe'}</span>
-            <h2 className="text-4xl lg:text-5xl font-light text-zinc-100 leading-tight whitespace-pre-line animate-slideUp">
+            <span className="text-xs uppercase tracking-widest text-zinc-500" style={{ color: 'var(--secondary-theme)' }}>{lang === 'ar' ? 'صنع يدوي فاخر بمراكش' : 'Atelier Brodé de luxe'}</span>
+            <h2 className="text-4xl lg:text-5xl font-light text-zinc-100 leading-tight whitespace-pre-line">
               {lang === 'ar' ? settings.hero?.title_ar : lang === 'fr' ? settings.hero?.title_fr : settings.hero?.title_en}
             </h2>
-            <p className="text-sm text-zinc-400 font-light leading-relaxed max-w-lg animate-slideUp">
+            <p className="text-sm text-zinc-400 font-light leading-relaxed max-w-lg">
               {lang === 'ar' ? settings.hero?.description_ar : lang === 'fr' ? settings.hero?.description_fr : settings.hero?.description_en}
             </p>
-            <div className="pt-4 animate-slideUp">
+            <div className="pt-4">
               <a 
                 href="#products-catalog"
                 className="inline-flex items-center space-x-2 space-x-reverse py-3.5 px-8 text-sm font-semibold text-black rounded-xl transition-all shadow-lg"
@@ -207,7 +208,7 @@ export default function HomePage() {
           </div>
 
           {/* صورة البانر الفاخرة المرفوعة من جهازك */}
-          <div className="aspect-[4/5] bg-zinc-950 border border-zinc-900/60 rounded-3xl overflow-hidden relative shadow-2xl animate-scaleIn">
+          <div className="aspect-[4/5] bg-zinc-950 border border-zinc-900/60 rounded-3xl overflow-hidden relative shadow-2xl">
             {settings.hero?.image ? (
               <img src={settings.hero.image} alt="SAFOS Luxury Banner" className="w-full h-full object-cover" />
             ) : (
@@ -252,7 +253,7 @@ export default function HomePage() {
           <p className="text-xs text-zinc-500 mt-2">اختاري الحجم واللون المناسب لإطلالتكِ الملكية</p>
         </div>
 
-        {/* 🟢 تفعيل شريط المجموعات والتصنيفات الديناميكي والفاخر (Shopify Pills Filter) */}
+        {/* تفعيل شريط المجموعات والتصنيفات الديناميكي والفاخر */}
         <div className="flex space-x-2 space-x-reverse overflow-x-auto pb-8 max-w-xl mx-auto justify-center">
           <button 
             onClick={() => setSelectedCategory('all')}
@@ -393,7 +394,7 @@ export default function HomePage() {
         </div>
       </footer>
 
-      {/* 🟢 أيقونات التواصل الاجتماعي العائمة والتفاعلية في الزاوية */}
+      {/* أيقونات التواصل الاجتماعي العائمة والتفاعلية في الزاوية */}
       <div className="fixed bottom-6 left-6 z-40 flex flex-col space-y-3">
         {settings.contact?.whatsapp && (
           <a 
@@ -429,7 +430,6 @@ export default function HomePage() {
             className="w-12 h-12 bg-[#010101] text-white rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 transform hover:scale-105 border border-zinc-800"
             title="تابعنا على تيك توك"
           >
-            {/* أيقونة تيك توك الرسمية بـ كود SVG مخصص ومحمي لمنع أخطاء المكتبة */}
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12.53.02C13.84 0 15.14.01 16.44 0c.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.06-2.89-.52-4.06-1.44-.12-.1-.23-.21-.34-.32v5.77c0 2.23-.74 4.44-2.22 6.02-1.74 1.83-4.32 2.75-6.85 2.51-2.44-.24-4.81-1.61-6.14-3.69-1.57-2.44-1.75-5.74-.47-8.33 1.07-2.18 3.18-3.79 5.6-4.14.21-.03.42-.05.63-.05v4.09c-1.32.13-2.61.85-3.32 1.95-.87 1.34-.84 3.23.08 4.49.9 1.25 2.53 1.91 4.04 1.65 1.51-.25 2.78-1.5 3.04-3.02.04-.26.06-.53.06-.8V.02z"/>
             </svg>
