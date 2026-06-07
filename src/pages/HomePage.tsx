@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 import { 
   ShoppingBag, ArrowLeft, Star, Heart, Phone, 
-  MapPin, Globe, Shield, Truck, Sparkles, MessageCircle,
-  ChevronRight, Menu, X
+  MapPin, Globe, Shield, Truck, Sparkles, MessageCircle, Menu, X
 } from 'lucide-react';
+
 const homeTranslations = {
   ar: {
     discover: "اكتشفي التشكيلة",
@@ -68,7 +68,7 @@ export default function HomePage() {
     localStorage.setItem('safos-lang', newLang);
   };
 
-  // 📥 جلب الخطوط من خوادم Google Fonts حياً بناءً على اختيارك فلوحة التحكم لتفادي تعطل الكود
+  // 📥 جلب وتثبيت خطوط جوجل الفنية حياً
   useEffect(() => {
     const titleFont = settings.colors?.title_font || 'Playfair Display';
     const bodyFont = settings.colors?.body_font || 'Montserrat';
@@ -101,14 +101,17 @@ export default function HomePage() {
 
   const t = homeTranslations[lang];
 
-  // تصفية وحفظ الألوان والخطوط الحية المجلوبة من سوبابيس
+  // تصفية ألوان الهوية الحية المدخلة من لوحة التحكم لتطبيقها حياً فالموقع
   const primaryTheme = settings.colors?.primary || '#0A0A0A';
   const secondaryTheme = settings.colors?.secondary || '#D4AF37';
   const titleColor = settings.colors?.title_color || '#FFFFFF';
   const textColor = settings.colors?.text_color || '#A1A1AA';
+  const cardBgColor = settings.colors?.card_bg || '#0F0F0F';
+  const imageBgColor = settings.colors?.image_bg || '#0F0F0F';
   const titleFont = settings.colors?.title_font || 'Playfair Display, sans-serif';
   const bodyFont = settings.colors?.body_font || 'Montserrat, sans-serif';
 
+  // تصفية وحساب المنتجات حياً بناءً على اختيار الكبسولة فالموقع
   const filteredProducts = selectedCategory === 'all' 
     ? products 
     : products.filter(p => p.category === selectedCategory);
@@ -120,16 +123,17 @@ export default function HomePage() {
         '--secondary-theme': secondaryTheme,
         '--title-color': titleColor,
         '--text-color': textColor,
+        '--card-bg-theme': cardBgColor,
+        '--image-bg-theme': imageBgColor,
         '--title-font': titleFont,
         '--body-font': bodyFont
       } as React.CSSProperties}
-      className="min-h-screen bg-[#0A0A0A] text-zinc-100 antialiased selection:bg-amber-500/30"
-      className="min-h-screen"
-      style={{ fontFamily: 'var(--body-font)' }}
+      className="min-h-screen antialiased selection:bg-amber-500/30"
+      style={{ fontFamily: 'var(--body-font)', backgroundColor: 'var(--primary-theme)' }}
     >
       
       {/* 🟢 شريط الإعلانات الفوقاني (Announcement Bar) */}
-      {settings.hero?.announcement_text_ar && settings.show_announcement_bar !== false && (
+      {settings.hero?.announcement_ar && settings.visibility?.show_announcement_bar !== false && (
         <div className="text-center py-2.5 px-4 text-xs font-semibold tracking-wider transition-all" style={{ backgroundColor: 'var(--secondary-theme)', color: '#000000' }}>
           {lang === 'ar' ? settings.hero.announcement_ar : lang === 'fr' ? settings.hero.announcement_fr : settings.hero.announcement_en}
         </div>
@@ -137,6 +141,7 @@ export default function HomePage() {
 
       {/* الهيدر الفاخر مع اللوجو كـ صورة تفاعلية أو اسم العلامة */}
       <header className="p-6 border-b border-zinc-900/50 flex justify-between items-center max-w-7xl mx-auto relative">
+        {/* زر الهامبرغر للقائمة الجانبية على الهاتف */}
         <button 
           onClick={() => setIsMenuOpen(true)}
           className="lg:hidden p-2 text-zinc-400 hover:text-white"
@@ -146,7 +151,7 @@ export default function HomePage() {
 
         <div className="text-right cursor-pointer" onClick={() => navigate('/')}>
           {settings.brand?.logo_url ? (
-            <img src={settings.brand.logo_url} alt="SAFOS Logo" className="h-12 w-12 rounded-full object-cover border border-[#D4AF37]/20 shadow-md" />
+            <img src={settings.brand.logo_url} alt="SAFOS Logo" className="h-12 w-12 rounded-full object-cover border shadow-md" style={{ borderColor: 'var(--secondary-theme)' }} />
           ) : (
             <>
               <h1 className="text-2xl font-bold tracking-[0.2em]" style={{ color: 'var(--secondary-theme)', fontFamily: 'var(--title-font)' }}>
@@ -159,18 +164,32 @@ export default function HomePage() {
           )}
         </div>
 
-        {/* روابط التنقل السلس على الكمبيوتر */}
+        {/* 🟢 روابط التنقل السلس منسقة وديناميكية من الـ Menu Manager باللغات الثلاث */}
         <nav className="hidden lg:flex items-center space-x-6 space-x-reverse text-xs uppercase tracking-wider text-zinc-400">
-          <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="hover:text-white transition">الرئيسية</button>
-          <button onClick={() => scrollToSection('products-catalog')} className="hover:text-white transition">حقائب الكانفاس</button>
-          {settings.show_about_section !== false && (
-            <button onClick={() => scrollToSection('brand-story')} className="hover:text-white transition">قصة ورشتنا</button>
+          {settings.menu_links?.menu_p1_visible !== false && (
+            <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="hover:text-white transition">
+              {lang === 'ar' ? settings.menu_links?.menu_p1_ar : lang === 'fr' ? settings.menu_links?.menu_p1_fr : settings.menu_links?.menu_p1_en}
+            </button>
           )}
-          {settings.show_pillars_section !== false && (
-            <button onClick={() => scrollToSection('luxury-pillars')} className="hover:text-white transition">لماذا SAFOS؟</button>
+          {settings.menu_links?.menu_p2_visible !== false && (
+            <button onClick={() => scrollToSection('products-catalog')} className="hover:text-white transition">
+              {lang === 'ar' ? settings.menu_links?.menu_p2_ar : lang === 'fr' ? settings.menu_links?.menu_p2_fr : settings.menu_links?.menu_p2_en}
+            </button>
           )}
-          {settings.show_testimonials_section !== false && (
-            <button onClick={() => scrollToSection('testimonials-section')} className="hover:text-white transition">تقييمات العميلات</button>
+          {settings.menu_links?.menu_p3_visible !== false && settings.visibility?.show_about_section !== false && (
+            <button onClick={() => scrollToSection('brand-story')} className="hover:text-white transition">
+              {lang === 'ar' ? settings.menu_links?.menu_p3_ar : lang === 'fr' ? settings.menu_links?.menu_p3_fr : settings.menu_links?.menu_p3_en}
+            </button>
+          )}
+          {settings.menu_links?.menu_p4_visible !== false && settings.visibility?.show_pillars_section !== false && (
+            <button onClick={() => scrollToSection('luxury-pillars')} className="hover:text-white transition">
+              {lang === 'ar' ? settings.menu_links?.menu_p4_ar : lang === 'fr' ? settings.menu_links?.menu_p4_fr : settings.menu_links?.menu_p4_en}
+            </button>
+          )}
+          {settings.menu_links?.menu_p5_visible !== false && settings.visibility?.show_testimonials_section !== false && (
+            <button onClick={() => scrollToSection('testimonials-section')} className="hover:text-white transition">
+              {lang === 'ar' ? settings.menu_links?.menu_p5_ar : lang === 'fr' ? settings.menu_links?.menu_p5_fr : settings.menu_links?.menu_p5_en}
+            </button>
           )}
         </nav>
 
@@ -190,16 +209,30 @@ export default function HomePage() {
             <button onClick={() => setIsMenuOpen(false)} className="p-2 text-zinc-400 hover:text-white"><X size={24} /></button>
           </div>
           <nav className="flex flex-col space-y-6 text-center text-lg font-light tracking-wide text-zinc-300">
-            <button onClick={() => { window.scrollTo({ top: 0, behavior: 'smooth' }); setIsMenuOpen(false); }} className="hover:text-white transition">الرئيسية</button>
-            <button onClick={() => scrollToSection('products-catalog')} className="hover:text-white transition">حقائب الكانفاس</button>
-            {settings.show_about_section !== false && (
-              <button onClick={() => scrollToSection('brand-story')} className="hover:text-white transition">قصة ورشتنا</button>
+            {settings.menu_links?.menu_p1_visible !== false && (
+              <button onClick={() => { window.scrollTo({ top: 0, behavior: 'smooth' }); setIsMenuOpen(false); }} className="hover:text-white transition">
+                {lang === 'ar' ? settings.menu_links?.menu_p1_ar : lang === 'fr' ? settings.menu_links?.menu_p1_fr : settings.menu_links?.menu_p1_en}
+              </button>
             )}
-            {settings.show_pillars_section !== false && (
-              <button onClick={() => scrollToSection('luxury-pillars')} className="hover:text-white transition">لماذا SAFOS؟</button>
+            {settings.menu_links?.menu_p2_visible !== false && (
+              <button onClick={() => scrollToSection('products-catalog')} className="hover:text-white transition">
+                {lang === 'ar' ? settings.menu_links?.menu_p2_ar : lang === 'fr' ? settings.menu_links?.menu_p2_fr : settings.menu_links?.menu_p2_en}
+              </button>
             )}
-            {settings.show_testimonials_section !== false && (
-              <button onClick={() => scrollToSection('testimonials-section')} className="hover:text-white transition">تقييمات العميلات</button>
+            {settings.menu_links?.menu_p3_visible !== false && settings.visibility?.show_about_section !== false && (
+              <button onClick={() => scrollToSection('brand-story')} className="hover:text-white transition">
+                {lang === 'ar' ? settings.menu_links?.menu_p3_ar : lang === 'fr' ? settings.menu_links?.menu_p3_fr : settings.menu_links?.menu_p3_en}
+              </button>
+            )}
+            {settings.menu_links?.menu_p4_visible !== false && settings.visibility?.show_pillars_section !== false && (
+              <button onClick={() => scrollToSection('luxury-pillars')} className="hover:text-white transition">
+                {lang === 'ar' ? settings.menu_links?.menu_p4_ar : lang === 'fr' ? settings.menu_links?.menu_p4_fr : settings.menu_links?.menu_p4_en}
+              </button>
+            )}
+            {settings.menu_links?.menu_p5_visible !== false && settings.visibility?.show_testimonials_section !== false && (
+              <button onClick={() => scrollToSection('testimonials-section')} className="hover:text-white transition">
+                {lang === 'ar' ? settings.menu_links?.menu_p5_ar : lang === 'fr' ? settings.menu_links?.menu_p5_fr : settings.menu_links?.menu_p5_en}
+              </button>
             )}
           </nav>
           <div className="text-center text-[10px] text-zinc-600 border-t border-zinc-900 pt-6">SAFOS Atelier • 2026</div>
@@ -210,7 +243,7 @@ export default function HomePage() {
       <section className="relative overflow-hidden py-16 lg:py-24 max-w-7xl mx-auto px-6 border-b border-zinc-900/40">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-6 text-right">
-            <span className="text-xs uppercase tracking-widest" style={{ color: 'var(--secondary-theme)' }}>{lang === 'ar' ? 'صنع يدوي فاخر بمراكش' : 'Atelier Brodé de luxe'}</span>
+            <span className="text-xs uppercase tracking-widest text-zinc-500" style={{ color: 'var(--secondary-theme)' }}>{lang === 'ar' ? 'صنع يدوي فاخر بمراكش' : 'Atelier Brodé de luxe'}</span>
             <h2 className="text-4xl lg:text-5xl font-light leading-tight whitespace-pre-line" style={{ fontFamily: 'var(--title-font)', color: 'var(--title-color)' }}>
               {lang === 'ar' ? settings.hero?.title_ar : lang === 'fr' ? settings.hero?.title_fr : settings.hero?.title_en}
             </h2>
@@ -229,7 +262,8 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="aspect-[4/5] bg-zinc-950 border border-zinc-900/60 rounded-3xl overflow-hidden relative shadow-2xl animate-scaleIn">
+          {/* صورة البانر الفاخرة المرفوعة من جهازك */}
+          <div className="aspect-[4/5] border rounded-3xl overflow-hidden relative shadow-2xl animate-scaleIn" style={{ backgroundColor: 'var(--image-bg-theme)', borderColor: 'border-zinc-900/60' }}>
             {settings.hero?.image ? (
               <img src={settings.hero.image} alt="SAFOS Luxury Banner" className="w-full h-full object-cover" />
             ) : (
@@ -240,28 +274,28 @@ export default function HomePage() {
       </section>
 
       {/* 2. ركائز الفخامة الثلاث لشبك الكانفاس المطرز (Luxury Pillars) */}
-      {settings.show_pillars_section !== false && (
+      {settings.show_pillars_section !== false && settings.visibility?.show_pillars_section !== false && (
         <section id="luxury-pillars" className="py-16 max-w-7xl mx-auto px-6 border-b border-zinc-900/40">
           <div className="text-center max-w-xl mx-auto mb-12">
-            <h3 className="text-2xl font-light" style={{ fontFamily: 'var(--title-font)', color: 'var(--title-color)' }}>{t.pillars}</h3>
+            <h3 className="text-2xl font-light animate-slideUp" style={{ fontFamily: 'var(--title-font)', color: 'var(--title-color)' }}>{t.pillars}</h3>
             <p className="text-xs text-zinc-500 mt-2">التزام تام بأدق معايير الجودة والحياكة اليدوية لتدوم الحقيبة لسنوات</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-zinc-950 border border-zinc-900 p-6 rounded-2xl text-center space-y-3">
+            <div className="border p-6 rounded-2xl text-center space-y-3" style={{ backgroundColor: 'var(--card-bg-theme)', borderColor: 'border-zinc-900/60' }}>
               <div className="mx-auto w-10 h-10 bg-amber-500/10 rounded-full flex items-center justify-center" style={{ color: 'var(--secondary-theme)' }}><Sparkles size={20} /></div>
-              <h4 className="text-sm font-medium text-zinc-200">{lang === 'ar' ? settings.pillars?.p1_title_ar : lang === 'fr' ? settings.pillars?.p1_title_fr : settings.pillars?.p1_title_en}</h4>
-              <p className="text-xs text-zinc-500 leading-relaxed font-light" style={{ color: 'var(--text-color)' }}>{lang === 'ar' ? settings.pillars?.p1_desc_ar : lang === 'fr' ? settings.pillars?.p1_desc_fr : settings.pillars?.p1_desc_en}</p>
+              <h4 className="text-sm font-medium" style={{ color: 'var(--title-color)' }}>{lang === 'ar' ? settings.pillars?.p1_title_ar : lang === 'fr' ? settings.pillars?.p1_title_fr : settings.pillars?.p1_title_en}</h4>
+              <p className="text-xs leading-relaxed font-light" style={{ color: 'var(--text-color)' }}>{lang === 'ar' ? settings.pillars?.p1_desc_ar : lang === 'fr' ? settings.pillars?.p1_desc_fr : settings.pillars?.p1_desc_en}</p>
             </div>
-            <div className="bg-zinc-950 border border-zinc-900 p-6 rounded-2xl text-center space-y-3">
+            <div className="border p-6 rounded-2xl text-center space-y-3" style={{ backgroundColor: 'var(--card-bg-theme)', borderColor: 'border-zinc-900/60' }}>
               <div className="mx-auto w-10 h-10 bg-amber-500/10 rounded-full flex items-center justify-center" style={{ color: 'var(--secondary-theme)' }}><Shield size={20} /></div>
-              <h4 className="text-sm font-medium text-zinc-200">{lang === 'ar' ? settings.pillars?.p2_title_ar : lang === 'fr' ? settings.pillars?.p2_title_fr : settings.pillars?.p2_title_en}</h4>
-              <p className="text-xs text-zinc-500 leading-relaxed font-light" style={{ color: 'var(--text-color)' }}>{lang === 'ar' ? settings.pillars?.p2_desc_ar : lang === 'fr' ? settings.pillars?.p2_desc_fr : settings.pillars?.p2_desc_en}</p>
+              <h4 className="text-sm font-medium" style={{ color: 'var(--title-color)' }}>{lang === 'ar' ? settings.pillars?.p2_title_ar : lang === 'fr' ? settings.pillars?.p2_title_fr : settings.pillars?.p2_title_en}</h4>
+              <p className="text-xs leading-relaxed font-light" style={{ color: 'var(--text-color)' }}>{lang === 'ar' ? settings.pillars?.p2_desc_ar : lang === 'fr' ? settings.pillars?.p2_desc_fr : settings.pillars?.p2_desc_en}</p>
             </div>
-            <div className="bg-zinc-950 border border-zinc-900 p-6 rounded-2xl text-center space-y-3">
+            <div className="border p-6 rounded-2xl text-center space-y-3" style={{ backgroundColor: 'var(--card-bg-theme)', borderColor: 'border-zinc-900/60' }}>
               <div className="mx-auto w-10 h-10 bg-amber-500/10 rounded-full flex items-center justify-center" style={{ color: 'var(--secondary-theme)' }}><Truck size={20} /></div>
-              <h4 className="text-sm font-medium text-zinc-200">{lang === 'ar' ? settings.pillars?.p3_title_ar : lang === 'fr' ? settings.pillars?.p3_title_fr : settings.pillars?.p3_title_en}</h4>
-              <p className="text-xs text-zinc-500 leading-relaxed font-light" style={{ color: 'var(--text-color)' }}>{lang === 'ar' ? settings.pillars?.p3_desc_ar : lang === 'fr' ? settings.pillars?.p3_desc_fr : settings.pillars?.p3_desc_en}</p>
+              <h4 className="text-sm font-medium" style={{ color: 'var(--title-color)' }}>{lang === 'ar' ? settings.pillars?.p3_title_ar : lang === 'fr' ? settings.pillars?.p3_title_fr : settings.pillars?.p3_title_en}</h4>
+              <p className="text-xs leading-relaxed font-light" style={{ color: 'var(--text-color)' }}>{lang === 'ar' ? settings.pillars?.p3_desc_ar : lang === 'fr' ? settings.pillars?.p3_desc_fr : settings.pillars?.p3_desc_en}</p>
             </div>
           </div>
         </section>
@@ -274,7 +308,7 @@ export default function HomePage() {
           <p className="text-xs text-zinc-500 mt-2">اختاري الحجم واللون المناسب لإطلالتكِ الملكية</p>
         </div>
 
-        {/* تفعيل شريط المجموعات والتصنيفات الديناميكي والفاخر */}
+        {/* تفعيل شريط المجموعات والتصنيفات الديناميكي والفاخر للفلترة */}
         <div className="flex space-x-2 space-x-reverse overflow-x-auto pb-8 max-w-xl mx-auto justify-center">
           <button 
             onClick={() => setSelectedCategory('all')}
@@ -303,16 +337,17 @@ export default function HomePage() {
           ))}
         </div>
 
-        {/* شبكة عرض الحقائب المصنفة */}
+        {/* شبكة عرض الحقائب المصنفة تفاعلياً */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredProducts.map((product) => (
             <div 
               key={product.id} 
               onClick={() => navigate(`/product/${product.id}`)}
-              className="bg-zinc-950 border border-zinc-900/60 rounded-3xl overflow-hidden p-5 flex flex-col justify-between hover:border-zinc-800 transition-all cursor-pointer group shadow-lg animate-fadeIn"
+              className="border rounded-3xl overflow-hidden p-5 flex flex-col justify-between hover:border-zinc-800 transition-all cursor-pointer group shadow-lg"
+              style={{ backgroundColor: 'var(--card-bg-theme)', borderColor: 'border-zinc-900/60' }}
             >
               <div>
-                <div className="w-full aspect-square bg-[#0F0F0F] rounded-2xl overflow-hidden mb-4 relative">
+                <div className="w-full aspect-square rounded-2xl overflow-hidden mb-4 relative" style={{ backgroundColor: 'var(--image-bg-theme)' }}>
                   {product.image_url ? (
                     <img src={product.image_url} alt={product.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
                   ) : (
@@ -324,7 +359,7 @@ export default function HomePage() {
                     </span>
                   )}
                 </div>
-                <h4 className="text-base font-light text-zinc-100" style={{ fontFamily: 'var(--title-font)' }}>
+                <h4 className="text-base font-light" style={{ fontFamily: 'var(--title-font)', color: 'var(--title-color)' }}>
                   {lang === 'ar' ? product.name : lang === 'fr' ? product.name_fr : product.name_en}
                 </h4>
                 <p className="text-xs text-zinc-500 mt-1">{product.color}</p>
@@ -334,7 +369,7 @@ export default function HomePage() {
                 <span className="text-sm font-semibold" style={{ color: 'var(--secondary-theme)' }}>{product.price.toLocaleString()} {lang === 'ar' ? settings.contact?.currency_symbol : settings.contact?.currency}</span>
                 <span className="text-xs text-zinc-400 group-hover:text-white flex items-center space-x-1 space-x-reverse transition-all">
                   <span>{t.viewProduct}</span>
-                  <ChevronRight size={14} className="transform rotate-180" />
+                  <ChevronRight size={14} className="transform rotate-180" style={{ color: 'var(--secondary-theme)' }} />
                 </span>
               </div>
             </div>
@@ -343,10 +378,10 @@ export default function HomePage() {
       </section>
 
       {/* 4. قصة الماركة الفنية والورشة (Brand Story) */}
-      {settings.show_about_section !== false && (
+      {settings.show_about_section !== false && settings.visibility?.show_about_section !== false && (
         <section id="brand-story" className="py-16 max-w-7xl mx-auto px-6 border-b border-zinc-900/40">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div className="aspect-[4/5] bg-zinc-950 border border-zinc-900 rounded-3xl overflow-hidden shadow-2xl">
+            <div className="aspect-[4/5] border rounded-3xl overflow-hidden shadow-2xl" style={{ backgroundColor: 'var(--image-bg-theme)', borderColor: 'border-zinc-900/60' }}>
               {settings.about?.image ? (
                 <img src={settings.about.image} alt="SAFOS Atelier Workshop" className="w-full h-full object-cover" />
               ) : (
@@ -356,7 +391,7 @@ export default function HomePage() {
 
             <div className="space-y-6 text-right">
               <span className="text-xs uppercase tracking-widest text-zinc-500" style={{ color: 'var(--secondary-theme)' }}>{settings.brand?.subtitle_ar}</span>
-              <h3 className="text-3xl font-light" style={{ fontFamily: 'var(--title-font)', color: 'var(--title-color)' }}>
+              <h3 className="text-3xl font-light animate-slideUp" style={{ fontFamily: 'var(--title-font)', color: 'var(--title-color)' }}>
                 {lang === 'ar' ? settings.about?.title_ar : lang === 'fr' ? settings.about?.title_fr : settings.about?.title_en}
               </h3>
               <p className="text-sm font-light leading-relaxed whitespace-pre-line" style={{ color: 'var(--text-color)' }}>
@@ -368,15 +403,15 @@ export default function HomePage() {
       )}
 
       {/* 5. آراء وتقييمات العميلات والتقييمات الحقيقية (Testimonials) */}
-      {settings.show_testimonials_section !== false && (
+      {settings.show_testimonials_section !== false && settings.visibility?.show_testimonials_section !== false && (
         <section id="testimonials-section" className="py-16 max-w-7xl mx-auto px-6 border-b border-zinc-900/40">
           <div className="text-center max-w-xl mx-auto mb-12">
-            <h3 className="text-2xl font-light text-zinc-100" style={{ fontFamily: 'var(--title-font)', color: 'var(--title-color)' }}>{t.testimonials}</h3>
+            <h3 className="text-2xl font-light" style={{ fontFamily: 'var(--title-font)', color: 'var(--title-color)' }}>{t.testimonials}</h3>
             <p className="text-xs text-zinc-500 mt-2">تجارب واقعية لزبائننا الوفيات بكل فخر ومصداقية</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="bg-[#0A0A0A] border border-zinc-900 p-6 rounded-2xl space-y-4">
+            <div className="border p-6 rounded-2xl space-y-4 animate-fadeIn" style={{ backgroundColor: 'var(--card-bg-theme)', borderColor: 'border-zinc-900/60' }}>
               <div className="flex items-center text-amber-500">
                 {[...Array(5)].map((_, i) => <Star key={i} size={14} fill="currentColor" />)}
               </div>
@@ -386,7 +421,7 @@ export default function HomePage() {
               <h4 className="text-xs font-semibold text-zinc-200">{lang === 'ar' ? settings.testimonials?.t1_name_ar : lang === 'fr' ? settings.testimonials?.t1_name_fr : settings.testimonials?.t1_name_en}</h4>
             </div>
 
-            <div className="bg-[#0A0A0A] border border-zinc-900 p-6 rounded-2xl space-y-4">
+            <div className="border p-6 rounded-2xl space-y-4 animate-fadeIn" style={{ backgroundColor: 'var(--card-bg-theme)', borderColor: 'border-zinc-900/60' }}>
               <div className="flex items-center text-amber-500">
                 {[...Array(5)].map((_, i) => <Star key={i} size={14} fill="currentColor" />)}
               </div>
@@ -416,7 +451,7 @@ export default function HomePage() {
       </footer>
 
       {/* أيقونات التواصل الاجتماعي العائمة والتفاعلية في الزاوية */}
-      <div className="fixed bottom-6 left-6 z-40 flex flex-col space-y-3">
+      <div className="fixed bottom-6 left-6 z-40 flex flex-col space-y-3 print:hidden">
         {settings.contact?.whatsapp && (
           <a 
             href={`https://api.whatsapp.com/send?phone=${settings.contact.whatsapp.replace(/\s+/g, '')}`} 
@@ -425,10 +460,7 @@ export default function HomePage() {
             className="w-12 h-12 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 transform hover:scale-105 animate-bounce"
             title="تواصل معنا عبر واتساب"
           >
-            {/* أيقونة واتساب الرسمية والحقيقية بـ كود SVG مخصص ومثبت */}
-            <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12.012 2c-5.506 0-9.988 4.482-9.988 9.988 0 1.761.447 3.473 1.299 4.988l-1.323 4.832 4.945-1.296c1.464.797 3.109 1.216 4.779 1.216 5.505 0 9.987-4.482 9.987-9.988a9.92 9.92 0 0 0-2.926-7.062A9.92 9.92 0 0 0 12.012 2zm5.727 14.127c-.244.689-1.21 1.25-1.666 1.296-.45.045-.9.232-2.905-.562-2.408-.953-3.953-3.41-4.072-3.572-.12-.162-.976-1.301-.976-2.482 0-1.18.618-1.761.838-2.002.22-.24.48-.3.638-.3.16 0 .319.002.459.009.145.007.339-.053.531.405.197.458.679 1.657.738 1.777.059.12.099.259.019.418-.08.159-.12.259-.24.398-.12.139-.253.309-.36.415-.12.12-.244.25-.104.46.14.21.62 1.023 1.33 1.657.915.816 1.687 1.068 1.927 1.188.24.12.38.1.52-.06.14-.16.598-.699.758-.938.16-.24.319-.2.539-.12.22.08 1.405.662 1.645.781.24.12.399.18.459.279.06.1.06.57-.184 1.259z"/>
-            </svg>
+            <MessageCircle size={24} />
           </a>
         )}
         {settings.contact?.instagram && (
