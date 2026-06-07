@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 import { 
   ShoppingBag, ArrowLeft, Star, Heart, Phone, 
-  MapPin, Globe, Shield, Truck, Sparkles, MessageCircle,
-  ChevronRight, Menu, X
+  MapPin, Globe, Shield, Truck, Sparkles, MessageCircle, Menu, X
 } from 'lucide-react';
 
 const homeTranslations = {
@@ -69,6 +68,21 @@ export default function HomePage() {
     localStorage.setItem('safos-lang', newLang);
   };
 
+  // 📥 جلب الخطوط من خوادم Google Fonts حياً بناءً على اختيارك فلوحة التحكم لتفادي تعطل الكود
+  useEffect(() => {
+    const titleFont = settings.colors?.title_font || 'Playfair Display';
+    const bodyFont = settings.colors?.body_font || 'Montserrat';
+    const linkId = 'safos-google-fonts';
+    let link = document.getElementById(linkId) as HTMLLinkElement;
+    if (!link) {
+      link = document.createElement('link');
+      link.id = linkId;
+      link.rel = 'stylesheet';
+      document.head.appendChild(link);
+    }
+    link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(titleFont)}:wght@300;400;700&family=${encodeURIComponent(bodyFont)}:wght@300;400;500;700&display=swap`;
+  }, [settings]);
+
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
@@ -87,11 +101,14 @@ export default function HomePage() {
 
   const t = homeTranslations[lang];
 
-  // تصفية ألوان الهوية الحية المدخلة من لوحة التحكم لتطبيقها حياً فالموقع
+  // تصفية وحفظ الألوان والخطوط الحية المجلوبة من سوبابيس
   const primaryTheme = settings.colors?.primary || '#0A0A0A';
   const secondaryTheme = settings.colors?.secondary || '#D4AF37';
+  const titleColor = settings.colors?.title_color || '#FFFFFF';
+  const textColor = settings.colors?.text_color || '#A1A1AA';
+  const titleFont = settings.colors?.title_font || 'Playfair Display, sans-serif';
+  const bodyFont = settings.colors?.body_font || 'Montserrat, sans-serif';
 
-  // تصفية وحساب المنتجات حياً بناءً على اختيار الكبسولة فالموقع
   const filteredProducts = selectedCategory === 'all' 
     ? products 
     : products.filter(p => p.category === selectedCategory);
@@ -100,12 +117,18 @@ export default function HomePage() {
     <div 
       style={{
         '--primary-theme': primaryTheme,
-        '--secondary-theme': secondaryTheme
+        '--secondary-theme': secondaryTheme,
+        '--title-color': titleColor,
+        '--text-color': textColor,
+        '--title-font': titleFont,
+        '--body-font': bodyFont
       } as React.CSSProperties}
-      className="min-h-screen bg-[#0A0A0A] text-zinc-100 font-sans antialiased selection:bg-amber-500/30"
+      className="min-h-screen bg-[#0A0A0A] text-zinc-100 antialiased selection:bg-amber-500/30"
+      className="min-h-screen"
+      style={{ fontFamily: 'var(--body-font)' }}
     >
       
-      {/* شريط الإعلانات الفوقاني (Announcement Bar) */}
+      {/* 🟢 شريط الإعلانات الفوقاني (Announcement Bar) */}
       {settings.hero?.announcement_text_ar && settings.show_announcement_bar !== false && (
         <div className="text-center py-2.5 px-4 text-xs font-semibold tracking-wider transition-all" style={{ backgroundColor: 'var(--secondary-theme)', color: '#000000' }}>
           {lang === 'ar' ? settings.hero.announcement_ar : lang === 'fr' ? settings.hero.announcement_fr : settings.hero.announcement_en}
@@ -114,7 +137,6 @@ export default function HomePage() {
 
       {/* الهيدر الفاخر مع اللوجو كـ صورة تفاعلية أو اسم العلامة */}
       <header className="p-6 border-b border-zinc-900/50 flex justify-between items-center max-w-7xl mx-auto relative">
-        {/* زر الهامبرغر للقائمة الجانبية على الهاتف */}
         <button 
           onClick={() => setIsMenuOpen(true)}
           className="lg:hidden p-2 text-zinc-400 hover:text-white"
@@ -124,10 +146,10 @@ export default function HomePage() {
 
         <div className="text-right cursor-pointer" onClick={() => navigate('/')}>
           {settings.brand?.logo_url ? (
-            <img src={settings.brand.logo_url} alt="SAFOS Logo" className="h-10 object-contain" />
+            <img src={settings.brand.logo_url} alt="SAFOS Logo" className="h-12 w-12 rounded-full object-cover border border-[#D4AF37]/20 shadow-md" />
           ) : (
             <>
-              <h1 className="text-2xl font-bold tracking-[0.2em]" style={{ color: 'var(--secondary-theme)' }}>
+              <h1 className="text-2xl font-bold tracking-[0.2em]" style={{ color: 'var(--secondary-theme)', fontFamily: 'var(--title-font)' }}>
                 {lang === 'ar' ? settings.brand?.name_ar : lang === 'fr' ? settings.brand?.name_fr : settings.brand?.name_en}
               </h1>
               <p className="text-[9px] uppercase tracking-widest text-zinc-500 mt-0.5">
@@ -137,7 +159,7 @@ export default function HomePage() {
           )}
         </div>
 
-        {/* روابط التنقل السلس على الكمبيوتر (Desktop Navigation) */}
+        {/* روابط التنقل السلس على الكمبيوتر */}
         <nav className="hidden lg:flex items-center space-x-6 space-x-reverse text-xs uppercase tracking-wider text-zinc-400">
           <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="hover:text-white transition">الرئيسية</button>
           <button onClick={() => scrollToSection('products-catalog')} className="hover:text-white transition">حقائب الكانفاس</button>
@@ -188,11 +210,11 @@ export default function HomePage() {
       <section className="relative overflow-hidden py-16 lg:py-24 max-w-7xl mx-auto px-6 border-b border-zinc-900/40">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-6 text-right">
-            <span className="text-xs uppercase tracking-widest text-zinc-500" style={{ color: 'var(--secondary-theme)' }}>{lang === 'ar' ? 'صنع يدوي فاخر بمراكش' : 'Atelier Brodé de luxe'}</span>
-            <h2 className="text-4xl lg:text-5xl font-light text-zinc-100 leading-tight whitespace-pre-line">
+            <span className="text-xs uppercase tracking-widest" style={{ color: 'var(--secondary-theme)' }}>{lang === 'ar' ? 'صنع يدوي فاخر بمراكش' : 'Atelier Brodé de luxe'}</span>
+            <h2 className="text-4xl lg:text-5xl font-light leading-tight whitespace-pre-line" style={{ fontFamily: 'var(--title-font)', color: 'var(--title-color)' }}>
               {lang === 'ar' ? settings.hero?.title_ar : lang === 'fr' ? settings.hero?.title_fr : settings.hero?.title_en}
             </h2>
-            <p className="text-sm text-zinc-400 font-light leading-relaxed max-w-lg">
+            <p className="text-sm font-light leading-relaxed max-w-lg" style={{ color: 'var(--text-color)' }}>
               {lang === 'ar' ? settings.hero?.description_ar : lang === 'fr' ? settings.hero?.description_fr : settings.hero?.description_en}
             </p>
             <div className="pt-4">
@@ -207,8 +229,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* صورة البانر الفاخرة المرفوعة من جهازك */}
-          <div className="aspect-[4/5] bg-zinc-950 border border-zinc-900/60 rounded-3xl overflow-hidden relative shadow-2xl">
+          <div className="aspect-[4/5] bg-zinc-950 border border-zinc-900/60 rounded-3xl overflow-hidden relative shadow-2xl animate-scaleIn">
             {settings.hero?.image ? (
               <img src={settings.hero.image} alt="SAFOS Luxury Banner" className="w-full h-full object-cover" />
             ) : (
@@ -222,7 +243,7 @@ export default function HomePage() {
       {settings.show_pillars_section !== false && (
         <section id="luxury-pillars" className="py-16 max-w-7xl mx-auto px-6 border-b border-zinc-900/40">
           <div className="text-center max-w-xl mx-auto mb-12">
-            <h3 className="text-2xl font-light text-zinc-100">{t.pillars}</h3>
+            <h3 className="text-2xl font-light" style={{ fontFamily: 'var(--title-font)', color: 'var(--title-color)' }}>{t.pillars}</h3>
             <p className="text-xs text-zinc-500 mt-2">التزام تام بأدق معايير الجودة والحياكة اليدوية لتدوم الحقيبة لسنوات</p>
           </div>
 
@@ -230,17 +251,17 @@ export default function HomePage() {
             <div className="bg-zinc-950 border border-zinc-900 p-6 rounded-2xl text-center space-y-3">
               <div className="mx-auto w-10 h-10 bg-amber-500/10 rounded-full flex items-center justify-center" style={{ color: 'var(--secondary-theme)' }}><Sparkles size={20} /></div>
               <h4 className="text-sm font-medium text-zinc-200">{lang === 'ar' ? settings.pillars?.p1_title_ar : lang === 'fr' ? settings.pillars?.p1_title_fr : settings.pillars?.p1_title_en}</h4>
-              <p className="text-xs text-zinc-500 leading-relaxed font-light">{lang === 'ar' ? settings.pillars?.p1_desc_ar : lang === 'fr' ? settings.pillars?.p1_desc_fr : settings.pillars?.p1_desc_en}</p>
+              <p className="text-xs text-zinc-500 leading-relaxed font-light" style={{ color: 'var(--text-color)' }}>{lang === 'ar' ? settings.pillars?.p1_desc_ar : lang === 'fr' ? settings.pillars?.p1_desc_fr : settings.pillars?.p1_desc_en}</p>
             </div>
             <div className="bg-zinc-950 border border-zinc-900 p-6 rounded-2xl text-center space-y-3">
               <div className="mx-auto w-10 h-10 bg-amber-500/10 rounded-full flex items-center justify-center" style={{ color: 'var(--secondary-theme)' }}><Shield size={20} /></div>
               <h4 className="text-sm font-medium text-zinc-200">{lang === 'ar' ? settings.pillars?.p2_title_ar : lang === 'fr' ? settings.pillars?.p2_title_fr : settings.pillars?.p2_title_en}</h4>
-              <p className="text-xs text-zinc-500 leading-relaxed font-light">{lang === 'ar' ? settings.pillars?.p2_desc_ar : lang === 'fr' ? settings.pillars?.p2_desc_fr : settings.pillars?.p2_desc_en}</p>
+              <p className="text-xs text-zinc-500 leading-relaxed font-light" style={{ color: 'var(--text-color)' }}>{lang === 'ar' ? settings.pillars?.p2_desc_ar : lang === 'fr' ? settings.pillars?.p2_desc_fr : settings.pillars?.p2_desc_en}</p>
             </div>
             <div className="bg-zinc-950 border border-zinc-900 p-6 rounded-2xl text-center space-y-3">
               <div className="mx-auto w-10 h-10 bg-amber-500/10 rounded-full flex items-center justify-center" style={{ color: 'var(--secondary-theme)' }}><Truck size={20} /></div>
               <h4 className="text-sm font-medium text-zinc-200">{lang === 'ar' ? settings.pillars?.p3_title_ar : lang === 'fr' ? settings.pillars?.p3_title_fr : settings.pillars?.p3_title_en}</h4>
-              <p className="text-xs text-zinc-500 leading-relaxed font-light">{lang === 'ar' ? settings.pillars?.p3_desc_ar : lang === 'fr' ? settings.pillars?.p3_desc_fr : settings.pillars?.p3_desc_en}</p>
+              <p className="text-xs text-zinc-500 leading-relaxed font-light" style={{ color: 'var(--text-color)' }}>{lang === 'ar' ? settings.pillars?.p3_desc_ar : lang === 'fr' ? settings.pillars?.p3_desc_fr : settings.pillars?.p3_desc_en}</p>
             </div>
           </div>
         </section>
@@ -249,7 +270,7 @@ export default function HomePage() {
       {/* 3. كتالوج المنتجات وحقائب الكانفاس (Products Catalog) */}
       <section id="products-catalog" className="py-16 max-w-7xl mx-auto px-6 border-b border-zinc-900/40">
         <div className="text-center max-w-xl mx-auto mb-8">
-          <h3 className="text-2xl font-light text-zinc-100">{lang === 'ar' ? 'حقائب الكانفاس الفاخرة' : 'Sacs en canevas de luxe'}</h3>
+          <h3 className="text-2xl font-light" style={{ fontFamily: 'var(--title-font)', color: 'var(--title-color)' }}>{lang === 'ar' ? 'حقائب الكانفاس الفاخرة' : 'Sacs en canevas de luxe'}</h3>
           <p className="text-xs text-zinc-500 mt-2">اختاري الحجم واللون المناسب لإطلالتكِ الملكية</p>
         </div>
 
@@ -288,7 +309,7 @@ export default function HomePage() {
             <div 
               key={product.id} 
               onClick={() => navigate(`/product/${product.id}`)}
-              className="bg-zinc-950 border border-zinc-900/60 rounded-3xl overflow-hidden p-5 flex flex-col justify-between hover:border-zinc-800 transition-all cursor-pointer group shadow-lg"
+              className="bg-zinc-950 border border-zinc-900/60 rounded-3xl overflow-hidden p-5 flex flex-col justify-between hover:border-zinc-800 transition-all cursor-pointer group shadow-lg animate-fadeIn"
             >
               <div>
                 <div className="w-full aspect-square bg-[#0F0F0F] rounded-2xl overflow-hidden mb-4 relative">
@@ -303,7 +324,7 @@ export default function HomePage() {
                     </span>
                   )}
                 </div>
-                <h4 className="text-base font-light text-zinc-100">
+                <h4 className="text-base font-light text-zinc-100" style={{ fontFamily: 'var(--title-font)' }}>
                   {lang === 'ar' ? product.name : lang === 'fr' ? product.name_fr : product.name_en}
                 </h4>
                 <p className="text-xs text-zinc-500 mt-1">{product.color}</p>
@@ -335,10 +356,10 @@ export default function HomePage() {
 
             <div className="space-y-6 text-right">
               <span className="text-xs uppercase tracking-widest text-zinc-500" style={{ color: 'var(--secondary-theme)' }}>{settings.brand?.subtitle_ar}</span>
-              <h3 className="text-3xl font-light text-zinc-100">
+              <h3 className="text-3xl font-light" style={{ fontFamily: 'var(--title-font)', color: 'var(--title-color)' }}>
                 {lang === 'ar' ? settings.about?.title_ar : lang === 'fr' ? settings.about?.title_fr : settings.about?.title_en}
               </h3>
-              <p className="text-sm text-zinc-400 font-light leading-relaxed whitespace-pre-line">
+              <p className="text-sm font-light leading-relaxed whitespace-pre-line" style={{ color: 'var(--text-color)' }}>
                 {lang === 'ar' ? settings.about?.text_ar : lang === 'fr' ? settings.about?.text_fr : settings.about?.text_en}
               </p>
             </div>
@@ -350,7 +371,7 @@ export default function HomePage() {
       {settings.show_testimonials_section !== false && (
         <section id="testimonials-section" className="py-16 max-w-7xl mx-auto px-6 border-b border-zinc-900/40">
           <div className="text-center max-w-xl mx-auto mb-12">
-            <h3 className="text-2xl font-light text-zinc-100">{t.testimonials}</h3>
+            <h3 className="text-2xl font-light text-zinc-100" style={{ fontFamily: 'var(--title-font)', color: 'var(--title-color)' }}>{t.testimonials}</h3>
             <p className="text-xs text-zinc-500 mt-2">تجارب واقعية لزبائننا الوفيات بكل فخر ومصداقية</p>
           </div>
 
@@ -359,7 +380,7 @@ export default function HomePage() {
               <div className="flex items-center text-amber-500">
                 {[...Array(5)].map((_, i) => <Star key={i} size={14} fill="currentColor" />)}
               </div>
-              <p className="text-xs text-zinc-400 font-light leading-relaxed">
+              <p className="text-xs font-light leading-relaxed" style={{ color: 'var(--text-color)' }}>
                 {lang === 'ar' ? settings.testimonials?.t1_text_ar : lang === 'fr' ? settings.testimonials?.t1_text_fr : settings.testimonials?.t1_text_en}
               </p>
               <h4 className="text-xs font-semibold text-zinc-200">{lang === 'ar' ? settings.testimonials?.t1_name_ar : lang === 'fr' ? settings.testimonials?.t1_name_fr : settings.testimonials?.t1_name_en}</h4>
@@ -369,7 +390,7 @@ export default function HomePage() {
               <div className="flex items-center text-amber-500">
                 {[...Array(5)].map((_, i) => <Star key={i} size={14} fill="currentColor" />)}
               </div>
-              <p className="text-xs text-zinc-400 font-light leading-relaxed">
+              <p className="text-xs font-light leading-relaxed" style={{ color: 'var(--text-color)' }}>
                 {lang === 'ar' ? settings.testimonials?.t2_text_ar : lang === 'fr' ? settings.testimonials?.t2_text_fr : settings.testimonials?.t2_text_en}
               </p>
               <h4 className="text-xs font-semibold text-zinc-200">{lang === 'ar' ? settings.testimonials?.t2_name_ar : lang === 'fr' ? settings.testimonials?.t2_name_fr : settings.testimonials?.t2_name_en}</h4>
@@ -404,7 +425,10 @@ export default function HomePage() {
             className="w-12 h-12 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 transform hover:scale-105 animate-bounce"
             title="تواصل معنا عبر واتساب"
           >
-            <MessageCircle size={24} />
+            {/* أيقونة واتساب الرسمية والحقيقية بـ كود SVG مخصص ومثبت */}
+            <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12.012 2c-5.506 0-9.988 4.482-9.988 9.988 0 1.761.447 3.473 1.299 4.988l-1.323 4.832 4.945-1.296c1.464.797 3.109 1.216 4.779 1.216 5.505 0 9.987-4.482 9.987-9.988a9.92 9.92 0 0 0-2.926-7.062A9.92 9.92 0 0 0 12.012 2zm5.727 14.127c-.244.689-1.21 1.25-1.666 1.296-.45.045-.9.232-2.905-.562-2.408-.953-3.953-3.41-4.072-3.572-.12-.162-.976-1.301-.976-2.482 0-1.18.618-1.761.838-2.002.22-.24.48-.3.638-.3.16 0 .319.002.459.009.145.007.339-.053.531.405.197.458.679 1.657.738 1.777.059.12.099.259.019.418-.08.159-.12.259-.24.398-.12.139-.253.309-.36.415-.12.12-.244.25-.104.46.14.21.62 1.023 1.33 1.657.915.816 1.687 1.068 1.927 1.188.24.12.38.1.52-.06.14-.16.598-.699.758-.938.16-.24.319-.2.539-.12.22.08 1.405.662 1.645.781.24.12.399.18.459.279.06.1.06.57-.184 1.259z"/>
+            </svg>
           </a>
         )}
         {settings.contact?.instagram && (
