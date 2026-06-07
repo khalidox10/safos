@@ -62,21 +62,18 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const fetchStoreData = async () => {
     setLoading(true);
     try {
-      // 1. جلب المنتجات بالكامل
       const { data: productsData } = await supabase
         .from('products')
         .select('*')
         .order('created_at', { ascending: false });
       setProducts(productsData || []);
 
-      // 2. جلب المجموعات والتصنيفات الديناميكية
       const { data: categoriesData } = await supabase
         .from('categories')
         .select('*')
         .order('name_ar');
       setCategories(categoriesData || []);
 
-      // 3. جلب الإعدادات والروابط وتفكيك الـ JSONB
       const { data: settingsData } = await supabase
         .from('store_settings')
         .select('*');
