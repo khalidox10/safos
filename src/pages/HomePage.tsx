@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 import { 
   ShoppingBag, ArrowLeft, Star, Heart, Phone, 
-  MapPin, Globe, Shield, Truck, Sparkles, MessageCircle, Menu, X
+  MapPin, Globe, Shield, Truck, Sparkles, MessageCircle,
+  ChevronRight, Menu, X
 } from 'lucide-react';
 
 const homeTranslations = {
