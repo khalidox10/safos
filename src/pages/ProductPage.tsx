@@ -138,7 +138,7 @@ export default function ProductPage() {
     setOpenAccordion(openAccordion === section ? null : section);
   };
 
-  // 🛡️ معالجة وفحص رقم الهاتف بدقة بـ 10 أرقام مغربية قبل إرسال الطلب
+  // معالجة وفحص رقم الهاتف بدقة بـ 10 أرقام مغربية قبل إرسال الطلب
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
@@ -195,7 +195,7 @@ export default function ProductPage() {
 
   const t = translations[lang];
 
-  // شاشة الشكر الفاخرة والقصيرة جداً التي تظهر عند الشراء الناجح [1]
+  // شاشة الشكر الفاخرة والقصيرة جداً التي تظهر عند الشراء الناجح
   if (orderSuccess) {
     return (
       <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center p-6 text-center animate-fadeIn">
@@ -220,7 +220,7 @@ export default function ProductPage() {
       
       {/* هيدر مبسط يحتوي على أزرار تبديل اللغة */}
       <header className="p-6 border-b border-zinc-900 flex justify-between items-center max-w-7xl mx-auto">
-        <h1 className="text-xl font-bold tracking-[0.2em] text-[#D4AF37]" onClick={() => navigate('/')} className="cursor-pointer">SAFOS</h1>
+        <h1 className="text-xl font-bold tracking-[0.2em] text-[#D4AF37] cursor-pointer" onClick={() => navigate('/')}>SAFOS</h1>
         <div className="flex bg-zinc-950 p-1.5 rounded-xl border border-zinc-900">
           <button onClick={() => handleLangChange('ar')} className={`py-1 px-3.5 text-xs rounded-lg transition-all ${lang === 'ar' ? 'bg-[#D4AF37] text-black font-bold' : 'text-zinc-400'}`}>العربية</button>
           <button onClick={() => handleLangChange('fr')} className={`py-1 px-3.5 text-xs rounded-lg transition-all ${lang === 'fr' ? 'bg-[#D4AF37] text-black font-bold' : 'text-zinc-400'}`}>FR</button>
@@ -228,7 +228,7 @@ export default function ProductPage() {
         </div>
       </header>
 
-      {/* المحتوى ثنائي الأعمدة لصفحة المنتج (Shopify Layout) */}
+      {/* المحتوى ثنائي الأعمدة لصفحة المنتج */}
       <main className="max-w-7xl mx-auto px-6 py-10 lg:py-16 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
         
         {/* العمود الأيسر: معرض الصور والفيديو الفاخر */}
@@ -256,7 +256,7 @@ export default function ProductPage() {
             )}
           </div>
 
-          {/* المعرض الفرعي للصور المصغرة (Thumbnails) */}
+          {/* المعرض الفرعي للصور المصغرة */}
           {product.show_gallery && (
             <div className="flex space-x-2 space-x-reverse overflow-x-auto py-2">
               <button 
@@ -320,7 +320,7 @@ export default function ProductPage() {
             </a>
           </div>
 
-          {/* الأكورديون المطوي والمقاد بالكامل من لوحة التحكم (Shopify Accordions) */}
+          {/* الأكورديون المطوي والمقاد بالكامل من لوحة التحكم */}
           <div className="border-t border-zinc-900 pt-6 space-y-2">
             
             {/* 1. الوصف */}
