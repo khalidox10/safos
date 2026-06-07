@@ -312,7 +312,7 @@ export default function AdminDashboard() {
           p2_title_ar: pillars.p2_title_ar || '', p2_title_fr: pillars.p2_title_fr || '', p2_title_en: pillars.p2_title_en || '', p2_desc_ar: pillars.p2_desc_ar || '', p2_desc_fr: pillars.p2_desc_fr || '', p2_desc_en: pillars.p2_desc_en || '',
           p3_title_ar: pillars.p3_title_ar || '', p3_title_fr: pillars.p3_title_fr || '', p3_title_en: pillars.p3_title_en || '', p3_desc_ar: pillars.p3_desc_ar || '', p3_desc_fr: pillars.p3_desc_fr || '', p3_desc_en: pillars.p3_desc_en || '',
           t1_name_ar: testimonials.t1_name_ar || '', t1_name_fr: testimonials.t1_name_fr || '', t1_name_en: testimonials.t1_name_en || '', t1_text_ar: testimonials.t1_text_ar || '', t1_text_fr: testimonials.t1_text_fr || '', t1_text_en: testimonials.t1_text_en || '', t1_rating: testimonials.t1_rating || '5',
-          t2_name_ar: testimonials.t2_name_ar || '', t2_name_fr: testimonials.t2_name_fr || '', t2_name_en: testimonials.t2_name_en || '', t2_text_ar: testimonials.t2_text_ar || '', t2_text_fr: testimonials.t2_text_fr || '', t2_text_en: testimonials.t2_text_en || '', t2_rating: testimonials.t2_rating || '5',
+          t2_name_ar: testimonials.t2_name_ar || '', t2_name_fr: testimonials.t2_name_fr || '', t2_name_en: testimonials.t2_name_en || '', t2_text_ar: testimonials.t2_text_ar || '', t2_text_fr: settings.testimonials?.t2_text_fr || '', t2_text_en: testimonials.t2_text_en || '', t2_rating: testimonials.t2_rating || '5',
           shipping_policy_ar: policies.shipping_ar || '', shipping_policy_fr: policies.shipping_fr || '', shipping_policy_en: policies.shipping_en || '',
           refund_policy_ar: policies.refund_ar || '', refund_policy_fr: policies.refund_fr || '', refund_policy_en: policies.refund_en || '',
           copyright_text: policies.copyright || '',
@@ -433,8 +433,7 @@ export default function AdminDashboard() {
     try {
       const { error } = await supabase
         .from('reviews')
-        .delete()
-        .eq('id', reviewId);
+        .delete().eq('id', reviewId);
       if (error) throw error;
       setReviews(prev => prev.filter(r => r.id !== reviewId));
       showToast('تم حذف التقييم بنجاح', 'success');
@@ -639,6 +638,18 @@ export default function AdminDashboard() {
     return matchesSearch && matchesStatus && matchesPayment;
   });
 
+  // تم تعريف مصفوفة الأقسام بنوع ثابت لضمان عدم حدوث أي خطأ في تصنيف الأنواع
+  const settingsSections: { id: 'identity' | 'hero' | 'about' | 'pillars' | 'testimonials' | 'policies' | 'contact' | 'templates'; label: string; icon: any }[] = [
+    { id: 'identity', label: 'الشعار والهوية', icon: Globe },
+    { id: 'hero', label: 'البانر الترحيبي والفرعي', icon: ImageIcon },
+    { id: 'about', label: 'قصة الماركة (من نحن)', icon: Clock },
+    { id: 'pillars', label: 'ركائز الفخامة (لماذا نحن)', icon: AlertCircle },
+    { id: 'testimonials', label: 'آراء العميلات والتقييمات', icon: CheckCircle },
+    { id: 'policies', label: 'السياسات وتذييل الصفحة', icon: SettingsIcon },
+    { id: 'contact', label: 'بيانات التواصل والشبكات', icon: Phone },
+    { id: 'templates', label: 'قوالب رسائل الواتساب', icon: Send }
+  ];
+
   return (
     <div 
       style={{
@@ -761,7 +772,7 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
-                <div className="bg-zinc-950 border border-zinc-900 p-6 rounded-2xl animate-slideUp">
+                <div className="bg-zinc-950 border border-zinc-900 p-6 rounded-2xl">
                   <h3 className="text-lg font-light text-zinc-200">تحليل الأداء المالي</h3>
                   <div className="h-48 w-full relative mt-8 flex items-end justify-between border-b border-zinc-800">
                     <div className="w-12 bg-zinc-900 h-24 rounded-t-lg mx-auto animate-heightGrow" />
@@ -775,7 +786,7 @@ export default function AdminDashboard() {
             {/* 2. سجل المبيعات والطلبات */}
             {activeTab === 'orders' && (
               <div className="space-y-6 print:hidden">
-                <div className="bg-zinc-950 border border-zinc-900 p-5 rounded-2xl flex flex-col md:flex-row gap-4 items-center justify-between animate-fadeIn">
+                <div className="bg-zinc-950 border border-zinc-900 p-5 rounded-2xl flex flex-col md:flex-row gap-4 items-center justify-between">
                   <input
                     type="text"
                     placeholder="البحث بالاسم، الهاتف، أو رقم الطلب..."
@@ -795,7 +806,7 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
-                <div className="bg-zinc-950 border border-zinc-900 rounded-2xl overflow-hidden shadow-2xl animate-fadeIn">
+                <div className="bg-zinc-950 border border-zinc-900 rounded-2xl overflow-hidden shadow-2xl">
                   <table className="w-full text-right text-sm">
                     <thead className="bg-[#0D0D0D] text-zinc-500 text-[10px] uppercase border-b border-zinc-900">
                       <tr>
@@ -853,7 +864,7 @@ export default function AdminDashboard() {
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fadeIn">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {products.map((product) => (
                     <div key={product.id} className="bg-zinc-950 border border-zinc-900 rounded-2xl overflow-hidden p-5 flex flex-col justify-between hover:border-zinc-800 transition-all">
                       <div>
@@ -901,7 +912,7 @@ export default function AdminDashboard() {
                   </button>
                 </div>
 
-                <div className="bg-zinc-950 border border-zinc-900 rounded-2xl overflow-hidden animate-fadeIn">
+                <div className="bg-zinc-950 border border-zinc-900 rounded-2xl overflow-hidden">
                   <table className="w-full text-right text-sm">
                     <thead className="bg-[#0D0D0D] text-zinc-500 text-[10px] uppercase border-b border-zinc-900">
                       <tr>
@@ -941,7 +952,7 @@ export default function AdminDashboard() {
             {/* إدارة مراجعات وتقييمات العميلات (التفعيل والحذف) */}
             {activeTab === 'reviews' && (
               <div className="space-y-6 print:hidden">
-                <div className="bg-zinc-950 border border-zinc-900 rounded-2xl overflow-hidden animate-fadeIn">
+                <div className="bg-zinc-950 border border-zinc-900 rounded-2xl overflow-hidden">
                   <table className="w-full text-right text-sm">
                     <thead className="bg-[#0D0D0D] text-zinc-500 text-[10px] uppercase border-b border-zinc-900">
                       <tr>
@@ -998,28 +1009,20 @@ export default function AdminDashboard() {
                       <button
                         key={sec.id}
                         onClick={() => setActiveSettingsSection(sec.id)}
-                        className={`w-full flex items-center space-x-3 space-x-reverse p-3.5 rounded-xl text-xs transition-all ${
-                          isSecActive ? 'bg-zinc-900 text-amber-500 font-semibold' : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-950/50'
-                        }`}
+                        className="w-full flex items-center space-x-3 space-x-reverse p-3.5 rounded-xl text-xs transition-all font-light"
+                        style={{
+                          backgroundColor: isSecActive ? 'rgba(212, 175, 55, 0.05)' : 'transparent',
+                          color: isSecActive ? 'var(--secondary-theme)' : '#71717a'
+                        }}
                       >
                         <Icon size={16} />
                         <span>{sec.label}</span>
                       </button>
                     );
                   })}
-                  {/* قسم فرعي مخصص لقوالب الواتساب */}
-                  <button
-                    onClick={() => setActiveSettingsSection('templates' as any)}
-                    className={`w-full flex items-center space-x-3 space-x-reverse p-3.5 rounded-xl text-xs transition-all ${
-                      activeSettingsSection === 'templates' ? 'bg-zinc-900 text-amber-500 font-semibold' : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-950/50'
-                    }`}
-                  >
-                    <Send size={16} />
-                    <span>قوالب رسائل الواتساب</span>
-                  </button>
                 </div>
 
-                <div className="lg:col-span-3 bg-zinc-950 border border-zinc-900 rounded-3xl p-6 lg:p-8 shadow-2xl animate-fadeIn">
+                <div className="lg:col-span-3 bg-zinc-950 border border-zinc-900 rounded-3xl p-6 lg:p-8 shadow-2xl">
                   <form onSubmit={handleSaveSettings} className="space-y-6">
                     
                     {activeSettingsSection === 'identity' && (
@@ -1042,14 +1045,18 @@ export default function AdminDashboard() {
                             <input type="text" value={settings.site_name_en || ''} onChange={(e) => setSettings({ ...settings, site_name_en: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
                           </div>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                           <div>
                             <label className="text-xs text-zinc-400 block mb-1.5">العنوان الفرعي بالعربية</label>
                             <input type="text" value={settings.site_subtitle_ar || ''} onChange={(e) => setSettings({ ...settings, site_subtitle_ar: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
                           </div>
                           <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">العنوان الفرعي بالفرنسية/الإنجليزية</label>
+                            <label className="text-xs text-zinc-400 block mb-1.5">العنوان الفرعي بالفرنسية</label>
                             <input type="text" value={settings.site_subtitle_fr || ''} onChange={(e) => setSettings({ ...settings, site_subtitle_fr: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
+                          </div>
+                          <div>
+                            <label className="text-xs text-zinc-400 block mb-1.5">العنوان الفرعي بالإنجليزية</label>
+                            <input type="text" value={settings.site_subtitle_en || ''} onChange={(e) => setSettings({ ...settings, site_subtitle_en: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
                           </div>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -1084,7 +1091,7 @@ export default function AdminDashboard() {
                             </div>
                           </div>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-zinc-900 pt-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-zinc-900 pt-4">
                           <div>
                             <label className="text-xs text-zinc-400 block mb-1.5">اللون الأساسي (Primary)</label>
                             <input type="color" value={settings.primary_color} onChange={(e) => setSettings({ ...settings, primary_color: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
@@ -1329,7 +1336,7 @@ export default function AdminDashboard() {
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <textarea placeholder="المراجعة بالعربية" value={settings.t2_text_ar || ''} onChange={(e) => setSettings({ ...settings, t2_text_ar: e.target.value })} className="w-full h-16 bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
                             <textarea placeholder="المراجعة بالفرنسية" value={settings.t2_text_fr || ''} onChange={(e) => setSettings({ ...settings, t2_text_fr: e.target.value })} className="w-full h-16 bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                            <textarea placeholder="المراجعة بالإنجليزية" value={settings.t2_text_en || ''} onChange={(e) => setSettings({ ...settings, t2_text_en: e.target.value })} className="w-full h-16 bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
+                            <textarea placeholder="المراجعة بالإنجليزية" value={settings.t2_text_en || ''} onChange={(e) => setSettings({ ...settings, t2_text_en: e.target.value })} className="w-full h-16 bg-black border border-[#b8935a]/25 p-3 rounded-xl text-sm animate-fadeIn" />
                           </div>
                         </div>
                       </div>
@@ -1433,7 +1440,7 @@ export default function AdminDashboard() {
                             <p><strong>المتغيرات المتاحة للاستخدام داخل قالب الرسالة:</strong></p>
                             <p>• `{'{name}'}`: اسم الكليان • `{'{order_number}'}`: رقم الطلبية • `{'{total}'}`: قيمة الطلب • `{'{city}'}`: المدينة</p>
                           </div>
-                          <div className="grid grid-cols-1 gap-4">
+                          <div className="grid grid-cols-1 gap-4 animate-fadeIn">
                             <div>
                               <label className="text-xs text-zinc-400 block mb-1.5">القالب بالعربية</label>
                               <textarea value={settings.cod_confirm_ar || ''} onChange={(e) => setSettings({ ...settings, cod_confirm_ar: e.target.value })} className="w-full h-20 bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
@@ -1455,7 +1462,7 @@ export default function AdminDashboard() {
                             <p><strong>المتغيرات المتاحة للاستخدام:</strong></p>
                             <p>• `{'{name}'}`: اسم الزبونة • `{'{review_url}'}`: الرابط المباشر للتقييم</p>
                           </div>
-                          <div className="grid grid-cols-1 gap-4">
+                          <div className="grid grid-cols-1 gap-4 animate-fadeIn">
                             <div>
                               <label className="text-xs text-zinc-400 block mb-1.5">القالب بالعربية</label>
                               <textarea value={settings.review_request_ar || ''} onChange={(e) => setSettings({ ...settings, review_request_ar: e.target.value })} className="w-full h-20 bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
@@ -1822,7 +1829,7 @@ export default function AdminDashboard() {
               </div>
               <div className="border-t border-zinc-900 pt-4 flex justify-end space-x-2 space-x-reverse">
                 <button type="button" onClick={() => setEditingProduct(null)} className="bg-zinc-900 text-zinc-300 py-2.5 px-6 rounded-xl text-xs">إلغاء</button>
-                <button type="submit" disabled={actionLoading === `save-prod-${editingProduct.id}`} className="bg-[#D4AF37] text-black py-2.5 px-6 rounded-xl text-xs font-bold">حفظ التغييرات</button>
+                <button type="submit" disabled={actionLoading === `save-prod-${editingProduct.id}`} className="bg-[#D4AF37] text-black py-2.5 px-6 rounded-xl text-xs font-bold" style={{ backgroundColor: 'var(--secondary-theme)' }}>حفظ التغييرات</button>
               </div>
             </form>
           </div>
@@ -1852,7 +1859,7 @@ export default function AdminDashboard() {
               </div>
               <div className="border-t border-zinc-900 pt-4 flex justify-end space-x-2 space-x-reverse">
                 <button type="button" onClick={() => { setIsAddingCategory(false); setEditingCategory(null); }} className="bg-zinc-900 text-zinc-300 py-2.5 px-5 rounded-xl text-xs">إلغاء</button>
-                <button type="submit" className="bg-[#D4AF37] text-black py-2.5 px-5 rounded-xl text-xs font-bold">حفظ المجموعة</button>
+                <button type="submit" className="bg-[#D4AF37] text-black py-2.5 px-5 rounded-xl text-xs font-bold" style={{ backgroundColor: 'var(--secondary-theme)' }}>حفظ المجموعة</button>
               </div>
             </form>
           </div>
