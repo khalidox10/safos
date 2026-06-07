@@ -29,7 +29,8 @@ const translations = {
     secTitle: "لماذا تختارين SAFOS؟",
     freeShipping: "شحن مجاني وسريع",
     warranty: "جودة يدوية مضمونة",
-    reviewsTitle: "آراء وتجارب العميلات الفعليات"
+    reviewsTitle: "آراء وتجارب العميلات الفعليات",
+    total: "المجموع"
   },
   fr: {
     thankYou: "Votre commande a été enregistrée avec succès, nous vous contacterons bientôt pour confirmer votre commande.",
@@ -52,7 +53,8 @@ const translations = {
     secTitle: "Pourquoi choisir SAFOS ?",
     freeShipping: "Livraison gratuite et rapide",
     warranty: "Qualité artisanale garantie",
-    reviewsTitle: "Avis de nos clientes"
+    reviewsTitle: "Avis de nos clientes",
+    total: "Total"
   },
   en: {
     thankYou: "Your order has been registered successfully, we will contact you soon to confirm your order.",
@@ -75,7 +77,8 @@ const translations = {
     secTitle: "Why choose SAFOS?",
     freeShipping: "Free & Fast Shipping",
     warranty: "Guaranteed Handmade Quality",
-    reviewsTitle: "Customer Reviews"
+    reviewsTitle: "Customer Reviews",
+    total: "Total"
   }
 };
 
@@ -238,33 +241,16 @@ export default function ProductPage() {
 
   const t = translations[lang];
 
-  // تصفية وحفظ الألوان والخطوط الحية
+  // تصفية وحساب الألوان والخطوط الحية
   const primaryTheme = settings.colors?.primary || '#0A0A0A';
   const secondaryTheme = settings.colors?.secondary || '#D4AF37';
   const titleColor = settings.colors?.title_color || '#FFFFFF';
   const textColor = settings.colors?.text_color || '#A1A1AA';
+  const cardBgColor = settings.colors?.card_bg || '#0F0F0F';
+  const accordionBgColor = settings.colors?.accordion_bg || '#0F0F0F';
+  const imageBgColor = settings.colors?.image_bg || '#0F0F0F';
   const titleFont = settings.colors?.title_font || 'Playfair Display, sans-serif';
   const bodyFont = settings.colors?.body_font || 'Montserrat, sans-serif';
-
-  // شاشة الشكر الفاخرة والقصيرة جداً التي تظهر عند الشراء الناجح
-  if (orderSuccess) {
-    return (
-      <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center p-6 text-center animate-fadeIn">
-        <div className="max-w-md w-full bg-zinc-950 border border-zinc-900 p-8 rounded-3xl space-y-6 shadow-2xl">
-          <div className="w-16 h-16 bg-emerald-500/10 text-emerald-400 rounded-full flex items-center justify-center mx-auto">
-            <CheckCircle size={32} />
-          </div>
-          <h2 className="text-xl font-light text-zinc-100">{t.orderSuccess}</h2>
-          <p className="text-sm text-zinc-400 leading-relaxed font-light">{t.thankYou}</p>
-          <div className="pt-4 border-t border-zinc-900">
-            <button onClick={() => navigate('/')} className="w-full bg-zinc-900 hover:bg-zinc-850 text-zinc-200 py-3 rounded-xl text-xs font-semibold transition-all">
-              {lang === 'ar' ? 'العودة للمتجر' : 'Retour à la boutique'}
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div 
@@ -273,24 +259,27 @@ export default function ProductPage() {
         '--secondary-theme': secondaryTheme,
         '--title-color': titleColor,
         '--text-color': textColor,
+        '--card-bg-theme': cardBgColor,
+        '--accordion-bg-theme': accordionBgColor,
+        '--image-bg-theme': imageBgColor,
         '--title-font': titleFont,
         '--body-font': bodyFont
       } as React.CSSProperties}
-      className="min-h-screen bg-[#0A0A0A] text-zinc-100 antialiased selection:bg-amber-500/30"
-      style={{ fontFamily: 'var(--body-font)' }}
+      className="min-h-screen antialiased selection:bg-amber-500/30"
+      style={{ fontFamily: 'var(--body-font)', backgroundColor: 'var(--primary-theme)' }}
     >
       
       {/* هيدر مبسط يحتوي على أزرار تبديل اللغة واللوجو كصورة مجهزة بمشروعك */}
       <header className="p-6 border-b border-zinc-900 flex justify-between items-center max-w-7xl mx-auto">
         <div className="cursor-pointer" onClick={() => navigate('/')}>
           {settings.brand?.logo_url ? (
-            <img src={settings.brand.logo_url} alt="SAFOS Logo" className="h-10 object-contain" />
+            <img src={settings.brand.logo_url} alt="SAFOS Logo" className="h-12 w-12 rounded-full object-cover border shadow-md" style={{ borderColor: 'var(--secondary-theme)' }} />
           ) : (
-            <h1 className="text-xl font-bold tracking-[0.2em] text-[#D4AF37] cursor-pointer" onClick={() => navigate('/')}>SAFOS</h1>
+            <h1 className="text-xl font-bold tracking-[0.2em] cursor-pointer" style={{ color: 'var(--secondary-theme)', fontFamily: 'var(--title-font)' }} onClick={() => navigate('/')}>SAFOS</h1>
           )}
         </div>
         <div className="flex bg-zinc-950 p-1.5 rounded-xl border border-zinc-900">
-          <button onClick={() => handleLangChange('ar')} className={`py-1 px-3.5 text-xs rounded-lg transition-all ${lang === 'ar' ? 'bg-[#D4AF37] text-black font-bold' : 'text-zinc-400'}`}>العربية</button>
+          <button onClick={() => handleLangChange('ar')} className={`py-1 px-3.5 text-xs rounded-lg transition-all ${lang === 'ar' ? 'text-black font-bold' : 'text-zinc-400'}`}>العربية</button>
           <button onClick={() => handleLangChange('fr')} className={`py-1 px-3.5 text-xs rounded-lg transition-all ${lang === 'fr' ? 'bg-[#D4AF37] text-black font-bold' : 'text-zinc-400'}`}>FR</button>
           <button onClick={() => handleLangChange('en')} className={`py-1 px-3.5 text-xs rounded-lg transition-all ${lang === 'en' ? 'bg-[#D4AF37] text-black font-bold' : 'text-zinc-400'}`}>EN</button>
         </div>
@@ -301,7 +290,7 @@ export default function ProductPage() {
         
         {/* العمود الأيسر: معرض الصور والفيديو الفاخر */}
         <div className="space-y-4">
-          <div className="w-full aspect-[4/5] bg-zinc-950 border border-zinc-900 rounded-3xl overflow-hidden relative shadow-lg">
+          <div className="w-full aspect-[4/5] border rounded-3xl overflow-hidden relative shadow-lg" style={{ backgroundColor: 'var(--image-bg-theme)', borderColor: 'border-zinc-900/60' }}>
             {isVideoPlaying && product.video_url ? (
               <iframe 
                 src={product.video_url} 
@@ -390,7 +379,7 @@ export default function ProductPage() {
                 <span className="text-zinc-500">{openAccordion === 'desc' ? '-' : '+'}</span>
               </button>
               {openAccordion === 'desc' && (
-                <p className="mt-3 text-xs text-zinc-400 leading-relaxed font-light animate-fadeIn" style={{ color: 'var(--text-color)' }}>
+                <p className="mt-3 text-xs leading-relaxed font-light animate-fadeIn" style={{ color: 'var(--text-color)' }}>
                   {lang === 'ar' ? product.description : lang === 'fr' ? product.description_fr : product.description_en}
                 </p>
               )}
@@ -404,7 +393,7 @@ export default function ProductPage() {
                   <span className="text-zinc-500">{openAccordion === 'dims' ? '-' : '+'}</span>
                 </button>
                 {openAccordion === 'dims' && (
-                  <p className="mt-3 text-xs text-zinc-400 leading-relaxed font-light animate-fadeIn" style={{ color: 'var(--text-color)' }}>
+                  <p className="mt-3 text-xs leading-relaxed font-light animate-fadeIn" style={{ color: 'var(--text-color)' }}>
                     {lang === 'ar' ? product.materials_dimensions : lang === 'fr' ? product.materials_dimensions_en : product.materials_dimensions_en}
                   </p>
                 )}
@@ -419,7 +408,7 @@ export default function ProductPage() {
                   <span className="text-zinc-500">{openAccordion === 'care' ? '-' : '+'}</span>
                 </button>
                 {openAccordion === 'care' && (
-                  <p className="mt-3 text-xs text-zinc-400 leading-relaxed font-light animate-fadeIn" style={{ color: 'var(--text-color)' }}>
+                  <p className="mt-3 text-xs leading-relaxed font-light animate-fadeIn" style={{ color: 'var(--text-color)' }}>
                     {lang === 'ar' ? product.care_guide : lang === 'fr' ? product.care_guide_fr : product.care_guide_en}
                   </p>
                 )}
@@ -496,8 +485,8 @@ export default function ProductPage() {
               </div>
             </div>
 
-            {/* 🟢 تفعيل كابسولة تحديد الكمية مع حساب السعر حياً داخل نموذج معلومات الشحن */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center bg-black/40 border border-zinc-900 p-4 rounded-2xl">
+            {/* 🟢 تفعيل تحديد الكمية مع حساب السعر حياً داخل نموذج معلومات الشحن */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center border p-4 rounded-2xl" style={{ backgroundColor: 'var(--card-bg-theme)', borderColor: 'border-zinc-900/60' }}>
               <div className="flex items-center space-x-4 space-x-reverse justify-end">
                 <span className="text-xs text-zinc-400">{t.quantity}:</span>
                 <div className="flex items-center bg-zinc-950 border border-zinc-900 rounded-xl overflow-hidden">
@@ -538,7 +527,8 @@ export default function ProductPage() {
                 href={`https://api.whatsapp.com/send?phone=${settings.contact.whatsapp.replace(/\s+/g, '')}&text=${encodeURIComponent(`السلام عليكم فريق SAFOS، أريد طلب حقيبة الكانفاس الفاخرة *${product.name}* (الكمية: ${quantity}) المتوفرة بسعر ${product.price} درهم. أرجو التواصل معي لتأكيد تفاصيل الشحن والطلب.`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full py-4 bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-400 font-semibold rounded-xl flex items-center justify-center space-x-2 space-x-reverse transition-all text-sm border border-emerald-500/20"
+                className="w-full py-4 text-emerald-400 font-semibold rounded-xl flex items-center justify-center space-x-2 space-x-reverse transition-all text-sm border border-emerald-500/20"
+                style={{ backgroundColor: 'transparent' }}
               >
                 <Phone size={16} />
                 <span>{lang === 'ar' ? 'أو اطلبي مباشرة بنقرة واحدة عبر الواتساب' : lang === 'fr' ? 'Ou commander directement via WhatsApp' : 'Or order directly via WhatsApp'}</span>
@@ -555,7 +545,7 @@ export default function ProductPage() {
           <h3 className="text-lg font-light text-zinc-200 mb-8 text-center" style={{ fontFamily: 'var(--title-font)' }}>{t.reviewsTitle}</h3>
           <div className="space-y-4">
             {reviews.map((rev) => (
-              <div key={rev.id} className="bg-zinc-950 border border-zinc-900 p-6 rounded-2xl space-y-3">
+              <div key={rev.id} className="border p-6 rounded-2xl space-y-3" style={{ backgroundColor: 'var(--card-bg-theme)', borderColor: 'border-zinc-900/60' }}>
                 <div className="flex items-center text-amber-500">
                   {[...Array(rev.rating)].map((_, i) => <Star key={i} size={12} fill="currentColor" />)}
                 </div>
