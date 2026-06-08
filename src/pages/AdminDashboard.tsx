@@ -37,48 +37,22 @@ import {
   Lock,
   Star
 } from 'lucide-react';
+import { useStore } from '../context/StoreContext';
 
-const translations = {
-  ar: {
-    thankYou: "تم تسجيل طلبكِ بنجاح، سنتواصل معكِ قريباً لتأكيد طلبيتك",
-    subtotal: "المجموع الفرعي",
-    total: "المجموع الإجمالي",
-    shipping: "الشحن والتوصيل",
-    free: "مجاني",
-    orderNow: "تأكيد الطلب السريع",
-    addToCart: "إضافة إلى السلة",
-    careGuide: "دليل العناية بالحقيبة",
-    dimensions: "مقاسات الحقيبة الدقيقة",
-    description: "الوصف والتفاصيل",
-    color: "الألوان المتوفرة"
-  },
-  fr: {
-    thankYou: "Votre commande a été enregistrée avec succès, nous vous contacterons bientôt pour confirmer votre commande.",
-    subtotal: "Sous-total",
-    total: "Total global",
-    shipping: "Livraison",
-    free: "Gratuite",
-    orderNow: "Confirmer la commande",
-    addToCart: "Ajouter au panier",
-    careGuide: "Guide d'entretien",
-    dimensions: "Dimensions de l'article",
-    description: "Description & Détails",
-    color: "Couleurs disponibles"
-  },
-  en: {
-    thankYou: "Your order has been registered successfully, we will contact you soon to confirm your order.",
-    subtotal: "Subtotal",
-    total: "Total Amount",
-    shipping: "Shipping",
-    free: "Free",
-    orderNow: "Confirm Order Now",
-    addToCart: "Add to Bag",
-    careGuide: "Bag Care Guide",
-    dimensions: "Precise Dimensions",
-    description: "Description & Details",
-    color: "Available Colors"
-  }
-};
+// الأقسام الفرعية الشاملة لتخصيص كامل جوانب الموقع بدون استثناء
+const settingsSections: { id: 'identity' | 'hero' | 'about' | 'pillars' | 'testimonials' | 'policies' | 'contact' | 'templates' | 'style' | 'checkout' | 'menu'; label: string; icon: any }[] = [
+  { id: 'identity', label: 'الشعار والهوية البصرية', icon: Globe },
+  { id: 'style', label: 'الألوان والخطوط الفاخرة', icon: Palette },
+  { id: 'menu', label: 'إدارة قائمة التنقل (Menu)', icon: Menu },
+  { id: 'checkout', label: 'إدارة حقول الشراء (Checkout)', icon: Lock },
+  { id: 'templates', label: 'قوالب رسائل الواتساب', icon: Send },
+  { id: 'hero', label: 'البانر الترحيبي والفرعي', icon: ImageIcon },
+  { id: 'about', label: 'قصة الماركة (من نحن)', icon: Clock },
+  { id: 'pillars', label: 'ركائز الفخامة (لماذا نحن)', icon: AlertCircle },
+  { id: 'testimonials', label: 'آراء العميلات والتقييمات', icon: CheckCircle },
+  { id: 'policies', label: 'السياسات وتذييل الصفحة', icon: SettingsIcon },
+  { id: 'contact', label: 'بيانات التواصل والشبكات', icon: Phone }
+];
 
 interface Category {
   id: string;
@@ -128,13 +102,17 @@ interface Review {
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
+  // جلب دالة التحديث المباشر للموقع لضمان مزامنة الألوان والخطوط حياً فالمتجر فور الحفظ
+  const { fetchStoreData } = useStore();
+
+  // حالات التنقل والواجهة
   const [activeTab, setActiveTab] = useState<'dashboard' | 'orders' | 'products' | 'settings' | 'reviews' | 'categories'>('dashboard');
-  const [activeSettingsSection, setActiveSettingsSection] = useState<'identity' | 'hero' | 'about' | 'pillars' | 'testimonials' | 'policies' | 'contact' | 'templates'>('identity');
+  const [activeSettingsSection, setActiveSettingsSection] = useState<'identity' | 'hero' | 'about' | 'pillars' | 'testimonials' | 'policies' | 'contact' | 'templates' | 'style' | 'checkout' | 'menu'>('identity');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   
-  // لغة واجهة العميل الافتراضية
+  // لغة لوحة التحكم الحالية للمعاينة
   const [lang, setLang] = useState<'ar' | 'fr' | 'en'>('ar');
 
   // حالة رصد أخطاء الربط بسوبابيس
@@ -157,6 +135,9 @@ export default function AdminDashboard() {
     phone: '', whatsapp: '', email: '', address: '',
     instagram: '', facebook: '', tiktok: '',
     primary_color: '#000000', secondary_color: '#D4AF37', accent_color: '#A37A3E',
+    title_color: '#FFFFFF', text_color: '#A1A1AA',
+    card_bg: '#0F0F0F', accordion_bg: '#0F0F0F', image_bg: '#0F0F0F',
+    title_font: 'Playfair Display', body_font: 'Montserrat',
     currency: 'MAD', currency_symbol: 'د.م',
     about_title_ar: '', about_title_fr: '', about_title_en: '',
     about_text_ar: '', about_text_fr: '', about_text_en: '',
@@ -171,7 +152,21 @@ export default function AdminDashboard() {
     copyright_text: '',
     // قوالب الرسائل
     cod_confirm_ar: '', cod_confirm_fr: '', cod_confirm_en: '',
-    review_request_ar: '', review_request_fr: '', review_request_en: ''
+    review_request_ar: '', review_request_fr: '', review_request_en: '',
+    // أزرار الإخفاء والإظهار للأقسام (Visibility Toggles)
+    show_about_section: true, show_pillars_section: true, show_testimonials_section: true, show_announcement_bar: true,
+    // إدارة حقول الشراء للزبون
+    field_name_ar: '', field_name_fr: '', field_name_en: '', field_name_required: true, field_name_visible: true,
+    field_phone_ar: '', field_phone_fr: '', field_phone_en: '', field_phone_required: true, field_phone_visible: true,
+    field_city_ar: '', field_city_fr: '', field_city_en: '', field_city_required: true, field_city_visible: true,
+    field_address_ar: '', field_address_fr: '', field_address_en: '', field_address_required: true, field_address_visible: true,
+    field_notes_ar: '', field_notes_fr: '', field_notes_en: '', field_notes_required: false, field_notes_visible: true,
+    // إدارة قائمة التنقل التفاعلية
+    menu_p1_ar: '', menu_p1_fr: '', menu_p1_en: '', menu_p1_visible: true,
+    menu_p2_ar: '', menu_p2_fr: '', menu_p2_en: '', menu_p2_visible: true,
+    menu_p3_ar: '', menu_p3_fr: '', menu_p3_en: '', menu_p3_visible: true,
+    menu_p4_ar: '', menu_p4_fr: '', menu_p4_en: '', menu_p4_visible: true,
+    menu_p5_ar: '', menu_p5_fr: '', menu_p5_en: '', menu_p5_visible: true
   });
 
   // حالات البحث والتصفية للطلبيات
@@ -200,20 +195,10 @@ export default function AdminDashboard() {
 
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
-  // الكشف التلقائي واليدوي للغات
   useEffect(() => {
     const savedLang = localStorage.getItem('safos-lang');
     if (savedLang === 'ar' || savedLang === 'fr' || savedLang === 'en') {
       setLang(savedLang as any);
-    } else {
-      const userLang = navigator.language || (navigator as any).userLanguage || '';
-      if (userLang.startsWith('ar')) {
-        setLang('ar');
-      } else if (userLang.startsWith('fr')) {
-        setLang('fr');
-      } else {
-        setLang('en');
-      }
     }
   }, []);
 
@@ -291,6 +276,9 @@ export default function AdminDashboard() {
         const testimonials = settingsData.find(s => s.key === 'testimonials')?.value || {};
         const policies = settingsData.find(s => s.key === 'policies')?.value || {};
         const templates = settingsData.find(s => s.key === 'templates')?.value || {};
+        const menuLinks = settingsData.find(s => s.key === 'menu_links')?.value || {};
+        const checkoutFields = settingsData.find(s => s.key === 'checkout_fields')?.value || {};
+        const visibility = settingsData.find(s => s.key === 'visibility')?.value || {};
 
         setSettings({
           site_name_ar: brand.name_ar || '', site_name_fr: brand.name_fr || '', site_name_en: brand.name_en || '',
@@ -304,6 +292,9 @@ export default function AdminDashboard() {
           phone: contact.phone || '', whatsapp: contact.whatsapp || '', email: contact.email || '', address: contact.address || '',
           instagram: contact.instagram || '', facebook: contact.facebook || '', tiktok: contact.tiktok || '',
           primary_color: colors.primary || '#000000', secondary_color: colors.secondary || '#D4AF37', accent_color: colors.accent || '#A37A3E',
+          title_color: colors.title_color || '#FFFFFF', text_color: colors.text_color || '#A1A1AA',
+          card_bg: colors.card_bg || '#0F0F0F', accordion_bg: colors.accordion_bg || '#0F0F0F', image_bg: colors.image_bg || '#0F0F0F',
+          title_font: colors.title_font || 'Playfair Display', body_font: colors.body_font || 'Montserrat',
           currency: contact.currency || 'MAD', currency_symbol: contact.currency_symbol || 'د.م',
           about_title_ar: about.title_ar || '', about_title_fr: about.title_fr || '', about_title_en: about.title_en || '',
           about_text_ar: about.text_ar || '', about_text_fr: about.text_fr || '', about_text_en: about.text_en || '',
@@ -317,7 +308,24 @@ export default function AdminDashboard() {
           refund_policy_ar: policies.refund_ar || '', refund_policy_fr: policies.refund_fr || '', refund_policy_en: policies.refund_en || '',
           copyright_text: policies.copyright || '',
           cod_confirm_ar: templates.cod_confirm_ar || '', cod_confirm_fr: templates.cod_confirm_fr || '', cod_confirm_en: templates.cod_confirm_en || '',
-          review_request_ar: templates.review_request_ar || '', review_request_fr: templates.review_request_fr || '', review_request_en: templates.review_request_en || ''
+          review_request_ar: templates.review_request_ar || '', review_request_fr: templates.review_request_fr || '', review_request_en: templates.review_request_en || '',
+          // استرداد أزرار الإخفاء والإظهار للأقسام (Visibility Toggles)
+          show_about_section: visibility.show_about_section !== false,
+          show_pillars_section: visibility.show_pillars_section !== false,
+          show_testimonials_section: visibility.show_testimonials_section !== false,
+          show_announcement_bar: visibility.show_announcement_bar !== false,
+          // استرداد إدارة حقول الشراء للزبون
+          field_name_ar: checkoutFields.field_name_ar || '', field_name_fr: checkoutFields.field_name_fr || '', field_name_en: checkoutFields.field_name_en || '', field_name_required: checkoutFields.field_name_required !== false, field_name_visible: checkoutFields.field_name_visible !== false,
+          field_phone_ar: checkoutFields.field_phone_ar || '', field_phone_fr: checkoutFields.field_phone_fr || '', field_phone_en: checkoutFields.field_phone_en || '', field_phone_required: checkoutFields.field_phone_required !== false, field_phone_visible: checkoutFields.field_phone_visible !== false,
+          field_city_ar: checkoutFields.field_city_ar || '', field_city_fr: checkoutFields.field_city_fr || '', field_city_en: checkoutFields.field_city_en || '', field_city_required: checkoutFields.field_city_required !== false, field_city_visible: checkoutFields.field_city_visible !== false,
+          field_address_ar: checkoutFields.field_address_ar || '', field_address_fr: checkoutFields.field_address_fr || '', field_address_en: checkoutFields.field_address_en || '', field_address_required: checkoutFields.field_address_required !== false, field_address_visible: checkoutFields.field_address_visible !== false,
+          field_notes_ar: checkoutFields.field_notes_ar || '', field_notes_fr: checkoutFields.field_notes_fr || '', field_notes_en: checkoutFields.field_notes_en || '', field_notes_required: checkoutFields.field_notes_required === true, field_notes_visible: checkoutFields.field_notes_visible !== false,
+          // استرداد إدارة قائمة التنقل التفاعلية
+          menu_p1_ar: menuLinks.menu_p1_ar || '', menu_p1_fr: menuLinks.menu_p1_fr || '', menu_p1_en: menuLinks.menu_p1_en || '', menu_p1_visible: menuLinks.menu_p1_visible !== false,
+          menu_p2_ar: menuLinks.menu_p2_ar || '', menu_p2_fr: menuLinks.menu_p2_fr || '', menu_p2_en: menuLinks.menu_p2_en || '', menu_p2_visible: menuLinks.menu_p2_visible !== false,
+          menu_p3_ar: menuLinks.menu_p3_ar || '', menu_p3_fr: menuLinks.menu_p3_fr || '', menu_p3_en: menuLinks.menu_p3_en || '', menu_p3_visible: menuLinks.menu_p3_visible !== false,
+          menu_p4_ar: menuLinks.menu_p4_ar || '', menu_p4_fr: menuLinks.menu_p4_fr || '', menu_p4_en: menuLinks.menu_p4_en || '', menu_p4_visible: menuLinks.menu_p4_visible !== false,
+          menu_p5_ar: menuLinks.menu_p5_ar || '', menu_p5_fr: menuLinks.menu_p5_fr || '', menu_p5_en: menuLinks.menu_p5_en || '', menu_p5_visible: menuLinks.menu_p5_visible !== false
         });
       }
     } catch (err: any) {
@@ -332,11 +340,13 @@ export default function AdminDashboard() {
     setTimeout(() => setToast(null), 4000);
   };
 
+  // 📥 دالة تسجيل الخروج المعتمدة في بنية مشروعك الخاص ( useAuth )
   async function handleLogout() {
     await logout();
     navigate('/admin/login');
   }
 
+  // 📥 دالة رفع الصور المعتمدة فالمشروع لرفع جميع ملفات وأقسام الموقع من جهازك مباشرة لـ Supabase
   async function handleImageUpload(file: File, bucketName: string): Promise<string> {
     const fileName = `safos-${Date.now()}-${file.name.replace(/\s+/g, '_')}`;
     const { url, error } = await uploadFile(bucketName, file, fileName);
@@ -346,6 +356,7 @@ export default function AdminDashboard() {
     return url;
   }
 
+  // تحميل الصور مباشرة على جهاز المستخدم
   const handleDownloadImage = async (imageUrl: string, fileName: string) => {
     if (!imageUrl) return;
     try {
@@ -365,6 +376,7 @@ export default function AdminDashboard() {
     }
   };
 
+  // تفعيل وإرسال قوالب رسائل الواتساب الديناميكية (تأكيد الـ COD / طلب التقييم)
   const handleSendWhatsAppMessage = (order: any, type: 'confirm' | 'review') => {
     if (!order) return;
     const cleanPhone = order.customer_phone.replace(/\s+/g, '');
@@ -428,7 +440,7 @@ export default function AdminDashboard() {
   };
 
   const handleDeleteReview = async (reviewId: string) => {
-    if (!window.confirm('هل تريد حذف هذا التقييم نهائياً؟')) return;
+    if (!window.confirm('هل يريد حذف هذا التقييم نهائياً؟')) return;
     setActionLoading(`del-review-${reviewId}`);
     try {
       const { error } = await supabase
@@ -559,7 +571,7 @@ export default function AdminDashboard() {
         },
         {
           key: 'colors',
-          value: { primary: settings.primary_color, secondary: settings.secondary_color }
+          value: { primary: settings.primary_color, secondary: settings.secondary_color, title_color: settings.title_color, text_color: settings.text_color, card_bg: settings.card_bg, accordion_bg: settings.accordion_bg, image_bg: settings.image_bg, title_font: settings.title_font, body_font: settings.body_font }
         },
         {
           key: 'contact',
@@ -601,17 +613,53 @@ export default function AdminDashboard() {
             cod_confirm_ar: settings.cod_confirm_ar, cod_confirm_fr: settings.cod_confirm_fr, cod_confirm_en: settings.cod_confirm_en,
             review_request_ar: settings.review_request_ar, review_request_fr: settings.review_request_fr, review_request_en: settings.review_request_en
           }
+        },
+        // مزامنة إدارة المينيو وقائمة التنقل الحية فالمتجر
+        {
+          key: 'menu_links',
+          value: {
+            menu_p1_ar: settings.menu_p1_ar, menu_p1_fr: settings.menu_p1_fr, menu_p1_en: settings.menu_p1_en, menu_p1_visible: settings.menu_p1_visible,
+            menu_p2_ar: settings.menu_p2_ar, menu_p2_fr: settings.menu_p2_fr, menu_p2_en: settings.menu_p2_en, menu_p2_visible: settings.menu_p2_visible,
+            menu_p3_ar: settings.menu_p3_ar, menu_p3_fr: settings.menu_p3_fr, menu_p3_en: settings.menu_p3_en, menu_p3_visible: settings.menu_p3_visible,
+            menu_p4_ar: settings.menu_p4_ar, menu_p4_fr: settings.menu_p4_fr, menu_p4_en: settings.menu_p4_en, menu_p4_visible: settings.menu_p4_visible,
+            menu_p5_ar: settings.menu_p5_ar, menu_p5_fr: settings.menu_p5_fr, menu_p5_en: settings.menu_p5_en, menu_p5_visible: settings.menu_p5_visible
+          }
+        },
+        // مزامنة حقول الشراء
+        {
+          key: 'checkout_fields',
+          value: {
+            field_name_ar: settings.field_name_ar, field_name_fr: settings.field_name_fr, field_name_en: settings.field_name_en, field_name_required: settings.field_name_required, field_name_visible: settings.field_name_visible,
+            field_phone_ar: settings.field_phone_ar, field_phone_fr: settings.field_phone_fr, field_phone_en: settings.field_phone_en, field_phone_required: settings.field_phone_required, field_phone_visible: settings.field_phone_visible,
+            field_city_ar: settings.field_city_ar, field_city_fr: settings.field_city_fr, field_city_en: settings.field_city_en, field_city_required: settings.field_city_required, field_city_visible: settings.field_city_visible,
+            field_address_ar: settings.field_address_ar, field_address_fr: settings.field_address_fr, field_address_en: settings.field_address_en, field_address_required: settings.field_address_required, field_address_visible: settings.field_address_visible,
+            field_notes_ar: settings.field_notes_ar, field_notes_fr: settings.field_notes_fr, field_notes_en: settings.field_notes_en, field_notes_required: settings.field_notes_required, field_notes_visible: settings.field_notes_visible
+          }
+        },
+        // مزامنة booleans الإخفاء والإظهار للأقسام الأساسية
+        {
+          key: 'visibility',
+          value: {
+            show_about_section: settings.show_about_section,
+            show_pillars_section: settings.show_pillars_section,
+            show_testimonials_section: settings.show_testimonials_section,
+            show_announcement_bar: settings.show_announcement_bar
+          }
         }
       ];
 
       for (const item of updates) {
-        const { error } = await supabase
-          .from('store_settings')
-          .upsert(item, { onConflict: 'key' });
+        const { error } = await supabase.from('store_settings').upsert({
+          key: item.key,
+          value: item.value,
+          updated_at: new Date().toISOString()
+        });
         if (error) throw error;
       }
 
-      showToast('تمت مزامنة وحفظ جميع إعدادات الهوية الفاخرة بنجاح', 'success');
+      showToast('تمت مزامنة وحفظ جميع التخصيصات حياً', 'success');
+      // تحديث الـ Context العالمي حياً فالموقع في نفس ثانية الحفظ بدون الحاجة لعمل ريفريش يدوياً
+      await fetchStoreData();
       fetchData();
     } catch (err: any) {
       showToast(err.message, 'error');
@@ -638,17 +686,45 @@ export default function AdminDashboard() {
     return matchesSearch && matchesStatus && matchesPayment;
   });
 
+  // حساب نسب الطلبيات حياً لرسم المبيانات الدائرية التفاعلية الـ SVG فلوحة التحكم
+  const totalOrdersCount = orders.length || 1;
+  const pendingPercent = Math.round((orders.filter(o => o.status === 'pending').length / totalOrdersCount) * 100);
+  const confirmedPercent = Math.round((orders.filter(o => o.status === 'confirmed').length / totalOrdersCount) * 100);
+  const shippedPercent = Math.round((orders.filter(o => o.status === 'shipped').length / totalOrdersCount) * 100);
+  const deliveredPercent = Math.round((orders.filter(o => o.status === 'delivered').length / totalOrdersCount) * 100);
+  const cancelledPercent = Math.round((orders.filter(o => o.status === 'cancelled').length / totalOrdersCount) * 100);
+
   // تم تعريف مصفوفة الأقسام بنوع ثابت لضمان عدم حدوث أي خطأ في تصنيف الأنواع
-  const settingsSections: { id: 'identity' | 'hero' | 'about' | 'pillars' | 'testimonials' | 'policies' | 'contact' | 'templates'; label: string; icon: any }[] = [
-    { id: 'identity', label: 'الشعار والهوية', icon: Globe },
+  const settingsSections: { id: 'identity' | 'hero' | 'about' | 'pillars' | 'testimonials' | 'policies' | 'contact' | 'templates' | 'style' | 'checkout' | 'menu'; label: string; icon: any }[] = [
+    { id: 'identity', label: 'الشعار والهوية البصرية', icon: Globe },
+    { id: 'style', label: 'الألوان والخطوط الفاخرة', icon: Palette },
+    { id: 'menu', label: 'إدارة قائمة التنقل (Menu)', icon: Menu },
+    { id: 'checkout', label: 'إدارة حقول الشراء (Checkout)', icon: Lock },
+    { id: 'templates', label: 'قوالب رسائل الواتساب', icon: Send },
     { id: 'hero', label: 'البانر الترحيبي والفرعي', icon: ImageIcon },
     { id: 'about', label: 'قصة الماركة (من نحن)', icon: Clock },
     { id: 'pillars', label: 'ركائز الفخامة (لماذا نحن)', icon: AlertCircle },
     { id: 'testimonials', label: 'آراء العميلات والتقييمات', icon: CheckCircle },
     { id: 'policies', label: 'السياسات وتذييل الصفحة', icon: SettingsIcon },
-    { id: 'contact', label: 'بيانات التواصل والشبكات', icon: Phone },
-    { id: 'templates', label: 'قوالب رسائل الواتساب', icon: Send }
+    { id: 'contact', label: 'بيانات التواصل والشبكات', icon: Phone }
   ];
+
+  if (connectionError) {
+    return (
+      <div className="min-h-screen bg-[#0A0A0A] text-zinc-100 flex items-center justify-center p-6">
+        <div className="bg-zinc-950 border border-red-500/20 p-8 rounded-3xl max-w-md w-full text-center space-y-4 shadow-2xl">
+          <div className="mx-auto w-12 h-12 bg-red-500/10 text-red-400 rounded-full flex items-center justify-center">
+            <AlertCircle size={24} />
+          </div>
+          <h2 className="text-lg font-light text-zinc-100">فشل الاتصال بـ Supabase</h2>
+          <p className="text-xs text-zinc-400 leading-relaxed">{connectionError}</p>
+          <div className="pt-4 border-t border-zinc-900">
+            <button onClick={() => window.location.reload()} className="w-full bg-zinc-900 hover:bg-zinc-850 text-zinc-200 py-2.5 rounded-xl text-xs font-semibold transition-all">إعادة محاولة الاتصال</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div 
@@ -656,7 +732,7 @@ export default function AdminDashboard() {
         '--primary-theme': settings.primary_color || '#0A0A0A',
         '--secondary-theme': settings.secondary_color || '#D4AF37'
       } as React.CSSProperties}
-      className="min-h-screen bg-zinc-950 text-zinc-100 flex font-sans antialiased selection:bg-amber-500/30 print:bg-white print:text-black animate-fadeIn"
+      className="min-h-screen bg-[#0A0A0A] text-zinc-100 flex font-sans antialiased selection:bg-amber-500/30 print:bg-white print:text-black animate-fadeIn"
     >
       
       {/* القائمة الجانبية الفاخرة والمتحكمة بالألوان ديناميكياً */}
@@ -673,7 +749,7 @@ export default function AdminDashboard() {
 
           <nav className="p-4 space-y-2">
             {[
-              { id: 'dashboard', label: 'الإحصائيات العامة', icon: LayoutDashboard },
+              { id: 'dashboard', label: 'الإحصائيات العامة والتحليل', icon: LayoutDashboard },
               { id: 'orders', label: 'إدارة الطلبيات والمبيعات', icon: ShoppingBag, badge: pendingOrdersCount > 0 ? pendingOrdersCount : undefined },
               { id: 'products', label: 'مخزون وحقائب الكانفاس', icon: TrendingUp, badge: lowStockProducts.length > 0 ? lowStockProducts.length : undefined },
               { id: 'categories', label: 'مجموعات وتصنيفات السلع', icon: Menu },
@@ -729,7 +805,7 @@ export default function AdminDashboard() {
         <div className="print:hidden flex items-center justify-between mb-8 pb-4 border-b border-zinc-900">
           <div>
             <h2 className="text-2xl font-light text-zinc-100">
-              {activeTab === 'dashboard' && 'الإحصائيات العامة'}
+              {activeTab === 'dashboard' && 'الإحصائيات العامة والتحليل'}
               {activeTab === 'orders' && 'سجل المبيعات والطلبات'}
               {activeTab === 'products' && 'إدارة المنتجات وتعديل الخصائص'}
               {activeTab === 'categories' && 'إدارة مجموعات وتصنيفات السلع'}
@@ -750,9 +826,9 @@ export default function AdminDashboard() {
           </div>
         ) : (
           <>
-            {/* 1. الإحصائيات العامة */}
+            {/* 1. الإحصائيات العامة والتحليل */}
             {activeTab === 'dashboard' && (
-              <div className="space-y-8 print:hidden">
+              <div className="space-y-8 print:hidden animate-fadeIn">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                   <div className="bg-zinc-950 border border-zinc-900 p-6 rounded-2xl">
                     <span className="text-xs text-zinc-500">إجمالي الأرباح المدفوعة</span>
@@ -772,12 +848,73 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
-                <div className="bg-zinc-950 border border-zinc-900 p-6 rounded-2xl">
-                  <h3 className="text-lg font-light text-zinc-200">تحليل الأداء المالي</h3>
-                  <div className="h-48 w-full relative mt-8 flex items-end justify-between border-b border-zinc-800">
-                    <div className="w-12 bg-zinc-900 h-24 rounded-t-lg mx-auto animate-heightGrow" />
-                    <div className="w-12 bg-zinc-900 h-36 rounded-t-lg mx-auto animate-heightGrow" />
-                    <div className="w-12 bg-gradient-to-t from-amber-500/5 to-amber-500/20 border h-44 rounded-t-lg mx-auto animate-heightGrow" style={{ borderColor: 'var(--secondary-theme)' }} />
+                {/* لوحة مبيانات حالات الطلب التفاعلية SVG */}
+                <div className="bg-zinc-950 border border-zinc-900 p-8 rounded-3xl">
+                  <h3 className="text-lg font-light text-zinc-200">تحليل وتوزيع حالات طلبيات الكانفاس</h3>
+                  <p className="text-xs text-zinc-500 mt-1">نسب حية لتتبع تقدم التوصيل وشحن الحقائب من ورشة SAFOS</p>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-5 gap-8 mt-10">
+                    
+                    {/* حلقة معلقة */}
+                    <div className="flex flex-col items-center space-y-3 bg-black/40 p-4 rounded-2xl border border-zinc-900">
+                      <div className="relative w-24 h-24">
+                        <svg className="w-full h-full transform -rotate-90">
+                          <circle cx="48" cy="48" r="40" stroke="#18181b" strokeWidth="6" fill="transparent" />
+                          <circle cx="48" cy="48" r="40" stroke="var(--secondary-theme)" strokeWidth="6" fill="transparent" strokeDasharray="251" strokeDashoffset={251 - (251 * pendingPercent) / 100} strokeLinecap="round" className="transition-all duration-1000" />
+                        </svg>
+                        <span className="absolute inset-0 m-auto h-fit text-center font-mono text-sm font-semibold">{pendingPercent}%</span>
+                      </div>
+                      <span className="text-xs text-zinc-400">قيد الانتظار ({orders.filter(o => o.status === 'pending').length})</span>
+                    </div>
+
+                    {/* حلقة مؤكدة */}
+                    <div className="flex flex-col items-center space-y-3 bg-black/40 p-4 rounded-2xl border border-zinc-900">
+                      <div className="relative w-24 h-24">
+                        <svg className="w-full h-full transform -rotate-90">
+                          <circle cx="48" cy="48" r="40" stroke="#18181b" strokeWidth="6" fill="transparent" />
+                          <circle cx="48" cy="48" r="40" stroke="#a78bfa" strokeWidth="6" fill="transparent" strokeDasharray="251" strokeDashoffset={251 - (251 * confirmedPercent) / 100} strokeLinecap="round" />
+                        </svg>
+                        <span className="absolute inset-0 m-auto h-fit text-center font-mono text-sm font-semibold">{confirmedPercent}%</span>
+                      </div>
+                      <span className="text-xs text-zinc-400">مؤكدة ({orders.filter(o => o.status === 'confirmed').length})</span>
+                    </div>
+
+                    {/* حلقة مشحونة */}
+                    <div className="flex flex-col items-center space-y-3 bg-black/40 p-4 rounded-2xl border border-zinc-900">
+                      <div className="relative w-24 h-24">
+                        <svg className="w-full h-full transform -rotate-90">
+                          <circle cx="48" cy="48" r="40" stroke="#18181b" strokeWidth="6" fill="transparent" />
+                          <circle cx="48" cy="48" r="40" stroke="#60a5fa" strokeWidth="6" fill="transparent" strokeDasharray="251" strokeDashoffset={251 - (251 * shippedPercent) / 100} strokeLinecap="round" />
+                        </svg>
+                        <span className="absolute inset-0 m-auto h-fit text-center font-mono text-sm font-semibold">{shippedPercent}%</span>
+                      </div>
+                      <span className="text-xs text-zinc-400">مشحونة ({orders.filter(o => o.status === 'shipped').length})</span>
+                    </div>
+
+                    {/* hلقة تم التوصيل */}
+                    <div className="flex flex-col items-center space-y-3 bg-black/40 p-4 rounded-2xl border border-zinc-900">
+                      <div className="relative w-24 h-24">
+                        <svg className="w-full h-full transform -rotate-90">
+                          <circle cx="48" cy="48" r="40" stroke="#18181b" strokeWidth="6" fill="transparent" />
+                          <circle cx="48" cy="48" r="40" stroke="#34d399" strokeWidth="6" fill="transparent" strokeDasharray="251" strokeDashoffset={251 - (251 * deliveredPercent) / 100} strokeLinecap="round" />
+                        </svg>
+                        <span className="absolute inset-0 m-auto h-fit text-center font-mono text-sm font-semibold">{deliveredPercent}%</span>
+                      </div>
+                      <span className="text-xs text-zinc-400">تم التوصيل ({orders.filter(o => o.status === 'delivered').length})</span>
+                    </div>
+
+                    {/* حلقة ملغاة */}
+                    <div className="flex flex-col items-center space-y-3 bg-black/40 p-4 rounded-2xl border border-zinc-900">
+                      <div className="relative w-24 h-24">
+                        <svg className="w-full h-full transform -rotate-90">
+                          <circle cx="48" cy="48" r="40" stroke="#18181b" strokeWidth="6" fill="transparent" />
+                          <circle cx="48" cy="48" r="40" stroke="#f87171" strokeWidth="6" fill="transparent" strokeDasharray="251" strokeDashoffset={251 - (251 * cancelledPercent) / 100} strokeLinecap="round" />
+                        </svg>
+                        <span className="absolute inset-0 m-auto h-fit text-center font-mono text-sm font-semibold">{cancelledPercent}%</span>
+                      </div>
+                      <span className="text-xs text-zinc-400">ملغاة ({orders.filter(o => o.status === 'cancelled').length})</span>
+                    </div>
+
                   </div>
                 </div>
               </div>
@@ -838,7 +975,7 @@ export default function AdminDashboard() {
                           </td>
                           <td className="py-4 px-6 text-center flex items-center justify-center space-x-2 space-x-reverse">
                             <button onClick={() => setSelectedOrder(order)} className="p-1.5 bg-zinc-900 text-zinc-300 rounded-lg"><Eye size={14} /></button>
-                            <button onClick={() => handleSendWhatsAppMessage(order, 'confirm')} className="p-1.5 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 rounded-lg" title="إرسال رسالة تأكيد COD مخصصة"><Send size={14} /></button>
+                            <button onClick={() => handleSendWhatsAppMessage(order, 'confirm')} className="p-1.5 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 rounded-lg" title="مشاركة على واتساب لتأكيد الـ COD"><Send size={14} /></button>
                             {/* إرسال رابط التقييم المباشر عند التوصيل */}
                             {order.status === 'delivered' && (
                               <button onClick={() => handleSendWhatsAppMessage(order, 'review')} className="p-1.5 bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 rounded-lg" title="إرسال رابط التقييم المخصص للزبونة"><Star size={14} /></button>
@@ -855,7 +992,7 @@ export default function AdminDashboard() {
 
             {/* 3. إدارة السلع وحقائب الكانفاس */}
             {activeTab === 'products' && (
-              <div className="space-y-6 print:hidden">
+              <div className="space-y-6 print:hidden animate-fadeIn">
                 <div className="flex justify-between items-center">
                   <h3 className="text-lg font-light text-zinc-300">حقائب الكانفاس</h3>
                   <button onClick={() => setIsAddingProduct(true)} className="bg-[#D4AF37] hover:bg-amber-500 text-black text-xs font-semibold py-2 px-4 rounded-xl flex items-center space-x-1.5 space-x-reverse" style={{ backgroundColor: 'var(--secondary-theme)' }}>
@@ -868,7 +1005,7 @@ export default function AdminDashboard() {
                   {products.map((product) => (
                     <div key={product.id} className="bg-zinc-950 border border-zinc-900 rounded-2xl overflow-hidden p-5 flex flex-col justify-between hover:border-zinc-800 transition-all">
                       <div>
-                        <div className="w-full h-48 bg-zinc-900 rounded-xl overflow-hidden mb-4 relative">
+                        <div className="w-full h-48 bg-zinc-900 rounded-xl overflow-hidden mb-4 relative" style={{ backgroundColor: settings.colors?.image_bg || '#0F0F0F' }}>
                           {product.image_url ? (
                             <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
                           ) : (
@@ -891,7 +1028,7 @@ export default function AdminDashboard() {
                       <div className="border-t border-zinc-900 pt-4 mt-4 flex gap-2">
                         <button onClick={() => setEditingProduct(product)} className="flex-1 bg-zinc-900 hover:bg-zinc-850 text-zinc-200 py-2 rounded-xl text-xs font-semibold flex items-center justify-center space-x-1.5 space-x-reverse">
                           <Edit3 size={14} />
-                          <span>تعديل التفاصيل</span>
+                          <span>تعديل التفاصيل والخصائص</span>
                         </button>
                         <button onClick={() => handleDeleteProduct(product.id)} className="p-2 bg-red-500/5 hover:bg-red-500/15 text-red-400 rounded-xl"><Trash2 size={14} /></button>
                       </div>
@@ -912,7 +1049,7 @@ export default function AdminDashboard() {
                   </button>
                 </div>
 
-                <div className="bg-zinc-950 border border-zinc-900 rounded-2xl overflow-hidden">
+                <div className="bg-zinc-950 border border-zinc-900 rounded-2xl overflow-hidden animate-fadeIn">
                   <table className="w-full text-right text-sm">
                     <thead className="bg-[#0D0D0D] text-zinc-500 text-[10px] uppercase border-b border-zinc-900">
                       <tr>
@@ -949,10 +1086,10 @@ export default function AdminDashboard() {
               </div>
             )}
 
-            {/* إدارة مراجعات وتقييمات العميلات (التفعيل والحذف) */}
+            {/* إدارة مراجعات وتقييمات العميلات */}
             {activeTab === 'reviews' && (
               <div className="space-y-6 print:hidden">
-                <div className="bg-zinc-950 border border-zinc-900 rounded-2xl overflow-hidden">
+                <div className="bg-zinc-950 border border-zinc-900 rounded-2xl overflow-hidden animate-fadeIn">
                   <table className="w-full text-right text-sm">
                     <thead className="bg-[#0D0D0D] text-zinc-500 text-[10px] uppercase border-b border-zinc-900">
                       <tr>
@@ -973,7 +1110,6 @@ export default function AdminDashboard() {
                             </div>
                           </td>
                           <td className="py-4 px-6 text-zinc-400">{rev.comment}</td>
-                          {/* زر تفعيل أو إخفاء التقييم حياً عن الزوار فثانية واحدة */}
                           <td className="py-4 px-6 text-center">
                             <button
                               onClick={() => handleToggleReviewStatus(rev.id, rev.is_approved)}
@@ -1091,16 +1227,128 @@ export default function AdminDashboard() {
                             </div>
                           </div>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-zinc-900 pt-4">
+                      </div>
+                    )}
+
+                    {/* 🟢 قسم الألوان والخطوط الفاخرة وخلفيات الكروت المحدث بالكامل */}
+                    {activeSettingsSection === 'style' && (
+                      <div className="space-y-5 animate-fadeIn">
+                        <div>
+                          <h4 className="text-base font-light text-zinc-100">الألوان والخطوط وخلفيات النصوص والصور</h4>
+                          <p className="text-xs text-zinc-500 mt-1">تعديل كامل لألوان الموقع الكبرى حياً ليتطابق مع الثيم الفاخر</p>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-zinc-900 pb-4">
                           <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">اللون الأساسي (Primary)</label>
+                            <label className="text-xs text-zinc-400 block mb-1.5">اللون الأساسي للموقع واللوحة (Primary)</label>
                             <input type="color" value={settings.primary_color} onChange={(e) => setSettings({ ...settings, primary_color: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
                           </div>
                           <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">اللون الثانوي / الذهبي</label>
+                            <label className="text-xs text-zinc-400 block mb-1.5">اللون الثانوي / الذهبي (Secondary)</label>
                             <input type="color" value={settings.secondary_color} onChange={(e) => setSettings({ ...settings, secondary_color: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
                           </div>
+                          <div>
+                            <label className="text-xs text-zinc-400 block mb-1.5">لون العناوين الكبرى والشعار (Title Color)</label>
+                            <input type="color" value={settings.title_color} onChange={(e) => setSettings({ ...settings, title_color: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
+                          </div>
+                          <div>
+                            <label className="text-xs text-zinc-400 block mb-1.5">لون النصوص والوصوف والفقرات (Text Color)</label>
+                            <input type="color" value={settings.text_color} onChange={(e) => setSettings({ ...settings, text_color: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
+                          </div>
                         </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-b border-zinc-900 pb-4">
+                          <div>
+                            <label className="text-xs text-zinc-400 block mb-1.5">لون خلفية كروت الحقائب والآراء (Card BG)</label>
+                            <input type="color" value={settings.card_bg} onChange={(e) => setSettings({ ...settings, card_bg: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
+                          </div>
+                          <div>
+                            <label className="text-xs text-zinc-400 block mb-1.5">لون خلفية الأكورديون المطوي (Accordion BG)</label>
+                            <input type="color" value={settings.accordion_bg} onChange={(e) => setSettings({ ...settings, accordion_bg: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
+                          </div>
+                          <div>
+                            <label className="text-xs text-zinc-400 block mb-1.5">لون خلفية إطارات صور الحقائب (Image Frame BG)</label>
+                            <input type="color" value={settings.image_bg} onChange={(e) => setSettings({ ...settings, image_bg: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+                          <div>
+                            <label className="text-xs text-zinc-400 block mb-1.5">خط العناوين الكبرى (Heading Font)</label>
+                            <select value={settings.title_font} onChange={(e) => setSettings({ ...settings, title_font: e.target.value })} className="w-full p-3 bg-black border border-zinc-900 rounded-xl text-xs text-zinc-300">
+                              <option value="Playfair Display">Playfair Display</option>
+                              <option value="Cinzel">Cinzel</option>
+                              <option value="Cairo">Cairo (عربي فاخر)</option>
+                              <option value="Cormorant Garamond">Cormorant Garamond</option>
+                              <option value="Tajawal">Tajawal</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="text-xs text-zinc-400 block mb-1.5">خط النصوص والوصوف العادية (Body Font)</label>
+                            <select value={settings.body_font} onChange={(e) => setSettings({ ...settings, body_font: e.target.value })} className="w-full p-3 bg-black border border-zinc-900 rounded-xl text-xs text-zinc-300">
+                              <option value="Montserrat">Montserrat</option>
+                              <option value="Lato">Lato</option>
+                              <option value="Inter">Inter</option>
+                              <option value="Tajawal">Tajawal (عربي ناعم)</option>
+                              <option value="Roboto">Roboto</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 🟢 قسم إدارة المينيو وقائمة التنقل التفاعلية باللغات الثلاث */}
+                    {activeSettingsSection === 'menu' && (
+                      <div className="space-y-5 animate-fadeIn">
+                        <div>
+                          <h4 className="text-base font-light text-zinc-100">إدارة قائمة التنقل (Menu Manager)</h4>
+                          <p className="text-xs text-zinc-500 mt-1">تعديل وتخصيص أسماء الروابط الخمسة بالكامل باللغات الثلاث مع تفعيلها وإخفائها</p>
+                        </div>
+                        {[1, 2, 3, 4, 5].map((num) => (
+                          <div key={num} className="border-b border-zinc-900 pb-4 space-y-3">
+                            <div className="flex justify-between items-center">
+                              <span className="text-xs text-amber-500 font-semibold">رابط التنقل {num}</span>
+                              <label className="flex items-center space-x-2 space-x-reverse cursor-pointer text-xs text-zinc-500">
+                                <input type="checkbox" checked={settings[`menu_p${num}_visible`]} onChange={(e) => setSettings({ ...settings, [`menu_p${num}_visible`]: e.target.checked })} className="rounded border-zinc-850 bg-black text-[#D4AF37]" />
+                                <span>إظهار في القائمة</span>
+                              </label>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              <input type="text" placeholder="الاسم بالعربية" value={settings[`menu_p${num}_ar`] || ''} onChange={(e) => setSettings({ ...settings, [`menu_p${num}_ar`]: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" />
+                              <input type="text" placeholder="الاسم بالفرنسية" value={settings[`menu_p${num}_fr`] || ''} onChange={(e) => setSettings({ ...settings, [`menu_p${num}_fr`]: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" />
+                              <input type="text" placeholder="الاسم بالإنجليزية" value={settings[`menu_p${num}_en`] || ''} onChange={(e) => setSettings({ ...settings, [`menu_p${num}_en`]: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* 🟢 قسم إدارة حقول الشراء للزبون (Checkout Fields) تفاعلياً كأزرار إخفاء وإظهار */}
+                    {activeSettingsSection === 'checkout' && (
+                      <div className="space-y-5 animate-fadeIn">
+                        <div>
+                          <h4 className="text-base font-light text-zinc-100">إدارة حقول الشراء (Checkout Manager)</h4>
+                          <p className="text-xs text-zinc-500 mt-1">التحكم في حقول استمارة معلومات الشحن وتعديل أسمائها لبراند SAFOS</p>
+                        </div>
+                        {['name', 'phone', 'city', 'address', 'notes'].map((field) => (
+                          <div key={field} className="border-b border-zinc-900 pb-4 space-y-3">
+                            <div className="flex justify-between items-center">
+                              <span className="text-xs text-amber-500 uppercase">حقل: {field === 'name' ? 'الاسم' : field === 'phone' ? 'الهاتف' : field === 'city' ? 'المدينة' : field === 'address' ? 'العنوان' : 'ملاحظات'}</span>
+                              <div className="flex space-x-3 space-x-reverse">
+                                <label className="flex items-center space-x-1.5 space-x-reverse cursor-pointer text-xs text-zinc-500">
+                                  <input type="checkbox" checked={settings[`field_${field}_visible`]} onChange={(e) => setSettings({ ...settings, [`field_${field}_visible`]: e.target.checked })} className="rounded border-zinc-850 bg-black text-[#D4AF37]" />
+                                  <span>ظاهر فالموقع</span>
+                                </label>
+                                <label className="flex items-center space-x-1.5 space-x-reverse cursor-pointer text-xs text-zinc-500">
+                                  <input type="checkbox" checked={settings[`field_${field}_required`]} onChange={(e) => setSettings({ ...settings, [`field_${field}_required`]: e.target.checked })} className="rounded border-zinc-850 bg-black text-[#D4AF37]" />
+                                  <span>حقل إجباري</span>
+                                </label>
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              <input type="text" placeholder="الاسم بالعربية" value={settings[`field_${field}_ar`] || ''} onChange={(e) => setSettings({ ...settings, [`field_${field}_ar`]: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" />
+                              <input type="text" placeholder="الاسم بالفرنسية" value={settings[`field_${field}_fr`] || ''} onChange={(e) => setSettings({ ...settings, [`field_${field}_fr`]: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" />
+                              <input type="text" placeholder="الاسم بالإنجليزية" value={settings[`field_${field}_en`] || ''} onChange={(e) => setSettings({ ...settings, [`field_${field}_en`]: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" />
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     )}
 
@@ -1220,16 +1468,16 @@ export default function AdminDashboard() {
                           </div>
                           <div>
                             <label className="text-xs text-zinc-400 block mb-1.5">قصة ورشتنا الفنية بالتفصيل بالفرنسية</label>
-                            <textarea value={settings.about_text_fr || ''} onChange={(e) => setSettings({ ...settings, about_text_fr: e.target.value })} className="w-full h-32 bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
+                            <textarea value={settings.about_text_fr || ''} onChange={(e) => setSettings({ ...settings, about_text_fr: e.target.value })} className="w-full h-32 bg-black border border-[#b8935a]/25 p-3 rounded-xl text-sm" />
                           </div>
                           <div>
                             <label className="text-xs text-zinc-400 block mb-1.5">قصة ورشتنا الفنية بالتفصيل بالإنجليزية</label>
-                            <textarea value={settings.about_text_en || ''} onChange={(e) => setSettings({ ...settings, about_text_en: e.target.value })} className="w-full h-32 bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
+                            <textarea value={settings.about_text_en || ''} onChange={(e) => setSettings({ ...settings, about_text_en: e.target.value })} className="w-full h-32 bg-black border border-[#b8935a]/25 p-3 rounded-xl text-sm" />
                           </div>
                         </div>
                         <div>
                           <label className="text-xs text-zinc-400 block mb-1.5">صورة ورشة التطريز اليدوي</label>
-                          <label className="cursor-pointer w-full bg-zinc-900 hover:bg-zinc-800 text-zinc-300 p-3 rounded-xl text-xs border border-zinc-800 flex items-center justify-center space-x-2 space-x-reverse">
+                          <label className="cursor-pointer w-full bg-zinc-900 hover:bg-zinc-800 text-zinc-300 p-3 rounded-xl text-xs border border-zinc-850 flex items-center justify-center space-x-2 space-x-reverse">
                             <Upload size={14} />
                             <span>رفع صورة الورشة من جهازك</span>
                             <input
@@ -1335,8 +1583,8 @@ export default function AdminDashboard() {
                           </div>
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <textarea placeholder="المراجعة بالعربية" value={settings.t2_text_ar || ''} onChange={(e) => setSettings({ ...settings, t2_text_ar: e.target.value })} className="w-full h-16 bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                            <textarea placeholder="المراجعة بالفرنسية" value={settings.t2_text_fr || ''} onChange={(e) => setSettings({ ...settings, t2_text_fr: e.target.value })} className="w-full h-16 bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                            <textarea placeholder="المراجعة بالإنجليزية" value={settings.t2_text_en || ''} onChange={(e) => setSettings({ ...settings, t2_text_en: e.target.value })} className="w-full h-16 bg-black border border-[#b8935a]/25 p-3 rounded-xl text-sm animate-fadeIn" />
+                            <textarea placeholder="المراجعة بالفرنسية" value={settings.t2_text_fr || ''} onChange={(e) => setSettings({ ...settings, t2_text_fr: e.target.value })} className="w-full h-16 bg-[#faf6ef] border border-[#b8935a]/25 p-3 rounded-xl text-sm" />
+                            <textarea placeholder="المراجعة بالإنجليزية" value={settings.t2_text_en || ''} onChange={(e) => setSettings({ ...settings, t2_text_en: e.target.value })} className="w-full h-16 bg-[#faf6ef] border border-[#b8935a]/25 p-3 rounded-xl text-sm animate-fadeIn" />
                           </div>
                         </div>
                       </div>
@@ -1368,17 +1616,40 @@ export default function AdminDashboard() {
                             <textarea value={settings.refund_policy_ar || ''} onChange={(e) => setSettings({ ...settings, refund_policy_ar: e.target.value })} className="w-full h-24 bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
                           </div>
                           <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">سياسة الاسترجاع بالفرنسية</label>
-                            <textarea value={settings.refund_policy_fr || ''} onChange={(e) => setSettings({ ...settings, refund_policy_fr: e.target.value })} className="w-full h-24 bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
+                            <label className="text-xs text-[#5c4330] mb-1.5 block">سياسة الاسترجاع بالفرنسية</label>
+                            <textarea value={settings.refund_policy_fr || ''} onChange={(e) => setSettings({ ...settings, refund_policy_fr: e.target.value })} className="w-full h-24 bg-black border border-[#b8935a]/25 p-3 rounded-xl text-sm animate-fadeIn" />
                           </div>
                           <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">سياسة الاسترجاع بالإنجليزية</label>
-                            <textarea value={settings.refund_policy_en || ''} onChange={(e) => setSettings({ ...settings, refund_policy_en: e.target.value })} className="w-full h-24 bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
+                            <label className="text-xs text-[#5c4330] mb-1.5 block">سياسة الاسترجاع بالإنجليزية</label>
+                            <textarea value={settings.refund_policy_en || ''} onChange={(e) => setSettings({ ...settings, refund_policy_en: e.target.value })} className="w-full h-24 bg-black border border-[#b8935a]/25 p-3 rounded-xl text-sm animate-fadeIn" />
                           </div>
                         </div>
                         <div>
-                          <label className="text-xs text-zinc-400 block mb-1.5">حقوق الملكية وتذييل الصفحة (Copyright)</label>
-                          <input type="text" value={settings.copyright_text} onChange={(e) => setSettings({ ...settings, copyright_text: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
+                          <label className="text-xs text-[#5c4330] mb-1.5 block">حقوق الملكية وتذييل الصفحة (Copyright)</label>
+                          <input type="text" value={settings.copyright_text} onChange={(e) => setSettings({ ...settings, copyright_text: e.target.value })} className="w-full bg-black border border-[#b8935a]/25 p-3 rounded-xl text-sm" />
+                        </div>
+
+                        {/* 🟢 أزرار التفعيل والإخفاء الحية للأقسام الكبرى فالمتجر */}
+                        <div className="border-t border-zinc-900 pt-5 space-y-4">
+                          <h4 className="text-xs text-amber-500 font-semibold mb-2">التحكم في إظهار وإخفاء الأقسام الكبرى فالمتجر</h4>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-zinc-900/40 p-3 rounded-xl border border-zinc-900">
+                            <label className="flex items-center space-x-2 space-x-reverse cursor-pointer text-xs text-zinc-400">
+                              <input type="checkbox" checked={settings.show_announcement_bar} onChange={(e) => setSettings({ ...settings, show_announcement_bar: e.target.checked })} className="rounded border-zinc-800 bg-black text-[#D4AF37]" />
+                              <span>شريط الإعلانات الفوقاني</span>
+                            </label>
+                            <label className="flex items-center space-x-2 space-x-reverse cursor-pointer text-xs text-zinc-400">
+                              <input type="checkbox" checked={settings.show_about_section} onChange={(e) => setSettings({ ...settings, show_about_section: e.target.checked })} className="rounded border-zinc-800 bg-black text-[#D4AF37]" />
+                              <span>قسم قصة ورشتنا (من نحن)</span>
+                            </label>
+                            <label className="flex items-center space-x-2 space-x-reverse cursor-pointer text-xs text-zinc-400">
+                              <input type="checkbox" checked={settings.show_pillars_section} onChange={(e) => setSettings({ ...settings, show_pillars_section: e.target.checked })} className="rounded border-zinc-800 bg-black text-[#D4AF37]" />
+                              <span>قسم ركائز الفخامة</span>
+                            </label>
+                            <label className="flex items-center space-x-2 space-x-reverse cursor-pointer text-xs text-zinc-400">
+                              <input type="checkbox" checked={settings.show_testimonials_section} onChange={(e) => setSettings({ ...settings, show_testimonials_section: e.target.checked })} className="rounded border-zinc-800 bg-black text-[#D4AF37]" />
+                              <span>قسم تقييمات العميلات</span>
+                            </label>
+                          </div>
                         </div>
                       </div>
                     )}
@@ -1415,12 +1686,12 @@ export default function AdminDashboard() {
                             <input type="text" value={settings.instagram || ''} onChange={(e) => setSettings({ ...settings, instagram: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-xs font-mono" placeholder="safos.bags" />
                           </div>
                           <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">فيسبوك (Facebook)</label>
-                            <input type="text" value={settings.facebook || ''} onChange={(e) => setSettings({ ...settings, facebook: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-xs font-mono" />
+                            <label className="text-xs text-[#5c4330] mb-1.5 block">فيسبوك (Facebook)</label>
+                            <input type="text" value={settings.facebook || ''} onChange={(e) => setSettings({ ...settings, facebook: e.target.value })} className="w-full bg-black border border-[#b8935a]/25 p-3 rounded-xl text-xs font-mono" />
                           </div>
                           <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">تيك توك (TikTok)</label>
-                            <input type="text" value={settings.tiktok || ''} onChange={(e) => setSettings({ ...settings, tiktok: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-xs font-mono" />
+                            <label className="text-xs text-[#5c4330] mb-1.5 block">تيك توك (TikTok)</label>
+                            <input type="text" value={settings.tiktok || ''} onChange={(e) => setSettings({ ...settings, tiktok: e.target.value })} className="w-full bg-black border border-[#b8935a]/25 p-3 rounded-xl text-xs font-mono" />
                           </div>
                         </div>
                       </div>
@@ -1447,11 +1718,11 @@ export default function AdminDashboard() {
                             </div>
                             <div>
                               <label className="text-xs text-zinc-400 block mb-1.5">القالب بالفرنسية</label>
-                              <textarea value={settings.cod_confirm_fr || ''} onChange={(e) => setSettings({ ...settings, cod_confirm_fr: e.target.value })} className="w-full h-20 bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
+                              <textarea value={settings.cod_confirm_fr || ''} onChange={(e) => setSettings({ ...settings, cod_confirm_fr: e.target.value })} className="w-full h-20 bg-[#faf6ef] border border-[#b8935a]/25 p-3 rounded-xl text-sm text-[#1a1410]" />
                             </div>
                             <div>
                               <label className="text-xs text-zinc-400 block mb-1.5">القالب بالإنجليزية</label>
-                              <textarea value={settings.cod_confirm_en || ''} onChange={(e) => setSettings({ ...settings, cod_confirm_en: e.target.value })} className="w-full h-20 bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
+                              <textarea value={settings.cod_confirm_en || ''} onChange={(e) => setSettings({ ...settings, cod_confirm_en: e.target.value })} className="w-full h-20 bg-[#faf6ef] border border-[#b8935a]/25 p-3 rounded-xl text-sm text-[#1a1410]" />
                             </div>
                           </div>
                         </div>
@@ -1469,14 +1740,136 @@ export default function AdminDashboard() {
                             </div>
                             <div>
                               <label className="text-xs text-zinc-400 block mb-1.5">القالب بالفرنسية</label>
-                              <textarea value={settings.review_request_fr || ''} onChange={(e) => setSettings({ ...settings, review_request_fr: e.target.value })} className="w-full h-20 bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
+                              <textarea value={settings.review_request_fr || ''} onChange={(e) => setSettings({ ...settings, review_request_fr: e.target.value })} className="w-full h-20 bg-[#faf6ef] border border-[#b8935a]/25 p-3 rounded-xl text-sm text-[#1a1410]" />
                             </div>
                             <div>
                               <label className="text-xs text-zinc-400 block mb-1.5">القالب بالإنجليزية</label>
-                              <textarea value={settings.review_request_en || ''} onChange={(e) => setSettings({ ...settings, review_request_en: e.target.value })} className="w-full h-20 bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
+                              <textarea value={settings.review_request_en || ''} onChange={(e) => setSettings({ ...settings, review_request_en: e.target.value })} className="w-full h-20 bg-[#faf6ef] border border-[#b8935a]/25 p-3 rounded-xl text-sm text-[#1a1410]" />
                             </div>
                           </div>
                         </div>
+                      </div>
+                    )}
+
+                    {/* 🟢 قسم الألوان والخطوط الفاخرة وخلفيات الكروت المحدث بالكامل */}
+                    {activeSettingsSection === 'style' && (
+                      <div className="space-y-5 animate-fadeIn">
+                        <div>
+                          <h4 className="text-base font-light text-zinc-100">الألوان والخطوط وخلفيات النصوص والصور</h4>
+                          <p className="text-xs text-zinc-500 mt-1">تعديل كامل لألوان الموقع الكبرى حياً ليتطابق مع الثيم الفاخر</p>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-zinc-900 pb-4">
+                          <div>
+                            <label className="text-xs text-zinc-400 block mb-1.5">اللون الأساسي للموقع واللوحة (Primary)</label>
+                            <input type="color" value={settings.primary_color} onChange={(e) => setSettings({ ...settings, primary_color: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
+                          </div>
+                          <div>
+                            <label className="text-xs text-zinc-400 block mb-1.5">اللون الثانوي / الذهبي (Secondary)</label>
+                            <input type="color" value={settings.secondary_color} onChange={(e) => setSettings({ ...settings, secondary_color: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
+                          </div>
+                          <div>
+                            <label className="text-xs text-zinc-400 block mb-1.5">لون العناوين الكبرى والشعار (Title Color)</label>
+                            <input type="color" value={settings.title_color} onChange={(e) => setSettings({ ...settings, title_color: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
+                          </div>
+                          <div>
+                            <label className="text-xs text-zinc-400 block mb-1.5">لون النصوص والوصوف والفقرات (Text Color)</label>
+                            <input type="color" value={settings.text_color} onChange={(e) => setSettings({ ...settings, text_color: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-b border-zinc-900 pb-4">
+                          <div>
+                            <label className="text-xs text-zinc-400 block mb-1.5">لون خلفية كروت الحقائب والآراء (Card BG)</label>
+                            <input type="color" value={settings.card_bg} onChange={(e) => setSettings({ ...settings, card_bg: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
+                          </div>
+                          <div>
+                            <label className="text-xs text-zinc-400 block mb-1.5">لون خلفية الأكورديون المطوي (Accordion BG)</label>
+                            <input type="color" value={settings.accordion_bg} onChange={(e) => setSettings({ ...settings, accordion_bg: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
+                          </div>
+                          <div>
+                            <label className="text-xs text-zinc-400 block mb-1.5">لون خلفية إطارات صور الحقائب (Image Frame BG)</label>
+                            <input type="color" value={settings.image_bg} onChange={(e) => setSettings({ ...settings, image_bg: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+                          <div>
+                            <label className="text-xs text-zinc-400 block mb-1.5">خط العناوين الكبرى (Heading Font)</label>
+                            <select value={settings.title_font} onChange={(e) => setSettings({ ...settings, title_font: e.target.value })} className="w-full p-3 bg-black border border-zinc-900 rounded-xl text-xs text-zinc-300">
+                              <option value="Playfair Display">Playfair Display</option>
+                              <option value="Cinzel">Cinzel</option>
+                              <option value="Cairo">Cairo (عربي فاخر)</option>
+                              <option value="Cormorant Garamond">Cormorant Garamond</option>
+                              <option value="Tajawal">Tajawal</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="text-xs text-zinc-400 block mb-1.5">خط النصوص والوصوف العادية (Body Font)</label>
+                            <select value={settings.body_font} onChange={(e) => setSettings({ ...settings, body_font: e.target.value })} className="w-full p-3 bg-black border border-zinc-900 rounded-xl text-xs text-zinc-300">
+                              <option value="Montserrat">Montserrat</option>
+                              <option value="Lato">Lato</option>
+                              <option value="Inter">Inter</option>
+                              <option value="Tajawal">Tajawal (عربي ناعم)</option>
+                              <option value="Roboto">Roboto</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 🟢 قسم إدارة المينيو وقائمة التنقل التفاعلية باللغات الثلاث */}
+                    {activeSettingsSection === 'menu' && (
+                      <div className="space-y-5 animate-fadeIn">
+                        <div>
+                          <h4 className="text-base font-light text-zinc-100">إدارة قائمة التنقل (Menu Manager)</h4>
+                          <p className="text-xs text-zinc-500 mt-1">تعديل وتخصيص أسماء الروابط الخمسة بالكامل باللغات الثلاث مع تفعيلها وإخفائها</p>
+                        </div>
+                        {[1, 2, 3, 4, 5].map((num) => (
+                          <div key={num} className="border-b border-zinc-900 pb-4 space-y-3">
+                            <div className="flex justify-between items-center">
+                              <span className="text-xs text-amber-500 font-semibold">رابط التنقل {num}</span>
+                              <label className="flex items-center space-x-2 space-x-reverse cursor-pointer text-xs text-zinc-500">
+                                <input type="checkbox" checked={settings[`menu_p${num}_visible`]} onChange={(e) => setSettings({ ...settings, [`menu_p${num}_visible`]: e.target.checked })} className="rounded border-zinc-850 bg-black text-[#D4AF37] focus:ring-0" />
+                                <span>إظهار في القائمة</span>
+                              </label>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              <input type="text" placeholder="الاسم بالعربية" value={settings[`menu_p${num}_ar`] || ''} onChange={(e) => setSettings({ ...settings, [`menu_p${num}_ar`]: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" />
+                              <input type="text" placeholder="الاسم بالفرنسية" value={settings[`menu_p${num}_fr`] || ''} onChange={(e) => setSettings({ ...settings, [`menu_p${num}_fr`]: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" />
+                              <input type="text" placeholder="الاسم بالإنجليزية" value={settings[`menu_p${num}_en`] || ''} onChange={(e) => setSettings({ ...settings, [`menu_p${num}_en`]: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* 🟢 قسم إدارة حقول الشراء للزبون (Checkout Fields) تفاعلياً كأزرار إخفاء وإظهار */}
+                    {activeSettingsSection === 'checkout' && (
+                      <div className="space-y-5 animate-fadeIn">
+                        <div>
+                          <h4 className="text-base font-light text-zinc-100">إدارة حقول الشراء (Checkout Manager)</h4>
+                          <p className="text-xs text-zinc-500 mt-1">التحكم في حقول استمارة معلومات الشحن وتعديل أسمائها لبراند SAFOS</p>
+                        </div>
+                        {['name', 'phone', 'city', 'address', 'notes'].map((field) => (
+                          <div key={field} className="border-b border-zinc-900 pb-4 space-y-3">
+                            <div className="flex justify-between items-center">
+                              <span className="text-xs text-amber-500 uppercase">حقل: {field === 'name' ? 'الاسم' : field === 'phone' ? 'الهاتف' : field === 'city' ? 'المدينة' : field === 'address' ? 'العنوان' : 'ملاحظات'}</span>
+                              <div className="flex space-x-3 space-x-reverse">
+                                <label className="flex items-center space-x-1.5 space-x-reverse cursor-pointer text-xs text-zinc-500">
+                                  <input type="checkbox" checked={settings[`field_${field}_visible`]} onChange={(e) => setSettings({ ...settings, [`field_${field}_visible`]: e.target.checked })} className="rounded border-zinc-850 bg-black text-[#D4AF37]" />
+                                  <span>ظاهر فالموقع</span>
+                                </label>
+                                <label className="flex items-center space-x-1.5 space-x-reverse cursor-pointer text-xs text-zinc-500">
+                                  <input type="checkbox" checked={settings[`field_${field}_required`]} onChange={(e) => setSettings({ ...settings, [`field_${field}_required`]: e.target.checked })} className="rounded border-zinc-850 bg-black text-[#D4AF37]" />
+                                  <span>حقل إجباري</span>
+                                </label>
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              <input type="text" placeholder="الاسم بالعربية" value={settings[`field_${field}_ar`] || ''} onChange={(e) => setSettings({ ...settings, [`field_${field}_ar`]: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" />
+                              <input type="text" placeholder="الاسم بالفرنسية" value={settings[`field_${field}_fr`] || ''} onChange={(e) => setSettings({ ...settings, [`field_${field}_fr`]: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" />
+                              <input type="text" placeholder="الاسم بالإنجليزية" value={settings[`field_${field}_en`] || ''} onChange={(e) => setSettings({ ...settings, [`field_${field}_en`]: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" />
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     )}
 
@@ -1506,33 +1899,33 @@ export default function AdminDashboard() {
             <form onSubmit={handleAddProduct} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto text-right">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs text-zinc-400 block mb-1">اسم الحقيبة بالعربية *</label>
-                  <input type="text" required value={newProduct.name} onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-sm" placeholder="مثال: حقيبة صفاء الكانفاس" />
+                  <label className="text-xs text-[#5c4330] mb-1.5 block">اسم الحقيبة بالعربية *</label>
+                  <input type="text" required value={newProduct.name} onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })} className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-sm text-[#1a1410]" placeholder="مثال: حقيبة صفاء الكانفاس" />
                 </div>
                 <div>
-                  <label className="text-xs text-zinc-400 block mb-1">الاسم بالإنجليزي (EN) *</label>
-                  <input type="text" required value={newProduct.name_en} onChange={(e) => setNewProduct({ ...newProduct, name_en: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-sm font-mono" placeholder="Safaa Canvas Bag" />
+                  <label className="text-xs text-[#5c4330] mb-1.5 block">الاسم بالإنجليزي (EN) *</label>
+                  <input type="text" required value={newProduct.name_en} onChange={(e) => setNewProduct({ ...newProduct, name_en: e.target.value })} className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-sm font-mono text-[#1a1410]" placeholder="Safaa Canvas Bag" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs text-zinc-400 block mb-1">السعر الموحد (درهم) *</label>
-                  <input type="number" required value={newProduct.price} onChange={(e) => setNewProduct({ ...newProduct, price: Number(e.target.value) })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-sm font-mono" />
+                  <label className="text-xs text-[#5c4330] mb-1.5 block">السعر الموحد (درهم) *</label>
+                  <input type="number" required value={newProduct.price} onChange={(e) => setNewProduct({ ...newProduct, price: Number(e.target.value) })} className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-sm font-mono text-[#1a1410]" />
                 </div>
                 <div>
-                  <label className="text-xs text-zinc-400 block mb-1">المخزون المتوفر</label>
-                  <input type="number" value={newProduct.stock} onChange={(e) => setNewProduct({ ...newProduct, stock: Number(e.target.value) })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-sm font-mono" />
+                  <label className="text-xs text-[#5c4330] mb-1.5 block">المخزون المتوفر</label>
+                  <input type="number" value={newProduct.stock} onChange={(e) => setNewProduct({ ...newProduct, stock: Number(e.target.value) })} className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-sm font-mono text-[#1a1410]" />
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-3">
                 {/* قائمة اختيار التصنيف الديناميكي المقروء مباشرة من جدول categories */}
                 <div>
-                  <label className="text-xs text-zinc-400 block mb-1">الصنف والمجموعة *</label>
+                  <label className="text-xs text-[#5c4330] mb-1.5 block">الصنف والمجموعة *</label>
                   <select 
                     required
                     value={newProduct.category} 
                     onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })} 
-                    className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs text-zinc-300"
+                    className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-xs text-[#1a1410]"
                   >
                     <option value="">اختر المجموعة...</option>
                     {categories.map((cat) => (
@@ -1541,12 +1934,12 @@ export default function AdminDashboard() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs text-zinc-400 block mb-1">الألوان المتوفرة</label>
-                  <input type="text" value={newProduct.color} onChange={(e) => setNewProduct({ ...newProduct, color: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" placeholder="بيج × أسود" />
+                  <label className="text-xs text-[#5c4330] mb-1.5 block">الألوان المتوفرة</label>
+                  <input type="text" value={newProduct.color} onChange={(e) => setNewProduct({ ...newProduct, color: e.target.value })} className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-xs text-[#1a1410]" placeholder="بيج × أسود" />
                 </div>
                 <div>
-                  <label className="text-xs text-zinc-400 block mb-1">التاغ الترويجي</label>
-                  <input type="text" value={newProduct.tag} onChange={(e) => setNewProduct({ ...newProduct, tag: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" placeholder="جديد، الأكثر مبيعاً" />
+                  <label className="text-xs text-[#5c4330] mb-1.5 block">التاغ الترويجي</label>
+                  <input type="text" value={newProduct.tag} onChange={(e) => setNewProduct({ ...newProduct, tag: e.target.value })} className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-xs text-[#1a1410]" placeholder="جديد، الأكثر مبيعاً" />
                 </div>
               </div>
               
@@ -1570,10 +1963,10 @@ export default function AdminDashboard() {
                 </label>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-zinc-900 pt-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-[#b8935a]/20 pt-4">
                 <div>
-                  <label className="text-xs text-zinc-400 block mb-1">رفع الصورة الرئيسية من جهازك</label>
-                  <label className="cursor-pointer w-full bg-zinc-900 hover:bg-zinc-800 text-zinc-300 p-2.5 rounded-xl text-xs border border-zinc-850 flex items-center justify-center space-x-2 space-x-reverse">
+                  <label className="text-xs text-[#5c4330] mb-1.5 block">رفع الصورة الرئيسية من جهازك</label>
+                  <label className="cursor-pointer w-full bg-[#1a1410] hover:bg-zinc-800 text-[#faf6ef] p-2.5 rounded-xl text-xs border border-zinc-850 flex items-center justify-center space-x-2 space-x-reverse">
                     <Upload size={14} />
                     <span>تحميل من جهازك</span>
                     <input
@@ -1596,8 +1989,8 @@ export default function AdminDashboard() {
                   </label>
                 </div>
                 <div>
-                  <label className="text-xs text-zinc-400 block mb-1">رفع صور إضافية للمعرض</label>
-                  <label className="cursor-pointer w-full bg-zinc-900 hover:bg-zinc-800 text-zinc-300 p-2.5 rounded-xl text-xs border border-zinc-850 flex items-center justify-center space-x-2 space-x-reverse">
+                  <label className="text-xs text-[#5c4330] mb-1.5 block">رفع صور إضافية للمعرض</label>
+                  <label className="cursor-pointer w-full bg-[#1a1410] hover:bg-zinc-800 text-[#faf6ef] p-2.5 rounded-xl text-xs border border-zinc-850 flex items-center justify-center space-x-2 space-x-reverse">
                     <Upload size={14} />
                     <span>تحميل صورة إضافية</span>
                     <input
@@ -1624,42 +2017,42 @@ export default function AdminDashboard() {
                 </div>
               </div>
               <div>
-                <label className="text-xs text-zinc-400 block mb-1">رابط الفيديو الترويجي (يوتيوب أو فيديو مباشر)</label>
-                <input type="text" value={newProduct.video_url} onChange={(e) => setNewProduct({ ...newProduct, video_url: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs font-mono" />
+                <label className="text-xs text-[#5c4330] mb-1.5 block">رابط الفيديو الترويجي (يوتيوب أو فيديو مباشر)</label>
+                <input type="text" value={newProduct.video_url} onChange={(e) => setNewProduct({ ...newProduct, video_url: e.target.value })} className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-xs font-mono text-[#1a1410]" />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs text-zinc-400 block mb-1">وصف الحقيبة بالعربية</label>
-                  <textarea value={newProduct.description} onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })} className="w-full h-16 bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" />
+                  <label className="text-xs text-[#5c4330] mb-1.5 block">وصف الحقيبة بالعربية</label>
+                  <textarea value={newProduct.description} onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })} className="w-full h-16 bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-xs text-[#1a1410]" />
                 </div>
                 <div>
-                  <label className="text-xs text-zinc-400 block mb-1">وصف الحقيبة بالفرنسية</label>
-                  <textarea value={newProduct.description_en} onChange={(e) => setNewProduct({ ...newProduct, description_en: e.target.value })} className="w-full h-16 bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs text-zinc-400 block mb-1">مقاسات الحقيبة بالعربية</label>
-                  <input type="text" value={newProduct.materials_dimensions} onChange={(e) => setNewProduct({ ...newProduct, materials_dimensions: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" placeholder="المتوسط: 36cm x 27.5cm" />
-                </div>
-                <div>
-                  <label className="text-xs text-zinc-400 block mb-1">مقاسات الحقيبة بالفرنسية</label>
-                  <input type="text" value={newProduct.materials_dimensions_en} onChange={(e) => setNewProduct({ ...newProduct, materials_dimensions_en: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" placeholder="Moyen: 36cm x 27.5cm" />
+                  <label className="text-xs text-[#5c4330] mb-1.5 block">وصف الحقيبة بالفرنسية</label>
+                  <textarea value={newProduct.description_en} onChange={(e) => setNewProduct({ ...newProduct, description_en: e.target.value })} className="w-full h-16 bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-xs text-[#1a1410]" />
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs text-zinc-400 block mb-1">دليل التنظيف والعناية بالعربية</label>
-                  <textarea value={newProduct.care_guide} onChange={(e) => setNewProduct({ ...newProduct, care_guide: e.target.value })} className="w-full h-16 bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" />
+                  <label className="text-xs text-[#5c4330] mb-1.5 block">مقاسات الحقيبة بالعربية</label>
+                  <input type="text" value={newProduct.materials_dimensions} onChange={(e) => setNewProduct({ ...newProduct, materials_dimensions: e.target.value })} className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-xs text-[#1a1410]" placeholder="المتوسط: 36cm x 27.5cm" />
                 </div>
                 <div>
-                  <label className="text-xs text-zinc-400 block mb-1">دليل التنظيف والعناية بالفرنسية</label>
-                  <textarea value={newProduct.care_guide_en} onChange={(e) => setNewProduct({ ...newProduct, care_guide_en: e.target.value })} className="w-full h-16 bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" />
+                  <label className="text-xs text-[#5c4330] mb-1.5 block">مقاسات الحقيبة بالفرنسية</label>
+                  <input type="text" value={newProduct.materials_dimensions_en} onChange={(e) => setNewProduct({ ...newProduct, materials_dimensions_en: e.target.value })} className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-xs text-[#1a1410]" placeholder="Moyen: 36cm x 27.5cm" />
                 </div>
               </div>
-              <div className="border-t border-zinc-900 pt-4 flex justify-end space-x-2 space-x-reverse">
-                <button type="button" onClick={() => setIsAddingProduct(false)} className="bg-zinc-900 text-zinc-300 py-2.5 px-6 rounded-xl text-xs">إلغاء</button>
-                <button type="submit" disabled={actionLoading === 'add-product'} className="bg-[#D4AF37] text-black py-2.5 px-6 rounded-xl text-xs font-bold">إضافة التشكيلة</button>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs text-[#5c4330] mb-1.5 block">دليل التنظيف والعناية بالعربية</label>
+                  <textarea value={newProduct.care_guide} onChange={(e) => setNewProduct({ ...newProduct, care_guide: e.target.value })} className="w-full h-16 bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-xs text-[#1a1410]" />
+                </div>
+                <div>
+                  <label className="text-xs text-[#5c4330] mb-1.5 block">دليل التنظيف والعناية بالفرنسية</label>
+                  <textarea value={newProduct.care_guide_en} onChange={(e) => setNewProduct({ ...newProduct, care_guide_en: e.target.value })} className="w-full h-16 bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-xs text-[#1a1410]" />
+                </div>
+              </div>
+              <div className="border-t border-[#b8935a]/20 pt-4 flex justify-end space-x-2 space-x-reverse">
+                <button type="button" onClick={() => setIsAddingProduct(false)} className="bg-[#1a1410] text-[#faf6ef] py-2.5 px-6 rounded-xl text-xs">إلغاء</button>
+                <button type="submit" disabled={actionLoading === 'add-product'} className="bg-[#b8935a] text-black py-2.5 px-6 rounded-xl text-xs font-bold">إضافة التشكيلة</button>
               </div>
             </form>
           </div>
@@ -1677,32 +2070,32 @@ export default function AdminDashboard() {
             <form onSubmit={handleSaveProductEdit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto text-right">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs text-zinc-400 block mb-1">اسم الحقيبة بالعربية</label>
-                  <input type="text" value={editingProduct.name} onChange={(e) => setEditingProduct({ ...editingProduct, name: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-sm" />
+                  <label className="text-xs text-[#5c4330] mb-1.5 block">اسم الحقيبة بالعربية</label>
+                  <input type="text" value={editingProduct.name} onChange={(e) => setEditingProduct({ ...editingProduct, name: e.target.value })} className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-sm text-[#1a1410]" />
                 </div>
                 <div>
-                  <label className="text-xs text-zinc-400 block mb-1">الاسم بالإنجليزي (EN)</label>
-                  <input type="text" value={editingProduct.name_en} onChange={(e) => setEditingProduct({ ...editingProduct, name_en: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-sm font-mono" />
+                  <label className="text-xs text-[#5c4330] mb-1.5 block">الاسم بالإنجليزي (EN)</label>
+                  <input type="text" value={editingProduct.name_en} onChange={(e) => setEditingProduct({ ...editingProduct, name_en: e.target.value })} className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-sm font-mono text-[#1a1410]" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs text-zinc-400 block mb-1">السعر الموحد (درهم)</label>
-                  <input type="number" value={editingProduct.price} onChange={(e) => setEditingProduct({ ...editingProduct, price: Number(e.target.value) })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-sm font-mono" />
+                  <label className="text-xs text-[#5c4330] mb-1.5 block">السعر الموحد (درهم)</label>
+                  <input type="number" value={editingProduct.price} onChange={(e) => setEditingProduct({ ...editingProduct, price: Number(e.target.value) })} className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-sm font-mono text-[#1a1410]" />
                 </div>
                 <div>
-                  <label className="text-xs text-zinc-400 block mb-1">المخزون المتوفر</label>
-                  <input type="number" value={editingProduct.stock} onChange={(e) => setEditingProduct({ ...editingProduct, stock: Number(e.target.value) })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-sm font-mono" />
+                  <label className="text-xs text-[#5c4330] mb-1.5 block">المخزون المتوفر</label>
+                  <input type="number" value={editingProduct.stock} onChange={(e) => setEditingProduct({ ...editingProduct, stock: Number(e.target.value) })} className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-sm font-mono text-[#1a1410]" />
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="text-xs text-zinc-400 block mb-1">الصنف والمجموعة *</label>
+                  <label className="text-xs text-[#5c4330] mb-1.5 block">الصنف والمجموعة *</label>
                   <select 
                     required
                     value={editingProduct.category} 
                     onChange={(e) => setEditingProduct({ ...editingProduct, category: e.target.value })} 
-                    className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs text-zinc-300"
+                    className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-xs text-[#1a1410]"
                   >
                     <option value="">اختر المجموعة...</option>
                     {categories.map((cat) => (
@@ -1711,12 +2104,12 @@ export default function AdminDashboard() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs text-zinc-400 block mb-1">الألوان</label>
-                  <input type="text" value={editingProduct.color || ''} onChange={(e) => setEditingProduct({ ...editingProduct, color: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" />
+                  <label className="text-xs text-[#5c4330] mb-1.5 block">الألوان</label>
+                  <input type="text" value={editingProduct.color || ''} onChange={(e) => setEditingProduct({ ...editingProduct, color: e.target.value })} className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-xs text-[#1a1410]" />
                 </div>
                 <div>
-                  <label className="text-xs text-zinc-400 block mb-1">التاغ</label>
-                  <input type="text" value={editingProduct.tag || ''} onChange={(e) => setEditingProduct({ ...editingProduct, tag: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" />
+                  <label className="text-xs text-[#5c4330] mb-1.5 block">التاغ</label>
+                  <input type="text" value={editingProduct.tag || ''} onChange={(e) => setEditingProduct({ ...editingProduct, tag: e.target.value })} className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-xs text-[#1a1410]" />
                 </div>
               </div>
 
@@ -1740,10 +2133,10 @@ export default function AdminDashboard() {
                 </label>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-zinc-900 pt-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-[#b8935a]/20 pt-4">
                 <div>
-                  <label className="text-xs text-zinc-400 block mb-1">رفع صورة رئيسية جديدة</label>
-                  <label className="cursor-pointer w-full bg-zinc-900 hover:bg-zinc-800 text-zinc-300 p-2.5 rounded-xl text-xs border border-zinc-850 flex items-center justify-center space-x-2 space-x-reverse">
+                  <label className="text-xs text-[#5c4330] mb-1.5 block">رفع صورة رئيسية جديدة</label>
+                  <label className="cursor-pointer w-full bg-[#1a1410] hover:bg-zinc-800 text-[#faf6ef] p-2.5 rounded-xl text-xs border border-zinc-850 flex items-center justify-center space-x-2 space-x-reverse">
                     <Upload size={14} />
                     <span>تحميل من جهازك</span>
                     <input
@@ -1766,8 +2159,8 @@ export default function AdminDashboard() {
                   </label>
                 </div>
                 <div>
-                  <label className="text-xs text-zinc-400 block mb-1">رفع صور إضافية للمعرض</label>
-                  <label className="cursor-pointer w-full bg-zinc-900 hover:bg-zinc-800 text-zinc-300 p-2.5 rounded-xl text-xs border border-zinc-850 flex items-center justify-center space-x-2 space-x-reverse">
+                  <label className="text-xs text-[#5c4330] mb-1.5 block">رفع صور إضافية للمعرض</label>
+                  <label className="cursor-pointer w-full bg-[#1a1410] hover:bg-zinc-800 text-[#faf6ef] p-2.5 rounded-xl text-xs border border-zinc-850 flex items-center justify-center space-x-2 space-x-reverse">
                     <Upload size={14} />
                     <span>تحميل صورة إضافية</span>
                     <input
@@ -1846,19 +2239,19 @@ export default function AdminDashboard() {
             </div>
             <form onSubmit={handleSaveCategory} className="p-6 space-y-4 text-right">
               <div>
-                <label className="text-xs text-zinc-400 block mb-1">اسم المجموعة بالعربية *</label>
-                <input type="text" required value={newCategory.name_ar} onChange={(e) => setNewCategory({ ...newCategory, name_ar: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-sm" placeholder="مثال: حقائب السهرات" />
+                <label className="text-xs text-[#5c4330] mb-1.5 block">اسم المجموعة بالعربية *</label>
+                <input type="text" required value={newCategory.name_ar} onChange={(e) => setNewCategory({ ...newCategory, name_ar: e.target.value })} className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-sm text-[#1a1410]" placeholder="مثال: حقائب السهرات" />
               </div>
               <div>
-                <label className="text-xs text-zinc-400 block mb-1">اسم المجموعة بالفرنسية *</label>
-                <input type="text" required value={newCategory.name_fr} onChange={(e) => setNewCategory({ ...newCategory, name_fr: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-sm" placeholder="Sacs de Soirée" />
+                <label className="text-xs text-[#5c4330] mb-1.5 block">اسم المجموعة بالفرنسية *</label>
+                <input type="text" required value={newCategory.name_fr} onChange={(e) => setNewCategory({ ...newCategory, name_fr: e.target.value })} className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-sm text-[#1a1410]" placeholder="Sacs de Soirée" />
               </div>
               <div>
-                <label className="text-xs text-zinc-400 block mb-1">اسم المجموعة بالإنجليزية *</label>
-                <input type="text" required value={newCategory.name_en} onChange={(e) => setNewCategory({ ...newCategory, name_en: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-sm" placeholder="Evening Bags" />
+                <label className="text-xs text-[#5c4330] mb-1.5 block">اسم المجموعة بالإنجليزية *</label>
+                <input type="text" required value={newCategory.name_en} onChange={(e) => setNewCategory({ ...newCategory, name_en: e.target.value })} className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-sm text-[#1a1410]" placeholder="Evening Bags" />
               </div>
               <div className="border-t border-zinc-900 pt-4 flex justify-end space-x-2 space-x-reverse">
-                <button type="button" onClick={() => { setIsAddingCategory(false); setEditingCategory(null); }} className="bg-zinc-900 text-zinc-300 py-2.5 px-5 rounded-xl text-xs">إلغاء</button>
+                <button type="button" onClick={() => { setIsAddingCategory(false); setEditingCategory(null); }} className="bg-[#1a1410] text-[#faf6ef] py-2.5 px-5 rounded-xl text-xs">إلغاء</button>
                 <button type="submit" className="bg-[#D4AF37] text-black py-2.5 px-5 rounded-xl text-xs font-bold" style={{ backgroundColor: 'var(--secondary-theme)' }}>حفظ المجموعة</button>
               </div>
             </form>
