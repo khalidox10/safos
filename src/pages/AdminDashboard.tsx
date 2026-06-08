@@ -39,21 +39,6 @@ import {
 } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
 
-// الأقسام الفرعية الشاملة لتخصيص كامل جوانب الموقع بدون استثناء
-const settingsSections: { id: 'identity' | 'hero' | 'about' | 'pillars' | 'testimonials' | 'policies' | 'contact' | 'templates' | 'style' | 'checkout' | 'menu'; label: string; icon: any }[] = [
-  { id: 'identity', label: 'الشعار والهوية البصرية', icon: Globe },
-  { id: 'style', label: 'الألوان والخطوط الفاخرة', icon: Palette },
-  { id: 'menu', label: 'إدارة قائمة التنقل (Menu)', icon: Menu },
-  { id: 'checkout', label: 'إدارة حقول الشراء (Checkout)', icon: Lock },
-  { id: 'templates', label: 'قوالب رسائل الواتساب', icon: Send },
-  { id: 'hero', label: 'البانر الترحيبي والفرعي', icon: ImageIcon },
-  { id: 'about', label: 'قصة الماركة (من نحن)', icon: Clock },
-  { id: 'pillars', label: 'ركائز الفخامة (لماذا نحن)', icon: AlertCircle },
-  { id: 'testimonials', label: 'آراء العميلات والتقييمات', icon: CheckCircle },
-  { id: 'policies', label: 'السياسات وتذييل الصفحة', icon: SettingsIcon },
-  { id: 'contact', label: 'بيانات التواصل والشبكات', icon: Phone }
-];
-
 interface Category {
   id: string;
   name_ar: string;
@@ -298,9 +283,6 @@ export default function AdminDashboard() {
           title_color: colors.title_color || '#FFFFFF', text_color: colors.text_color || '#A1A1AA',
           card_bg: colors.card_bg || '#0F0F0F', accordion_bg: colors.accordion_bg || '#0F0F0F', image_bg: colors.image_bg || '#0F0F0F',
           title_font: colors.title_font || 'Playfair Display', body_font: colors.body_font || 'Montserrat',
-          admin_bg_color: colors.admin_bg_color || '#FFFFFF', admin_card_bg: colors.admin_card_bg || '#F4F4F5', admin_text_color: colors.admin_text_color || '#18181B',
-          admin_button_bg_color: colors.admin_button_bg_color || '#18181B', admin_button_text_color: colors.admin_button_text_color || '#FFFFFF',
-          button_bg_color: colors.button_bg_color || '#D4AF37', button_text_color: colors.button_text_color || '#000000',
           currency: contact.currency || 'MAD', currency_symbol: contact.currency_symbol || 'د.م',
           about_title_ar: about.title_ar || '', about_title_fr: about.title_fr || '', about_title_en: about.title_en || '',
           about_text_ar: about.text_ar || '', about_text_fr: about.text_fr || '', about_text_en: about.text_en || '',
@@ -313,7 +295,7 @@ export default function AdminDashboard() {
           shipping_policy_ar: policies.shipping_ar || '', shipping_policy_fr: policies.shipping_fr || '', shipping_policy_en: policies.shipping_en || '',
           refund_policy_ar: policies.refund_ar || '', refund_policy_fr: policies.refund_fr || '', refund_policy_en: policies.refund_en || '',
           copyright_text: policies.copyright || '',
-          // استرداد قوالب رسائل الواتساب
+          // استرداد قوالب الرسائل
           cod_confirm_ar: templates.cod_confirm_ar || '', cod_confirm_fr: templates.cod_confirm_fr || '', cod_confirm_en: templates.cod_confirm_en || '',
           review_request_ar: templates.review_request_ar || '', review_request_fr: templates.review_request_fr || '', review_request_en: templates.review_request_en || '',
           // استرداد أزرار الإخفاء والإظهار للأقسام (Visibility Toggles)
@@ -430,7 +412,6 @@ export default function AdminDashboard() {
     }
   };
 
-  // التحكم بالمراجعات والتقييمات الفعلي للزبناء (التفعيل والحذف)
   const handleToggleReviewStatus = async (reviewId: string, currentStatus: boolean) => {
     setActionLoading(`review-${reviewId}`);
     try {
@@ -630,7 +611,7 @@ export default function AdminDashboard() {
             review_request_ar: settings.review_request_ar, review_request_fr: settings.review_request_fr, review_request_en: settings.review_request_en
           }
         },
-        // مزامنة قائمة التنقل
+        // مزامنة إدارة المينيو وقائمة التنقل الحية فالمتجر
         {
           key: 'menu_links',
           value: {
@@ -652,7 +633,7 @@ export default function AdminDashboard() {
             field_notes_ar: settings.field_notes_ar, field_notes_fr: settings.field_notes_fr, field_notes_en: settings.field_notes_en, field_notes_required: settings.field_notes_required, field_notes_visible: settings.field_notes_visible
           }
         },
-        // مزامنة الإخفاء والإظهار حياً
+        // مزامنة booleans الإخفاء والإظهار للأقسام الأساسية
         {
           key: 'visibility',
           value: {
@@ -701,6 +682,8 @@ export default function AdminDashboard() {
     return matchesSearch && matchesStatus && matchesPayment;
   });
 
+  // حساب نسب الطلبيات حياً لرسم المبيانات الدائرية التفاعلية الـ SVG فلوحة التحكم
+  const totalOrdersCount = orders.length || 1;
   const pendingPercent = Math.round((orders.filter(o => o.status === 'pending').length / totalOrdersCount) * 100);
   const confirmedPercent = Math.round((orders.filter(o => o.status === 'confirmed').length / totalOrdersCount) * 100);
   const shippedPercent = Math.round((orders.filter(o => o.status === 'shipped').length / totalOrdersCount) * 100);
@@ -728,7 +711,7 @@ export default function AdminDashboard() {
             <h1 className="text-2xl font-bold tracking-[0.3em]" style={{ color: 'var(--secondary-theme)' }}>
               {lang === 'ar' ? settings.site_name_ar : lang === 'fr' ? settings.site_name_fr : settings.site_name_en}
             </h1>
-            <p className="text-[10px] uppercase tracking-widest text-zinc-400 mt-1">
+            <p className="text-[10px] uppercase tracking-widest text-zinc-500 mt-1">
               {lang === 'ar' ? settings.site_subtitle_ar : lang === 'fr' ? settings.site_subtitle_fr : settings.site_subtitle_en}
             </p>
           </div>
@@ -779,12 +762,12 @@ export default function AdminDashboard() {
             <button onClick={() => handleLangChange('fr')} className={`flex-1 py-1 px-2 text-[10px] rounded-lg transition-all ${lang === 'fr' ? 'text-black font-bold' : 'text-zinc-400'}`} style={{ backgroundColor: lang === 'fr' ? 'var(--secondary-theme)' : 'transparent' }}>FR</button>
             <button onClick={() => handleLangChange('en')} className={`flex-1 py-1 px-2 text-[10px] rounded-lg transition-all ${lang === 'en' ? 'text-black font-bold' : 'text-zinc-400'}`} style={{ backgroundColor: lang === 'en' ? 'var(--secondary-theme)' : 'transparent' }}>EN</button>
           </div>
-          <button onClick={handleLogout} className="w-full flex items-center space-x-3 space-x-reverse p-3 text-red-500 hover:bg-red-50 rounded-xl transition-all duration-200 text-sm">
+          <button onClick={handleLogout} className="w-full flex items-center space-x-3 space-x-reverse p-3 text-red-500 hover:bg-red-100 rounded-xl transition-all duration-200 text-sm">
             <LogOut size={18} />
             <span>تسجيل الخروج</span>
           </button>
         </div>
-      </aside>
+      </</aside>
 
       {/* المحتوى الرئيسي للوحة */}
       <main className="flex-1 min-w-0 p-6 lg:p-10 overflow-y-auto print:p-0">
@@ -825,7 +808,7 @@ export default function AdminDashboard() {
                     <div className="mt-4 text-3xl font-light" style={{ color: 'var(--secondary-theme)' }}>{pendingOrdersCount}</div>
                   </div>
                   <div className="border p-6 rounded-2xl" style={{ backgroundColor: 'var(--admin-card-theme)', borderColor: 'rgba(0,0,0,0.05)' }}>
-                    <span className="text-xs text-red-500">نقص المخزون (&lt;3)</span>
+                    <span className="text-xs text-red-400">نقص المخزون (&lt;3)</span>
                     <div className="mt-4 text-3xl font-light text-red-500">{lowStockProducts.length}</div>
                   </div>
                   <div className="border p-6 rounded-2xl" style={{ backgroundColor: 'var(--admin-card-theme)', borderColor: 'rgba(0,0,0,0.05)' }}>
@@ -901,7 +884,7 @@ export default function AdminDashboard() {
 
             {/* 2. سجل المبيعات والطلب */}
             {activeTab === 'orders' && (
-              <div className="space-y-6 print:hidden">
+              <div className="space-y-6 print:hidden animate-fadeIn">
                 <div className="bg-white border border-zinc-200 p-5 rounded-2xl flex flex-col md:flex-row gap-4 items-center justify-between shadow-sm">
                   <input
                     type="text"
@@ -958,7 +941,7 @@ export default function AdminDashboard() {
                             {order.status === 'delivered' && (
                               <button onClick={() => handleSendWhatsAppMessage(order, 'review')} className="p-1.5 bg-amber-100 text-amber-600 rounded-lg hover:bg-amber-200" title="إرسال رابط التقييم للزبونة"><Star size={14}/></button>
                             )}
-                            <button onClick={() => handleDeleteOrder(order.id)} className="p-1.5 bg-red-50 text-red-600 rounded-lg hover:bg-red-100"><Trash2 size={14}/></button>
+                            <button onClick={() => handleDeleteOrder(order.id)} className="p-1.5 bg-red text-red-600 rounded-lg hover:bg-red-100"><Trash2 size={14}/></button>
                           </td>
                         </tr>
                       ))}
@@ -1008,7 +991,7 @@ export default function AdminDashboard() {
                           <Edit3 size={14} />
                           <span>تعديل التفاصيل والخصائص</span>
                         </button>
-                        <button onClick={() => handleDeleteProduct(product.id)} className="p-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl"><Trash2 size={14}/></button>
+                        <button onClick={() => handleDeleteProduct(product.id)} className="p-2 bg-red text-red-600 hover:bg-red-100 rounded-xl"><Trash2 size={14}/></button>
                       </div>
                     </div>
                   ))}
@@ -1054,7 +1037,7 @@ export default function AdminDashboard() {
                             >
                               <Edit3 size={12} />
                             </button>
-                            <button onClick={() => handleDeleteCategory(cat.id)} className="p-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded"><Trash2 size={12} /></button>
+                            <button onClick={() => handleDeleteCategory(cat.id)} className="p-1.5 bg-red-600 hover:bg-red-100 rounded"><Trash2 size={12} /></button>
                           </td>
                         </tr>
                       ))}
@@ -1101,7 +1084,7 @@ export default function AdminDashboard() {
                             </button>
                           </td>
                           <td className="py-4 px-6 text-center">
-                            <button onClick={() => handleDeleteReview(rev.id)} className="p-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded"><Trash2 size={12} /></button>
+                            <button onClick={() => handleDeleteReview(rev.id)} className="p-1.5 bg-red-650/5 text-red-600 hover:bg-red-100 rounded"><Trash2 size={12} /></button>
                           </td>
                         </tr>
                       ))}
@@ -1113,9 +1096,9 @@ export default function AdminDashboard() {
 
             {/* 4. تخصيص كامل لأقسام المتجر والرسائل باللغات الثلاث */}
             {activeTab === 'settings' && (
-              <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                <div className="lg:col-span-1 space-y-2">
-                  <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-400 px-3 mb-4">أقسام واجهة المتجر</h3>
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 animate-fadeIn">
+                <div className="lg:col-span-1 space-y-2 animate-fadeIn">
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-400 px-3 mb-4 font-medium">أقسام واجهة المتجر</h3>
                   {settingsSections.map((sec) => {
                     const Icon = sec.icon;
                     const isSecActive = activeSettingsSection === sec.id;
@@ -1136,7 +1119,7 @@ export default function AdminDashboard() {
                   })}
                 </div>
 
-                <div className="lg:col-span-3 bg-white border border-zinc-200 rounded-3xl p-6 lg:p-8 shadow-sm">
+                <div className="lg:col-span-3 bg-white border border-zinc-200 rounded-3xl p-6 lg:p-8 shadow-2xl">
                   <form onSubmit={handleSaveSettings} className="space-y-6">
                     
                     {activeSettingsSection === 'identity' && (
@@ -1147,41 +1130,41 @@ export default function AdminDashboard() {
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                           <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">الاسم بالعربية</label>
+                            <label className="text-xs text-zinc-400 block mb-1.5 font-medium">الاسم بالعربية</label>
                             <input type="text" value={settings.site_name_ar || ''} onChange={(e) => setSettings({ ...settings, site_name_ar: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
                           </div>
                           <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">الاسم بالفرنسية</label>
+                            <label className="text-xs text-zinc-400 block mb-1.5 font-medium">الاسم بالفرنسية</label>
                             <input type="text" value={settings.site_name_fr || ''} onChange={(e) => setSettings({ ...settings, site_name_fr: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
                           </div>
                           <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">الاسم بالإنجليزية</label>
+                            <label className="text-xs text-zinc-400 block mb-1.5 font-medium">الاسم بالإنجليزية</label>
                             <input type="text" value={settings.site_name_en || ''} onChange={(e) => setSettings({ ...settings, site_name_en: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
                           </div>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                           <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">العنوان الفرعي بالعربية</label>
+                            <label className="text-xs text-zinc-400 block mb-1.5 font-medium">العنوان الفرعي بالعربية</label>
                             <input type="text" value={settings.site_subtitle_ar || ''} onChange={(e) => setSettings({ ...settings, site_subtitle_ar: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
                           </div>
                           <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">العنوان الفرعي بالفرنسية</label>
+                            <label className="text-xs text-zinc-400 block mb-1.5 font-medium">العنوان الفرعي بالفرنسية</label>
                             <input type="text" value={settings.site_subtitle_fr || ''} onChange={(e) => setSettings({ ...settings, site_subtitle_fr: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
                           </div>
                           <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">العنوان الفرعي بالإنجليزية</label>
+                            <label className="text-xs text-zinc-400 block mb-1.5 font-medium">العنوان الفرعي بالإنجليزية</label>
                             <input type="text" value={settings.site_subtitle_en || ''} onChange={(e) => setSettings({ ...settings, site_subtitle_en: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
                           </div>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                           <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">الحرف الرمزي للشعار</label>
-                            <input type="text" maxLength={1} value={settings.logo_letter} onChange={(e) => setSettings({ ...settings, logo_letter: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm text-center font-bold" />
+                            <label className="text-xs text-zinc-400 block mb-1.5 font-medium">الحرف الرمزي للشعار</label>
+                            <input type="text" maxLength={1} value={settings.logo_letter} onChange={(e) => setSettings({ ...settings, logo_letter: e.target.value })} className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-3 rounded-xl text-sm text-center font-bold text-[#1a1410]" />
                           </div>
                           <div className="md:col-span-3">
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">شعار المتجر (الشعار الحالي: {settings.logo_url ? 'مرفوع' : 'لا يوجد'})</label>
+                            <label className="text-xs text-zinc-400 block mb-1.5">شعار المتجر (الشعار الحالي: {settings.logo_url ? 'مرفوع' : 'لا يوجد'})</label>
                             <div className="flex items-center space-x-4 space-x-reverse">
-                              <label className="cursor-pointer bg-zinc-50 hover:bg-zinc-100 text-zinc-700 py-2.5 px-4 rounded-xl text-xs border border-zinc-200 transition-all flex items-center space-x-2 space-x-reverse">
+                              <label className="cursor-pointer bg-zinc-900 hover:bg-zinc-800 text-zinc-300 py-2.5 px-4 rounded-xl text-xs border border-zinc-850 flex items-center justify-center space-x-2 space-x-reverse">
                                 <Upload size={14} />
                                 <span>رفع شعار من جهازك</span>
                                 <input
@@ -1213,614 +1196,68 @@ export default function AdminDashboard() {
                       <div className="space-y-5 animate-fadeIn">
                         <div>
                           <h4 className="text-base font-medium">الألوان والخطوط وخلفيات النصوص والصور</h4>
-                          <p className="text-xs text-zinc-400 mt-1">تعديل كامل لألوان المتجر والداشبورد والخلفيات حياً</p>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-zinc-100 pb-4">
-                          <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">اللون الأساسي للموقع (Primary)</label>
-                            <input type="color" value={settings.primary_color} onChange={(e) => setSettings({ ...settings, primary_color: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">اللون الثانوي / الذهبي للموقع (Secondary)</label>
-                            <input type="color" value={settings.secondary_color} onChange={(e) => setSettings({ ...settings, secondary_color: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">لون العناوين الكبرى والشعار (Title Color)</label>
-                            <input type="color" value={settings.title_color} onChange={(e) => setSettings({ ...settings, title_color: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">لون النصوص والوصوف والفقرات (Text Color)</label>
-                            <input type="color" value={settings.text_color} onChange={(e) => setSettings({ ...settings, text_color: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
-                          </div>
-                        </div>
-                        {/* مغير ألوان لوحة التحكم (الداشبورد) وأزرارها تفاعلياً */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-b border-zinc-100 pb-4">
-                          <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">لون خلفية لوحة التحكم (Dashboard BG)</label>
-                            <input type="color" value={settings.admin_bg_color} onChange={(e) => setSettings({ ...settings, admin_bg_color: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5">لون بطاقات لوحة التحكم (Dashboard Card BG)</label>
-                            <input type="color" value={settings.admin_card_bg} onChange={(e) => setSettings({ ...settings, admin_card_bg: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5">لون نصوص لوحة التحكم (Dashboard Text Color)</label>
-                            <input type="color" value={settings.admin_text_color} onChange={(e) => setSettings({ ...settings, admin_text_color: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-zinc-100 pb-4">
-                          <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5">لون خلفية أزرار الداشبورد (Dashboard Button BG)</label>
-                            <input type="color" value={settings.admin_button_bg_color} onChange={(e) => setSettings({ ...settings, admin_button_bg_color: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5">لون نصوص أزرار الداشبورد (Dashboard Button Text)</label>
-                            <input type="color" value={settings.admin_button_text_color} onChange={(e) => setSettings({ ...settings, admin_button_text_color: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-b border-zinc-100 pb-4">
-                          <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">لون خلفية كروت الحقائب والآراء (Card BG)</label>
-                            <input type="color" value={settings.card_bg} onChange={(e) => setSettings({ ...settings, card_bg: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">لون خلفية الأكورديون المطوي (Accordion BG)</label>
-                            <input type="color" value={settings.accordion_bg} onChange={(e) => setSettings({ ...settings, accordion_bg: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">لون خلفية إطارات صور الحقائب (Image Frame BG)</label>
-                            <input type="color" value={settings.image_bg} onChange={(e) => setSettings({ ...settings, image_bg: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-                          <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">خط العناوين الكبرى (Heading Font)</label>
-                            <select value={settings.title_font} onChange={(e) => setSettings({ ...settings, title_font: e.target.value })} className="w-full p-3 bg-zinc-50 border border-zinc-200 rounded-xl text-xs text-zinc-700 focus:outline-none">
-                              <option value="Playfair Display">Playfair Display</option>
-                              <option value="Cinzel">Cinzel</option>
-                              <option value="Cairo">Cairo (عربي فاخر)</option>
-                              <option value="Cormorant Garamond">Cormorant Garamond</option>
-                              <option value="Tajawal">Tajawal</option>
-                            </select>
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">خط النصوص والوصوف العادية (Body Font)</label>
-                            <select value={settings.body_font} onChange={(e) => setSettings({ ...settings, body_font: e.target.value })} className="w-full p-3 bg-zinc-50 border border-zinc-200 rounded-xl text-xs text-zinc-700 focus:outline-none">
-                              <option value="Montserrat">Montserrat</option>
-                              <option value="Lato">Lato</option>
-                              <option value="Inter">Inter</option>
-                              <option value="Tajawal">Tajawal (عربي ناعم)</option>
-                              <option value="Roboto">Roboto</option>
-                            </select>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* 🟢 قسم إدارة المينيو وقائمة التنقل التفاعلية باللغات الثلاث */}
-                    {activeSettingsSection === 'menu' && (
-                      <div className="space-y-5 animate-fadeIn">
-                        <div>
-                          <h4 className="text-base font-light">إدارة قائمة التنقل (Menu Manager)</h4>
-                          <p className="text-xs text-zinc-500 mt-1">تعديل وتخصيص أسماء الروابط الخمسة بالكامل باللغات الثلاث مع تفعيلها وإخفائها</p>
-                        </div>
-                        {[1, 2, 3, 4, 5].map((num) => (
-                          <div key={num} className="border-b border-zinc-100 pb-4 space-y-3">
-                            <div className="flex justify-between items-center">
-                              <span className="text-xs text-amber-500 font-semibold">رابط التنقل {num}</span>
-                              <label className="flex items-center space-x-2 space-x-reverse cursor-pointer text-xs text-zinc-500">
-                                <input type="checkbox" checked={settings[`menu_p${num}_visible`]} onChange={(e) => setSettings({ ...settings, [`menu_p${num}_visible`]: e.target.checked })} className="rounded border-zinc-200 bg-zinc-50 text-[#D4AF37]" />
-                                <span>إظهار في القائمة</span>
-                              </label>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                              <input type="text" placeholder="الاسم بالعربية" value={settings[`menu_p${num}_ar`] || ''} onChange={(e) => setSettings({ ...settings, [`menu_p${num}_ar`]: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-2.5 rounded-xl text-xs" />
-                              <input type="text" placeholder="الاسم بالفرنسية" value={settings[`menu_p${num}_fr`] || ''} onChange={(e) => setSettings({ ...settings, [`menu_p${num}_fr`]: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-2.5 rounded-xl text-xs" />
-                              <input type="text" placeholder="الاسم بالإنجليزية" value={settings[`menu_p${num}_en`] || ''} onChange={(e) => setSettings({ ...settings, [`menu_p${num}_en`]: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-2.5 rounded-xl text-xs" />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* 🟢 قسم إدارة حقول الشراء للزبون (Checkout Fields) تفاعلياً كأزرار إخفاء وإظهار */}
-                    {activeSettingsSection === 'checkout' && (
-                      <div className="space-y-5 animate-fadeIn">
-                        <div>
-                          <h4 className="text-base font-light">إدارة حقول الشراء (Checkout Manager)</h4>
-                          <p className="text-xs text-zinc-500 mt-1">التحكم في حقول استمارة معلومات الشحن وتعديل أسمائها لبراند SAFOS</p>
-                        </div>
-                        {['name', 'phone', 'city', 'address', 'notes'].map((field) => (
-                          <div key={field} className="border-b border-zinc-100 pb-4 space-y-3">
-                            <div className="flex justify-between items-center">
-                              <span className="text-xs text-amber-500 uppercase">حقل: {field === 'name' ? 'الاسم' : field === 'phone' ? 'الهاتف' : field === 'city' ? 'المدينة' : field === 'address' ? 'العنوان' : 'ملاحظات'}</span>
-                              <div className="flex space-x-3 space-x-reverse">
-                                <label className="flex items-center space-x-1.5 space-x-reverse cursor-pointer text-xs text-zinc-500">
-                                  <input type="checkbox" checked={settings[`field_${field}_visible`]} onChange={(e) => setSettings({ ...settings, [`field_${field}_visible`]: e.target.checked })} className="rounded border-zinc-200 bg-zinc-50 text-[#D4AF37]" />
-                                  <span>ظاهر فالموقع</span>
-                                </label>
-                                <label className="flex items-center space-x-1.5 space-x-reverse cursor-pointer text-xs text-zinc-500">
-                                  <input type="checkbox" checked={settings[`field_${field}_required`]} onChange={(e) => setSettings({ ...settings, [`field_${field}_required`]: e.target.checked })} className="rounded border-zinc-200 bg-zinc-50 text-[#D4AF37]" />
-                                  <span>حقل إجباري</span>
-                                </label>
-                              </div>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                              <input type="text" placeholder="الاسم بالعربية" value={settings[`field_${field}_ar`] || ''} onChange={(e) => setSettings({ ...settings, [`field_${field}_ar`]: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-2.5 rounded-xl text-xs" />
-                              <input type="text" placeholder="الاسم بالفرنسية" value={settings[`field_${field}_fr`] || ''} onChange={(e) => setSettings({ ...settings, [`field_${field}_fr`]: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-2.5 rounded-xl text-xs" />
-                              <input type="text" placeholder="الاسم بالإنجليزية" value={settings[`field_${field}_en`] || ''} onChange={(e) => setSettings({ ...settings, [`field_${field}_en`]: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-2.5 rounded-xl text-xs" />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {activeSettingsSection === 'hero' && (
-                      <div className="space-y-5 animate-fadeIn">
-                        <div>
-                          <h4 className="text-base font-light">الشاشة الترحيبية (Hero Banner)</h4>
-                          <p className="text-xs text-zinc-500 mt-1">تعديل البانر الترويجي لمتجر SAFOS والرفع من جهازك باللغات الثلاث</p>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">العنوان الرئيسي بالعربية</label>
-                            <textarea value={settings.hero_title_ar || ''} onChange={(e) => setSettings({ ...settings, hero_title_ar: e.target.value })} className="w-full h-20 bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">العنوان الرئيسي بالفرنسية</label>
-                            <textarea value={settings.hero_title_fr || ''} onChange={(e) => setSettings({ ...settings, hero_title_fr: e.target.value })} className="w-full h-20 bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">العنوان الرئيسي بالإنجليزية</label>
-                            <textarea value={settings.hero_title_en || ''} onChange={(e) => setSettings({ ...settings, hero_title_en: e.target.value })} className="w-full h-20 bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">العنوان الفرعي بالعربية</label>
-                            <input type="text" value={settings.hero_subtitle_ar || ''} onChange={(e) => setSettings({ ...settings, hero_subtitle_ar: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">العنوان الفرعي بالفرنسية</label>
-                            <input type="text" value={settings.hero_subtitle_fr || ''} onChange={(e) => setSettings({ ...settings, hero_subtitle_fr: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">العنوان الفرعي بالإنجليزية</label>
-                            <input type="text" value={settings.hero_subtitle_en || ''} onChange={(e) => setSettings({ ...settings, hero_subtitle_en: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">شريط الإعلانات بالعربية</label>
-                            <input type="text" value={settings.announcement_text_ar || ''} onChange={(e) => setSettings({ ...settings, announcement_text_ar: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm text-amber-500" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">شريط الإعلانات بالفرنسية</label>
-                            <input type="text" value={settings.announcement_text_fr || ''} onChange={(e) => setSettings({ ...settings, announcement_text_fr: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm text-amber-500" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">شريط الإعلانات بالإنجليزية</label>
-                            <input type="text" value={settings.announcement_text_en || ''} onChange={(e) => setSettings({ ...settings, announcement_text_en: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm text-amber-500" />
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">الوصف التفصيلي بالعربية</label>
-                            <textarea value={settings.hero_description_ar || ''} onChange={(e) => setSettings({ ...settings, hero_description_ar: e.target.value })} className="w-full h-20 bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">الوصف التفصيلي بالفرنسية</label>
-                            <textarea value={settings.hero_description_fr || ''} onChange={(e) => setSettings({ ...settings, hero_description_fr: e.target.value })} className="w-full h-20 bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">الوصف التفصيلي بالإنجليزية</label>
-                            <textarea value={settings.hero_description_en || ''} onChange={(e) => setSettings({ ...settings, hero_description_en: e.target.value })} className="w-full h-20 bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                          </div>
-                        </div>
-                        <div>
-                          <label className="text-xs text-zinc-550 block mb-1.5 font-medium">صورة البانر الرئيسي</label>
-                          <label className="cursor-pointer w-full bg-white hover:bg-zinc-100 text-zinc-700 p-3 rounded-xl text-xs border border-zinc-200 flex items-center justify-center space-x-2 space-x-reverse">
-                            <Upload size={14} />
-                            <span>رفع صورة البانر من جهازك</span>
-                            <input
-                              type="file"
-                              accept="image/*"
-                              className="hidden"
-                              onChange={async (e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                  try {
-                                    const url = await handleImageUpload(file, BUCKETS.PRODUCT_IMAGES);
-                                    setSettings({ ...settings, hero_image_url: url });
-                                    showToast('تم رفع صورة البانر بنجاح', 'success');
-                                  } catch (err: any) {
-                                    showToast(err.message, 'error');
-                                  }
-                                }
-                              }}
-                            />
-                          </label>
-                        </div>
-                      </div>
-                    )}
-
-                    {activeSettingsSection === 'about' && (
-                      <div className="space-y-5 animate-fadeIn">
-                        <div>
-                          <h4 className="text-base font-light">قصة الماركة (Brand Story)</h4>
-                          <p className="text-xs text-zinc-500 mt-1">قصة الحرفة اليدوية لكتان الكانفاس بورشة SAFOS</p>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">عنوان قصة ورشتنا بالعربية</label>
-                            <input type="text" value={settings.about_title_ar || ''} onChange={(e) => setSettings({ ...settings, about_title_ar: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">عنوان قصة ورشتنا بالفرنسية</label>
-                            <input type="text" value={settings.about_title_fr || ''} onChange={(e) => setSettings({ ...settings, about_title_fr: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">عنوان قصة ورشتنا بالإنجليزية</label>
-                            <input type="text" value={settings.about_title_en || ''} onChange={(e) => setSettings({ ...settings, about_title_en: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">قصة ورشتنا الفنية بالتفصيل بالعربية</label>
-                            <textarea value={settings.about_text_ar || ''} onChange={(e) => setSettings({ ...settings, about_text_ar: e.target.value })} className="w-full h-32 bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">قصة ورشتنا الفنية بالتفصيل بالفرنسية</label>
-                            <textarea value={settings.about_text_fr || ''} onChange={(e) => setSettings({ ...settings, about_text_fr: e.target.value })} className="w-full h-32 bg-zinc-50 border border-[#b8935a]/25 p-3 rounded-xl text-sm text-[#1a1410]" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">قصة ورشتنا الفنية بالتفصيل بالإنجليزية</label>
-                            <textarea value={settings.about_text_en || ''} onChange={(e) => setSettings({ ...settings, about_text_en: e.target.value })} className="w-full h-32 bg-zinc-50 border border-[#b8935a]/25 p-3 rounded-xl text-sm text-[#1a1410]" />
-                          </div>
-                        </div>
-                        <div>
-                          <label className="text-xs text-zinc-500 block mb-1.5 font-medium">صورة ورشة التطريز اليدوي</label>
-                          <label className="cursor-pointer w-full bg-white hover:bg-zinc-100 text-zinc-700 p-3 rounded-xl text-xs border border-zinc-200 flex items-center justify-center space-x-2 space-x-reverse">
-                            <Upload size={14} />
-                            <span>رفع صورة الورشة من جهازك</span>
-                            <input
-                              type="file"
-                              accept="image/*"
-                              className="hidden"
-                              onChange={async (e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                  try {
-                                    const url = await handleImageUpload(file, BUCKETS.PRODUCT_IMAGES);
-                                    setSettings({ ...settings, about_image: url });
-                                    showToast('تم رفع صورة قصة الماركة بنجاح', 'success');
-                                  } catch (err: any) {
-                                    showToast(err.message, 'error');
-                                  }
-                                }
-                              }}
-                            />
-                          </label>
-                        </div>
-                      </div>
-                    )}
-
-                    {activeSettingsSection === 'pillars' && (
-                      <div className="space-y-5 animate-fadeIn">
-                        <div>
-                          <h4 className="text-base font-light">ركائز ومميزات الفخامة الثلاث</h4>
-                          <p className="text-xs text-zinc-500 mt-1">تخصيص العناوين والوصف للمميزات الثلاثة لـ الكانفاس المتقن</p>
-                        </div>
-                        {/* الركائز بـ 3 لغات */}
-                        <div className="border-b border-zinc-100 pb-4 space-y-4">
-                          <h5 className="text-xs text-amber-500 font-semibold">المميز الأول (Pillar 1)</h5>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <input type="text" placeholder="العنوان بالعربية" value={settings.p1_title_ar || ''} onChange={(e) => setSettings({ ...settings, p1_title_ar: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                            <input type="text" placeholder="العنوان بالفرنسية" value={settings.p1_title_fr || ''} onChange={(e) => setSettings({ ...settings, p1_title_fr: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                            <input type="text" placeholder="العنوان بالإنجليزية" value={settings.p1_title_en || ''} onChange={(e) => setSettings({ ...settings, p1_title_en: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                          </div>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <input type="text" placeholder="الوصف بالعربية" value={settings.p1_desc_ar || ''} onChange={(e) => setSettings({ ...settings, p1_desc_ar: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                            <input type="text" placeholder="الوصف بالفرنسية" value={settings.p1_desc_fr || ''} onChange={(e) => setSettings({ ...settings, p1_desc_fr: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                            <input type="text" placeholder="الوصف بالإنجليزية" value={settings.p1_desc_en || ''} onChange={(e) => setSettings({ ...settings, p1_desc_en: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                          </div>
-                        </div>
-
-                        <div className="border-b border-zinc-100 pb-4 space-y-4">
-                          <h5 className="text-xs text-amber-500 font-semibold">المميز الثاني (Pillar 2)</h5>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <input type="text" placeholder="العنوان بالعربية" value={settings.p2_title_ar || ''} onChange={(e) => setSettings({ ...settings, p2_title_ar: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                            <input type="text" placeholder="العنوان بالفرنسية" value={settings.p2_title_fr || ''} onChange={(e) => setSettings({ ...settings, p2_title_fr: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                            <input type="text" placeholder="العنوان بالإنجليزية" value={settings.p2_title_en || ''} onChange={(e) => setSettings({ ...settings, p2_title_en: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                          </div>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <input type="text" placeholder="الوصف بالعربية" value={settings.p2_desc_ar || ''} onChange={(e) => setSettings({ ...settings, p2_desc_ar: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                            <input type="text" placeholder="الوصف بالفرنسية" value={settings.p2_desc_fr || ''} onChange={(e) => setSettings({ ...settings, p2_desc_fr: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                            <input type="text" placeholder="الوصف بالإنجليزية" value={settings.p2_desc_en || ''} onChange={(e) => setSettings({ ...settings, p2_desc_en: e.target.value })} className="w-full bg-black border border-zinc-200 p-3 rounded-xl text-sm" />
-                          </div>
-                        </div>
-
-                        <div className="border-b border-zinc-100 pb-4 space-y-4">
-                          <h5 className="text-xs text-amber-500 font-semibold">المميز الثالث (Pillar 3)</h5>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <input type="text" placeholder="العنوان بالعربية" value={settings.p3_title_ar || ''} onChange={(e) => setSettings({ ...settings, p3_title_ar: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                            <input type="text" placeholder="العنوان بالفرنسية" value={settings.p3_title_fr || ''} onChange={(e) => setSettings({ ...settings, p3_title_fr: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                            <input type="text" placeholder="العنوان بالإنجليزية" value={settings.p3_title_en || ''} onChange={(e) => setSettings({ ...settings, p3_title_en: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                          </div>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <input type="text" placeholder="الوصف بالعربية" value={settings.p3_desc_ar || ''} onChange={(e) => setSettings({ ...settings, p3_desc_ar: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                            <input type="text" placeholder="الوصف بالفرنسية" value={settings.p3_desc_fr || ''} onChange={(e) => setSettings({ ...settings, p3_desc_fr: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                            <input type="text" placeholder="الوصف بالإنجليزية" value={settings.p3_desc_en || ''} onChange={(e) => setSettings({ ...settings, p3_desc_en: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {activeSettingsSection === 'testimonials' && (
-                      <div className="space-y-5 animate-fadeIn">
-                        <div>
-                          <h4 className="text-base font-light">آراء وتقييمات العميلات الحقيقية</h4>
-                          <p className="text-xs text-zinc-500 mt-1">تعديل مراجعات عينات الزبناء الوفيات للمتجر باللغات الثلاث</p>
-                        </div>
-                        
-                        <div className="border-b border-zinc-100 pb-4 space-y-4">
-                          <h5 className="text-xs text-amber-500 font-semibold">المراجعة الأولى (Testimonial 1)</h5>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <input type="text" placeholder="الاسم بالعربية" value={settings.t1_name_ar || ''} onChange={(e) => setSettings({ ...settings, t1_name_ar: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                            <input type="text" placeholder="الاسم بالفرنسية" value={settings.t1_name_fr || ''} onChange={(e) => setSettings({ ...settings, t1_name_fr: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                            <input type="text" placeholder="الاسم بالإنجليزية" value={settings.t1_name_en || ''} onChange={(e) => setSettings({ ...settings, t1_name_en: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                          </div>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <textarea placeholder="المراجعة بالعربية" value={settings.t1_text_ar || ''} onChange={(e) => setSettings({ ...settings, t1_text_ar: e.target.value })} className="w-full h-16 bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                            <textarea placeholder="المراجعة بالفرنسية" value={settings.t1_text_fr || ''} onChange={(e) => setSettings({ ...settings, t1_text_fr: e.target.value })} className="w-full h-16 bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                            <textarea placeholder="المراجعة بالإنجليزية" value={settings.t1_text_en || ''} onChange={(e) => setSettings({ ...settings, t1_text_en: e.target.value })} className="w-full h-16 bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                          </div>
-                        </div>
-
-                        <div className="border-b border-zinc-100 pb-4 space-y-4">
-                          <h5 className="text-xs text-amber-500 font-semibold">المراجعة الثانية (Testimonial 2)</h5>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <input type="text" placeholder="الاسم بالعربية" value={settings.t2_name_ar || ''} onChange={(e) => setSettings({ ...settings, t2_name_ar: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                            <input type="text" placeholder="الاسم بالفرنسية" value={settings.t2_name_fr || ''} onChange={(e) => setSettings({ ...settings, t2_name_fr: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                            <input type="text" placeholder="الاسم بالإنجليزية" value={settings.t2_name_en || ''} onChange={(e) => setSettings({ ...settings, t2_name_en: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                          </div>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <textarea placeholder="المراجعة بالعربية" value={settings.t2_text_ar || ''} onChange={(e) => setSettings({ ...settings, t2_text_ar: e.target.value })} className="w-full h-16 bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                            <textarea placeholder="المراجعة بالفرنسية" value={settings.t2_text_fr || ''} onChange={(e) => setSettings({ ...settings, t2_text_fr: e.target.value })} className="w-full h-16 bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                            <textarea placeholder="المراجعة بالإنجليزية" value={settings.t2_text_en || ''} onChange={(e) => setSettings({ ...settings, t2_text_en: e.target.value })} className="w-full h-16 bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm animate-fadeIn" />
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {activeSettingsSection === 'policies' && (
-                      <div className="space-y-5 animate-fadeIn">
-                        <div>
-                          <h4 className="text-base font-light">السياسات وتذييل الصفحة</h4>
-                          <p className="text-xs text-zinc-500 mt-1">تعديل سياسات الشحن وسياسة الاسترجاع وحقوق الملكية للمتجر باللغات الثلاث</p>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <div>
-                            <label className="text-xs text-zinc-550 block mb-1.5 font-medium">سياسة الشحن بالعربية</label>
-                            <textarea value={settings.shipping_policy_ar || ''} onChange={(e) => setSettings({ ...settings, shipping_policy_ar: e.target.value })} className="w-full h-24 bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-550 block mb-1.5 font-medium">سياسة الشحن بالفرنسية</label>
-                            <textarea value={settings.shipping_policy_fr || ''} onChange={(e) => setSettings({ ...settings, shipping_policy_fr: e.target.value })} className="w-full h-24 bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-550 block mb-1.5 font-medium">سياسة الشحن بالإنجليزية</label>
-                            <textarea value={settings.shipping_policy_en || ''} onChange={(e) => setSettings({ ...settings, shipping_policy_en: e.target.value })} className="w-full h-24 bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <div>
-                            <label className="text-xs text-zinc-550 block mb-1.5 font-medium">سياسة الاسترجاع بالعربية</label>
-                            <textarea value={settings.refund_policy_ar || ''} onChange={(e) => setSettings({ ...settings, refund_policy_ar: e.target.value })} className="w-full h-24 bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-550 block mb-1.5 font-medium">سياسة الاسترجاع بالفرنسية</label>
-                            <textarea value={settings.refund_policy_fr || ''} onChange={(e) => setSettings({ ...settings, refund_policy_fr: e.target.value })} className="w-full h-24 bg-zinc-50 border border-[#b8935a]/25 p-3 rounded-xl text-sm animate-fadeIn" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-550 block mb-1.5 font-medium">سياسة الاسترجاع بالإنجليزية</label>
-                            <textarea value={settings.refund_policy_en || ''} onChange={(e) => setSettings({ ...settings, refund_policy_en: e.target.value })} className="w-full h-24 bg-[#faf6ef] border border-[#b8935a]/25 p-3 rounded-xl text-sm animate-fadeIn" />
-                          </div>
-                        </div>
-                        <div>
-                          <label className="text-xs text-zinc-550 block mb-1.5 font-medium">حقوق الملكية وتذييل الصفحة (Copyright)</label>
-                          <input type="text" value={settings.copyright_text} onChange={(e) => setSettings({ ...settings, copyright_text: e.target.value })} className="w-full bg-zinc-50 border border-[#b8935a]/25 p-3 rounded-xl text-sm" />
-                        </div>
-
-                        {/* أزرار التفعيل والإخفاء الحية للأقسام الكبرى فالمتجر */}
-                        <div className="border-t border-zinc-200 pt-5 space-y-4">
-                          <h4 className="text-xs text-amber-500 font-semibold mb-2">التحكم في إظهار وإخفاء الأقسام الكبرى فالمتجر</h4>
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-zinc-50 p-3 rounded-xl border border-zinc-100">
-                            <label className="flex items-center space-x-2 space-x-reverse cursor-pointer text-xs text-zinc-500">
-                              <input type="checkbox" checked={settings.show_announcement_bar} onChange={(e) => setSettings({ ...settings, show_announcement_bar: e.target.checked })} className="rounded border-zinc-200 bg-zinc-50 text-[#D4AF37]" />
-                              <span>شريط الإعلانات الفوقاني</span>
-                            </label>
-                            <label className="flex items-center space-x-2 space-x-reverse cursor-pointer text-xs text-zinc-500">
-                              <input type="checkbox" checked={settings.show_about_section} onChange={(e) => setSettings({ ...settings, show_about_section: e.target.checked })} className="rounded border-zinc-200 bg-zinc-50 text-[#D4AF37]" />
-                              <span>قسم قصة ورشتنا (من نحن)</span>
-                            </label>
-                            <label className="flex items-center space-x-2 space-x-reverse cursor-pointer text-xs text-zinc-500">
-                              <input type="checkbox" checked={settings.show_pillars_section} onChange={(e) => setSettings({ ...settings, show_pillars_section: e.target.checked })} className="rounded border-zinc-200 bg-zinc-50 text-[#D4AF37]" />
-                              <span>قسم ركائز الفخامة</span>
-                            </label>
-                            <label className="flex items-center space-x-2 space-x-reverse cursor-pointer text-xs text-zinc-500">
-                              <input type="checkbox" checked={settings.show_testimonials_section} onChange={(e) => setSettings({ ...settings, show_testimonials_section: e.target.checked })} className="rounded border-zinc-200 bg-zinc-50 text-[#D4AF37]" />
-                              <span>قسم تقييمات العميلات</span>
-                            </label>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {activeSettingsSection === 'contact' && (
-                      <div className="space-y-5 animate-fadeIn">
-                        <div>
-                          <h4 className="text-base font-light">بيانات وقنوات التواصل الاجتماعي</h4>
-                          <p className="text-xs text-zinc-500 mt-1">تعديل الهاتف، روابط واتساب، إنستغرام، فيسبوك وتيك توك</p>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">رقم الهاتف الفعلي للتواصل</label>
-                            <input type="text" value={settings.phone || ''} onChange={(e) => setSettings({ ...settings, phone: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">رقم الواتساب للتواصل المباشر</label>
-                            <input type="text" value={settings.whatsapp || ''} onChange={(e) => setSettings({ ...settings, whatsapp: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" placeholder="+212600000000" />
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">البريد الإلكتروني للعلامة</label>
-                            <input type="email" value={settings.email || ''} onChange={(e) => setSettings({ ...settings, email: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">عنوان مشغل المتجر الفعلي (المدينة/الحي)</label>
-                            <input type="text" value={settings.address || ''} onChange={(e) => setSettings({ ...settings, address: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-zinc-100 pt-4">
-                          <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">انستغرام (Instagram Username)</label>
-                            <input type="text" value={settings.instagram || ''} onChange={(e) => setSettings({ ...settings, instagram: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-xs font-mono" placeholder="safos.bags" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">فيسبوك (Facebook)</label>
-                            <input type="text" value={settings.facebook || ''} onChange={(e) => setSettings({ ...settings, facebook: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-xs font-mono" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">تيك توك (TikTok)</label>
-                            <input type="text" value={settings.tiktok || ''} onChange={(e) => setSettings({ ...settings, tiktok: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-xs font-mono" />
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* القسم الفرعي لتعديل قوالب رسائل الواتساب حياً وتضمين المتغيرات */}
-                    {activeSettingsSection === 'templates' && (
-                      <div className="space-y-5 animate-fadeIn">
-                        <div>
-                          <h4 className="text-base font-light">تعديل قوالب رسائل الواتساب</h4>
-                          <p className="text-xs text-zinc-500 mt-1">تعديل قوالب تأكيد طلبيات الـ COD وإرسال روابط التقييم باللغات الثلاث</p>
-                        </div>
-                        
-                        <div className="border-b border-zinc-100 pb-4 space-y-4">
-                          <h5 className="text-xs text-emerald-400 font-semibold">قالب تأكيد طلبيات COD (WhatsApp COD Confirmation)</h5>
-                          <div className="grid grid-cols-1 gap-3 text-[10px] text-zinc-500 bg-zinc-50 p-2.5 rounded-xl border border-zinc-100 leading-relaxed">
-                            <p><strong>المتغيرات المتاحة للاستخدام داخل قالب الرسالة:</strong></p>
-                            <p>• `{'{name}'}`: اسم الكليان • `{'{order_number}'}`: رقم الطلبية • `{'{total}'}`: قيمة الطلب • `{'{city}'}`: المدينة</p>
-                          </div>
-                          <div className="grid grid-cols-1 gap-4 animate-fadeIn">
-                            <div>
-                              <label className="text-xs text-zinc-500 block mb-1.5 font-medium">القالب بالعربية</label>
-                              <textarea value={settings.cod_confirm_ar || ''} onChange={(e) => setSettings({ ...settings, cod_confirm_ar: e.target.value })} className="w-full h-20 bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                            </div>
-                            <div>
-                              <label className="text-xs text-zinc-500 block mb-1.5 font-medium">القالب بالفرنسية</label>
-                              <textarea value={settings.cod_confirm_fr || ''} onChange={(e) => setSettings({ ...settings, cod_confirm_fr: e.target.value })} className="w-full h-20 bg-zinc-50 border border-[#b8935a]/25 p-3 rounded-xl text-sm text-[#1a1410]" />
-                            </div>
-                            <div>
-                              <label className="text-xs text-zinc-500 block mb-1.5 font-medium">القالب بالإنجليزية</label>
-                              <textarea value={settings.cod_confirm_en || ''} onChange={(e) => setSettings({ ...settings, cod_confirm_en: e.target.value })} className="w-full h-20 bg-zinc-50 border border-[#b8935a]/25 p-3 rounded-xl text-sm text-[#1a1410]" />
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="border-b border-zinc-100 pb-4 space-y-4">
-                          <h5 className="text-xs text-amber-500 font-semibold">قالب طلب التقييم ورابط المراجعات (WhatsApp Review Request)</h5>
-                          <div className="grid grid-cols-1 gap-3 text-[10px] text-zinc-500 bg-zinc-50 p-2.5 rounded-xl border border-zinc-100 leading-relaxed">
-                            <p><strong>المتغيرات المتاحة للاستخدام:</strong></p>
-                            <p>• `{'{name}'}`: اسم الزبونة • `{'{review_url}'}`: الرابط المباشر للتقييم</p>
-                          </div>
-                          <div className="grid grid-cols-1 gap-4 animate-fadeIn">
-                            <div>
-                              <label className="text-xs text-zinc-500 block mb-1.5 font-medium">القالب بالعربية</label>
-                              <textarea value={settings.review_request_ar || ''} onChange={(e) => setSettings({ ...settings, review_request_ar: e.target.value })} className="w-full h-20 bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm" />
-                            </div>
-                            <div>
-                              <label className="text-xs text-zinc-500 block mb-1.5 font-medium">القالب بالفرنسية</label>
-                              <textarea value={settings.review_request_fr || ''} onChange={(e) => setSettings({ ...settings, review_request_fr: e.target.value })} className="w-full h-20 bg-zinc-50 border border-[#b8935a]/25 p-3 rounded-xl text-sm text-[#1a1410]" />
-                            </div>
-                            <div>
-                              <label className="text-xs text-zinc-500 block mb-1.5 font-medium">القالب بالإنجليزية</label>
-                              <textarea value={settings.review_request_en || ''} onChange={(e) => setSettings({ ...settings, review_request_en: e.target.value })} className="w-full h-20 bg-zinc-50 border border-[#b8935a]/25 p-3 rounded-xl text-sm text-[#1a1410]" />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* 🟢 قسم الألوان والخطوط الفاخرة وخلفيات الكروت المحدث بالكامل للداشبورد والموقع */}
-                    {activeSettingsSection === 'style' && (
-                      <div className="space-y-5 animate-fadeIn">
-                        <div>
-                          <h4 className="text-base font-medium">الألوان والخطوط وخلفيات النصوص والصور</h4>
                           <p className="text-xs text-zinc-500 mt-1">تعديل كامل لألوان المتجر والداشبورد والخلفيات حياً</p>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-zinc-100 pb-4">
                           <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">اللون الأساسي للموقع (Primary)</label>
+                            <label className="text-xs text-zinc-400 block mb-1.5 font-medium">اللون الأساسي للموقع (Primary)</label>
                             <input type="color" value={settings.primary_color} onChange={(e) => setSettings({ ...settings, primary_color: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
                           </div>
                           <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">اللون الثانوي / الذهبي للموقع (Secondary)</label>
+                            <label className="text-xs text-zinc-400 block mb-1.5 font-medium">اللون الثانوي / الذهبي للموقع (Secondary)</label>
                             <input type="color" value={settings.secondary_color} onChange={(e) => setSettings({ ...settings, secondary_color: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
                           </div>
                           <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">لون العناوين الكبرى والشعار (Title Color)</label>
+                            <label className="text-xs text-zinc-400 block mb-1.5 font-medium">لون العناوين الكبرى والشعار (Title Color)</label>
                             <input type="color" value={settings.title_color} onChange={(e) => setSettings({ ...settings, title_color: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
                           </div>
                           <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">لون النصوص والوصوف والفقرات (Text Color)</label>
+                            <label className="text-xs text-zinc-400 block mb-1.5 font-medium">لون النصوص والوصوف والفقرات (Text Color)</label>
                             <input type="color" value={settings.text_color} onChange={(e) => setSettings({ ...settings, text_color: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
                           </div>
                         </div>
                         {/* مغير ألوان لوحة التحكم (الداشبورد) وأزرارها تفاعلياً */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-b border-zinc-100 pb-4">
                           <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">لون خلفية لوحة التحكم (Dashboard BG)</label>
+                            <label className="text-xs text-zinc-400 block mb-1.5 font-medium">لون خلفية لوحة التحكم (Dashboard BG)</label>
                             <input type="color" value={settings.admin_bg_color} onChange={(e) => setSettings({ ...settings, admin_bg_color: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
                           </div>
                           <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5">لون بطاقات لوحة التحكم (Dashboard Card BG)</label>
+                            <label className="text-xs text-zinc-400 block mb-1.5">لون بطاقات لوحة التحكم (Dashboard Card BG)</label>
                             <input type="color" value={settings.admin_card_bg} onChange={(e) => setSettings({ ...settings, admin_card_bg: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
                           </div>
                           <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5">لون نصوص لوحة التحكم (Dashboard Text Color)</label>
+                            <label className="text-xs text-zinc-400 block mb-1.5">لون نصوص لوحة التحكم (Dashboard Text Color)</label>
                             <input type="color" value={settings.admin_text_color} onChange={(e) => setSettings({ ...settings, admin_text_color: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
                           </div>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-zinc-100 pb-4">
                           <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5">لون خلفية أزرار الداشبورد (Dashboard Button BG)</label>
+                            <label className="text-xs text-zinc-400 block mb-1.5">لون خلفية أزرار الداشبورد (Dashboard Button BG)</label>
                             <input type="color" value={settings.admin_button_bg_color} onChange={(e) => setSettings({ ...settings, admin_button_bg_color: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
                           </div>
                           <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5">لون نصوص أزرار الداشبورد (Dashboard Button Text)</label>
+                            <label className="text-xs text-zinc-400 block mb-1.5">لون نصوص أزرار الداشبورد (Dashboard Button Text)</label>
                             <input type="color" value={settings.admin_button_text_color} onChange={(e) => setSettings({ ...settings, admin_button_text_color: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
                           </div>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-b border-zinc-100 pb-4">
                           <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">لون خلفية كروت الحقائب والآراء (Card BG)</label>
+                            <label className="text-xs text-zinc-400 block mb-1.5 font-medium">لون خلفية كروت الحقائب والآراء (Card BG)</label>
                             <input type="color" value={settings.card_bg} onChange={(e) => setSettings({ ...settings, card_bg: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
                           </div>
                           <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">لون خلفية الأكورديون المطوي (Accordion BG)</label>
+                            <label className="text-xs text-zinc-400 block mb-1.5 font-medium">لون خلفية الأكورديون المطوي (Accordion BG)</label>
                             <input type="color" value={settings.accordion_bg} onChange={(e) => setSettings({ ...settings, accordion_bg: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
                           </div>
                           <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">لون خلفية إطارات صور الحقائب (Image Frame BG)</label>
+                            <label className="text-xs text-zinc-400 block mb-1.5 font-medium">لون خلفية إطارات صور الحقائب (Image Frame BG)</label>
                             <input type="color" value={settings.image_bg} onChange={(e) => setSettings({ ...settings, image_bg: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
                           </div>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
                           <div>
-                            <label className="text-xs text-zinc-500 block mb-1.5 font-medium">خط العناوين الكبرى (Heading Font)</label>
+                            <label className="text-xs text-zinc-400 block mb-1.5 font-medium">خط العناوين الكبرى (Heading Font)</label>
                             <select value={settings.title_font} onChange={(e) => setSettings({ ...settings, title_font: e.target.value })} className="w-full p-3 bg-zinc-50 border border-zinc-200 rounded-xl text-xs text-zinc-700 focus:outline-none">
                               <option value="Playfair Display">Playfair Display</option>
                               <option value="Cinzel">Cinzel</option>
@@ -1860,20 +1297,20 @@ export default function AdminDashboard() {
                               </label>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                              <input type="text" placeholder="الاسم بالعربية" value={settings[`menu_p${num}_ar`] || ''} onChange={(e) => setSettings({ ...settings, [`menu_p${num}_ar`]: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-2.5 rounded-xl text-xs" />
-                              <input type="text" placeholder="الاسم بالفرنسية" value={settings[`menu_p${num}_fr`] || ''} onChange={(e) => setSettings({ ...settings, [`menu_p${num}_fr`]: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-2.5 rounded-xl text-xs" />
-                              <input type="text" placeholder="الاسم بالإنجليزية" value={settings[`menu_p${num}_en`] || ''} onChange={(e) => setSettings({ ...settings, [`menu_p${num}_en`]: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-2.5 rounded-xl text-xs" />
+                              <input type="text" placeholder="الاسم بالعربية" value={settings[`menu_p${num}_ar`] || ''} onChange={(e) => setSettings({ ...settings, [`menu_p${num}_ar`]: e.target.value })} className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-xs text-[#1a1410]" />
+                              <input type="text" placeholder="الاسم بالفرنسية" value={settings[`menu_p${num}_fr`] || ''} onChange={(e) => setSettings({ ...settings, [`menu_p${num}_fr`]: e.target.value })} className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-xs text-[#1a1410]" />
+                              <input type="text" placeholder="الاسم بالإنجليزية" value={settings[`menu_p${num}_en`] || ''} onChange={(e) => setSettings({ ...settings, [`menu_p${num}_en`]: e.target.value })} className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-xs text-[#1a1410]" />
                             </div>
                           </div>
                         ))}
                       </div>
                     )}
 
-                    {/* 🟢 قسم إدارة حقول الشراء للزبون (Checkout Fields) تفاعلياً كأزرار إخفاء وإظهار */}
+                    {/* 🟢 قسم إدارة حقول الشراء للزبون تفاعلياً كأزرار إخفاء وإظهار */}
                     {activeSettingsSection === 'checkout' && (
                       <div className="space-y-5 animate-fadeIn">
                         <div>
-                          <h4 className="text-base font-light font-medium">إدارة حقول الشراء (Checkout Manager)</h4>
+                          <h4 className="text-base font-light">إدارة حقول الشراء (Checkout Manager)</h4>
                           <p className="text-xs text-zinc-500 mt-1">التحكم في حقول استمارة معلومات الشحن وتعديل أسمائها لبراند SAFOS</p>
                         </div>
                         {['name', 'phone', 'city', 'address', 'notes'].map((field) => (
@@ -1892,16 +1329,16 @@ export default function AdminDashboard() {
                               </div>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                              <input type="text" placeholder="الاسم بالعربية" value={settings[`field_${field}_ar`] || ''} onChange={(e) => setSettings({ ...settings, [`field_${field}_ar`]: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-2.5 rounded-xl text-xs" />
-                              <input type="text" placeholder="الاسم بالفرنسية" value={settings[`field_${field}_fr`] || ''} onChange={(e) => setSettings({ ...settings, [`field_${field}_fr`]: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-2.5 rounded-xl text-xs" />
-                              <input type="text" placeholder="الاسم بالإنجليزية" value={settings[`field_${field}_en`] || ''} onChange={(e) => setSettings({ ...settings, [`field_${field}_en`]: e.target.value })} className="w-full bg-zinc-50 border border-zinc-200 p-2.5 rounded-xl text-xs" />
+                              <input type="text" placeholder="الاسم بالعربية" value={settings[`field_${field}_ar`] || ''} onChange={(e) => setSettings({ ...settings, [`field_${field}_ar`]: e.target.value })} className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-xs text-[#1a1410]" />
+                              <input type="text" placeholder="الاسم بالفرنسية" value={settings[`field_${field}_fr`] || ''} onChange={(e) => setSettings({ ...settings, [`field_${field}_fr`]: e.target.value })} className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-xs text-[#1a1410]" />
+                              <input type="text" placeholder="الاسم بالإنجليزية" value={settings[`field_${field}_en`] || ''} onChange={(e) => setSettings({ ...settings, [`field_${field}_en`]: e.target.value })} className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-xs text-[#1a1410]" />
                             </div>
                           </div>
                         ))}
                       </div>
                     )}
 
-                    {/* 🟢 أزرار التفعيل والإخفاء الحية للأقسام الكبرى فالمتجر */}
+                    {/* أزرار التفعيل والإخفاء الحية للأقسام الكبرى فالمتجر */}
                     {activeSettingsSection === 'policies' && (
                       <div className="space-y-4 border-t border-zinc-200 pt-5">
                         <h4 className="text-xs text-amber-500 font-semibold mb-2">التحكم في إظهار وإخفاء الأقسام الكبرى فالمتجر</h4>
@@ -1927,7 +1364,7 @@ export default function AdminDashboard() {
                     )}
 
                     <div className="border-t border-zinc-900 pt-6 mt-6 flex justify-end">
-                      <button type="submit" disabled={actionLoading === 'settings'} className="text-black font-semibold py-3 px-8 rounded-xl flex items-center justify-center space-x-2 space-x-reverse transition-all text-xs" style={{ backgroundColor: 'var(--secondary-theme)', color: '#000000' }}>
+                      <button type="submit" disabled={actionLoading === 'settings'} className="bg-[#D4AF37] hover:bg-amber-500 text-black font-semibold py-3 px-8 rounded-xl flex items-center justify-center space-x-2 space-x-reverse transition-all text-xs" style={{ backgroundColor: 'var(--secondary-theme)', color: '#000000' }}>
                         <Save size={18} />
                         <span>{actionLoading === 'settings' ? 'جاري الحفظ والمزامنة...' : 'مزامنة وحفظ التعديلات حياً'}</span>
                       </button>
@@ -2011,7 +1448,7 @@ export default function AdminDashboard() {
                   <span>إظهار دليل العناية</span>
                 </label>
                 <label className="flex items-center space-x-2 space-x-reverse cursor-pointer text-xs text-zinc-400">
-                  <input type="checkbox" checked={newProduct.show_dimensions} onChange={(e) => setNewProduct({ ...newProduct, show_dimensions: e.target.checked })} className="rounded border-zinc-800 bg-black text-[#D4AF37] focus:ring-0" />
+                  <input type="checkbox" checked={newProduct.show_dimensions} onChange={(e) => setNewProduct({ ...newProduct, show_dimensions: e.target.checked })} className="rounded border-zinc-800 bg-black text-[#D4AF37]" />
                   <span>إظهار المقاسات</span>
                 </label>
               </div>
@@ -2124,20 +1561,20 @@ export default function AdminDashboard() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs text-zinc-400 block mb-1">اسم الحقيبة بالعربية</label>
-                  <input type="text" value={editingProduct.name} onChange={(e) => setEditingProduct({ ...editingProduct, name: e.target.value })} className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-sm text-[#1a1410]" />
+                  <input type="text" value={editingProduct.name} onChange={(e) => setEditingProduct({ ...editingProduct, name: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-sm" />
                 </div>
                 <div>
                   <label className="text-xs text-zinc-400 block mb-1">الاسم بالإنجليزي (EN)</label>
-                  <input type="text" value={editingProduct.name_en} onChange={(e) => setEditingProduct({ ...editingProduct, name_en: e.target.value })} className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-sm font-mono text-[#1a1410]" />
+                  <input type="text" value={editingProduct.name_en} onChange={(e) => setEditingProduct({ ...editingProduct, name_en: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-sm font-mono" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs text-zinc-400 block mb-1">السعر الموحد (درهم)</label>
-                  <input type="number" value={editingProduct.price} onChange={(e) => setEditingProduct({ ...editingProduct, price: Number(e.target.value) })} className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-sm font-mono text-[#1a1410]" />
+                  <input type="number" value={editingProduct.price} onChange={(e) => setEditingProduct({ ...editingProduct, price: Number(e.target.value) })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-sm font-mono" />
                 </div>
                 <div>
-                  <label className="text-xs text-[#5c4330] mb-1.5 block">المخزون المتوفر</label>
+                  <label className="text-xs text-zinc-400 block mb-1">المخزون المتوفر</label>
                   <input type="number" value={editingProduct.stock} onChange={(e) => setEditingProduct({ ...editingProduct, stock: Number(e.target.value) })} className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-sm font-mono text-[#1a1410]" />
                 </div>
               </div>
@@ -2162,7 +1599,7 @@ export default function AdminDashboard() {
                 </div>
                 <div>
                   <label className="text-xs text-zinc-400 block mb-1">التاغ</label>
-                  <input type="text" value={editingProduct.tag || ''} onChange={(e) => setEditingProduct({ ...editingProduct, tag: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs text-zinc-300" />
+                  <input type="text" value={editingProduct.tag || ''} onChange={(e) => setEditingProduct({ ...editingProduct, tag: e.target.value })} className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-xs text-[#1a1410]" />
                 </div>
               </div>
 
@@ -2181,7 +1618,7 @@ export default function AdminDashboard() {
                   <span>إظهار دليل العناية</span>
                 </label>
                 <label className="flex items-center space-x-2 space-x-reverse cursor-pointer text-xs text-zinc-400">
-                  <input type="checkbox" checked={editingProduct.show_dimensions} onChange={(e) => setEditingProduct({ ...editingProduct, show_dimensions: e.target.checked })} className="rounded border-zinc-800 bg-black text-[#D4AF37] focus:ring-0" />
+                  <input type="checkbox" checked={editingProduct.show_dimensions} onChange={(e) => setEditingProduct({ ...editingProduct, show_dimensions: e.target.checked })} className="rounded border-zinc-850 bg-black text-[#D4AF37]" />
                   <span>إظهار المقاسات</span>
                 </label>
               </div>
@@ -2189,7 +1626,7 @@ export default function AdminDashboard() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-[#b8935a]/20 pt-4">
                 <div>
                   <label className="text-xs text-zinc-400 block mb-1">رفع صورة رئيسية جديدة</label>
-                  <label className="cursor-pointer w-full bg-[#1a1410] hover:bg-zinc-855 text-[#faf6ef] p-2.5 rounded-xl text-xs border border-zinc-850 flex items-center justify-center space-x-2 space-x-reverse">
+                  <label className="cursor-pointer w-full bg-[#1a1410] hover:bg-zinc-850 text-[#faf6ef] p-2.5 rounded-xl text-xs border border-zinc-850 flex items-center justify-center space-x-2 space-x-reverse">
                     <Upload size={14} />
                     <span>تحميل من جهازك</span>
                     <input
@@ -2274,7 +1711,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
               <div className="border-t border-zinc-900 pt-4 flex justify-end space-x-2 space-x-reverse">
-                <button type="button" onClick={() => setEditingProduct(null)} className="bg-[#1a1410] text-[#faf6ef] py-2.5 px-6 rounded-xl text-xs">إلغاء</button>
+                <button type="button" onClick={() => setEditingProduct(null)} className="bg-zinc-900 text-zinc-300 py-2.5 px-6 rounded-xl text-xs">إلغاء</button>
                 <button type="submit" disabled={actionLoading === `save-prod-${editingProduct.id}`} className="bg-[#D4AF37] text-black py-2.5 px-6 rounded-xl text-xs font-bold" style={{ backgroundColor: 'var(--secondary-theme)' }}>حفظ التغييرات</button>
               </div>
             </form>
