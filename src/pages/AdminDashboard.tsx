@@ -83,7 +83,7 @@ interface Review {
   created_at: string;
 }
 
-export function AdminDashboard() {
+export default function AdminDashboard() {
   const navigate = useNavigate();
   const { refreshData } = useStore();
   const { session, logout } = useAuth();
