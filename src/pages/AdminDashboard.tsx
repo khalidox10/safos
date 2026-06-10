@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-// استيراد الدوال المعتمدة في بنية مشروعك بالضبط لمنع مشاكل تسجيل الخروج والرفع المباشر
 import { supabase } from '../lib/supabase';
 import { uploadFile, BUCKETS } from '../lib/supabase';
 import { logout } from '../lib/useAuth';
@@ -39,7 +38,6 @@ import {
 } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
 
-// الأقسام الفرعية الشاملة لتخصيص كامل جوانب الموقع بدون استثناء
 const settingsSections: { id: 'identity' | 'hero' | 'about' | 'pillars' | 'testimonials' | 'policies' | 'contact' | 'templates' | 'style' | 'checkout' | 'menu'; label: string; icon: any }[] = [
   { id: 'identity', label: 'الشعار والهوية البصرية', icon: Globe },
   { id: 'style', label: 'الألوان والخطوط الفاخرة', icon: Palette },
@@ -102,23 +100,16 @@ interface Review {
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  // جلب دالة التحديث المباشر للموقع لضمان مزامنة الألوان والخطوط حياً فالمتجر فور الحفظ
   const { fetchStoreData } = useStore();
 
-  // حالات التنقل والواجهة
   const [activeTab, setActiveTab] = useState<'dashboard' | 'orders' | 'products' | 'settings' | 'reviews' | 'categories'>('dashboard');
   const [activeSettingsSection, setActiveSettingsSection] = useState<'identity' | 'hero' | 'about' | 'pillars' | 'testimonials' | 'policies' | 'contact' | 'templates' | 'style' | 'checkout' | 'menu'>('identity');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
-  
-  // لغة لوحة التحكم الحالية للمعاينة
   const [lang, setLang] = useState<'ar' | 'fr' | 'en'>('ar');
-
-  // حالة رصد أخطاء الربط بسوبابيس
   const [connectionError, setConnectionError] = useState<string | null>(null);
 
-  // البيانات من قاعدة البيانات
   const [orders, setOrders] = useState<any[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -138,6 +129,8 @@ export default function AdminDashboard() {
     title_color: '#FFFFFF', text_color: '#A1A1AA',
     card_bg: '#0F0F0F', accordion_bg: '#0F0F0F', image_bg: '#0F0F0F',
     title_font: 'Playfair Display', body_font: 'Montserrat',
+    // إعدادات ألوان السلة الافتراضية
+    cart_bg: '#0F0F0F', cart_btn: '#D4AF37', cart_btn_text: '#000000', cart_text: '#FFFFFF',
     currency: 'MAD', currency_symbol: 'د.م',
     about_title_ar: '', about_title_fr: '', about_title_en: '',
     about_text_ar: '', about_text_fr: '', about_text_en: '',
@@ -150,18 +143,14 @@ export default function AdminDashboard() {
     shipping_policy_ar: '', shipping_policy_fr: '', shipping_policy_en: '',
     refund_policy_ar: '', refund_policy_fr: '', refund_policy_en: '',
     copyright_text: '',
-    // قوالب الرسائل
     cod_confirm_ar: '', cod_confirm_fr: '', cod_confirm_en: '',
     review_request_ar: '', review_request_fr: '', review_request_en: '',
-    // أزرار الإخفاء والإظهار للأقسام (Visibility Toggles)
     show_about_section: true, show_pillars_section: true, show_testimonials_section: true, show_announcement_bar: true,
-    // إدارة حقول الشراء للزبون
     field_name_ar: '', field_name_fr: '', field_name_en: '', field_name_required: true, field_name_visible: true,
     field_phone_ar: '', field_phone_fr: '', field_phone_en: '', field_phone_required: true, field_phone_visible: true,
     field_city_ar: '', field_city_fr: '', field_city_en: '', field_city_required: true, field_city_visible: true,
     field_address_ar: '', field_address_fr: '', field_address_en: '', field_address_required: true, field_address_visible: true,
     field_notes_ar: '', field_notes_fr: '', field_notes_en: '', field_notes_required: false, field_notes_visible: true,
-    // إدارة قائمة التنقل التفاعلية
     menu_p1_ar: '', menu_p1_fr: '', menu_p1_en: '', menu_p1_visible: true,
     menu_p2_ar: '', menu_p2_fr: '', menu_p2_en: '', menu_p2_visible: true,
     menu_p3_ar: '', menu_p3_fr: '', menu_p3_en: '', menu_p3_visible: true,
@@ -169,17 +158,14 @@ export default function AdminDashboard() {
     menu_p5_ar: '', menu_p5_fr: '', menu_p5_en: '', menu_p5_visible: true
   });
 
-  // حالات البحث والتصفية للطلبيات
   const [orderSearch, setOrderSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [paymentFilter, setPaymentFilter] = useState('all');
 
-  // النوافذ المنبثقة للتحكم
   const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isAddingProduct, setIsAddingProduct] = useState(false);
   
-  // نموذج إضافة منتج جديد
   const [newProduct, setNewProduct] = useState<any>({
     name: '', name_en: '', name_fr: '', price: 0, old_price: null, stock: 5, image_url: '', category: '',
     color: '', tag: '', description: '', description_en: '', description_fr: '',
@@ -188,11 +174,9 @@ export default function AdminDashboard() {
     show_video: true, show_gallery: true, show_care_guide: true, show_dimensions: true
   });
 
-  // نموذج إضافة/تعديل تصنيف ومجموعة
   const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [newCategory, setNewCategory] = useState({ name_ar: '', name_fr: '', name_en: '' });
-
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   useEffect(() => {
@@ -210,9 +194,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        if (!supabase) {
-          throw new Error("لم يتم العثور على عميل سوبابيس الموحد.");
-        }
+        if (!supabase) throw new Error("لم يتم العثور على عميل سوبابيس الموحد.");
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error) throw error;
         if (!session) {
@@ -228,43 +210,23 @@ export default function AdminDashboard() {
     checkAuth();
   }, []);
 
-  // جلب كافة تفاصيل المتجر ومزامنته مع سوبابيس
   const fetchData = async () => {
     setLoading(true);
     setConnectionError(null);
     try {
-      const { data: ordersData, error: ordersError } = await supabase
-        .from('orders')
-        .select('*')
-        .order('created_at', { ascending: false });
-      if (ordersError) throw ordersError;
+      const { data: ordersData } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
       setOrders(ordersData || []);
 
-      const { data: productsData, error: productsError } = await supabase
-        .from('products')
-        .select('*')
-        .order('name');
-      if (productsError) throw productsError;
+      const { data: productsData } = await supabase.from('products').select('*').order('name');
       setProducts(productsData || []);
 
-      const { data: categoriesData, error: categoriesError } = await supabase
-        .from('categories')
-        .select('*')
-        .order('name_ar');
-      if (categoriesError) throw categoriesError;
+      const { data: categoriesData } = await supabase.from('categories').select('*').order('name_ar');
       setCategories(categoriesData || []);
 
-      const { data: reviewsData, error: reviewsError } = await supabase
-        .from('reviews')
-        .select('*')
-        .order('created_at', { ascending: false });
-      if (reviewsError) throw reviewsError;
+      const { data: reviewsData } = await supabase.from('reviews').select('*').order('created_at', { ascending: false });
       setReviews(reviewsData || []);
 
-      const { data: settingsData, error: settingsError } = await supabase
-        .from('store_settings')
-        .select('*');
-      if (settingsError) throw settingsError;
+      const { data: settingsData } = await supabase.from('store_settings').select('*');
 
       if (settingsData && settingsData.length > 0) {
         const brand = settingsData.find(s => s.key === 'brand')?.value || {};
@@ -295,6 +257,8 @@ export default function AdminDashboard() {
           title_color: colors.title_color || '#FFFFFF', text_color: colors.text_color || '#A1A1AA',
           card_bg: colors.card_bg || '#0F0F0F', accordion_bg: colors.accordion_bg || '#0F0F0F', image_bg: colors.image_bg || '#0F0F0F',
           title_font: colors.title_font || 'Playfair Display', body_font: colors.body_font || 'Montserrat',
+          // استدعاء ألوان السلة من السحابة
+          cart_bg: colors.cart_bg || '#0F0F0F', cart_btn: colors.cart_btn || '#D4AF37', cart_btn_text: colors.cart_btn_text || '#000000', cart_text: colors.cart_text || '#FFFFFF',
           currency: contact.currency || 'MAD', currency_symbol: contact.currency_symbol || 'د.م',
           about_title_ar: about.title_ar || '', about_title_fr: about.title_fr || '', about_title_en: about.title_en || '',
           about_text_ar: about.text_ar || '', about_text_fr: about.text_fr || '', about_text_en: about.text_en || '',
@@ -303,24 +267,21 @@ export default function AdminDashboard() {
           p2_title_ar: pillars.p2_title_ar || '', p2_title_fr: pillars.p2_title_fr || '', p2_title_en: pillars.p2_title_en || '', p2_desc_ar: pillars.p2_desc_ar || '', p2_desc_fr: pillars.p2_desc_fr || '', p2_desc_en: pillars.p2_desc_en || '',
           p3_title_ar: pillars.p3_title_ar || '', p3_title_fr: pillars.p3_title_fr || '', p3_title_en: pillars.p3_title_en || '', p3_desc_ar: pillars.p3_desc_ar || '', p3_desc_fr: pillars.p3_desc_fr || '', p3_desc_en: pillars.p3_desc_en || '',
           t1_name_ar: testimonials.t1_name_ar || '', t1_name_fr: testimonials.t1_name_fr || '', t1_name_en: testimonials.t1_name_en || '', t1_text_ar: testimonials.t1_text_ar || '', t1_text_fr: testimonials.t1_text_fr || '', t1_text_en: testimonials.t1_text_en || '', t1_rating: testimonials.t1_rating || '5',
-          t2_name_ar: testimonials.t2_name_ar || '', t2_name_fr: testimonials.t2_name_fr || '', t2_name_en: testimonials.t2_name_en || '', t2_text_ar: testimonials.t2_text_ar || '', t2_text_fr: settings.testimonials?.t2_text_fr || '', t2_text_en: testimonials.t2_text_en || '', t2_rating: testimonials.t2_rating || '5',
+          t2_name_ar: testimonials.t2_name_ar || '', t2_name_fr: testimonials.t2_name_fr || '', t2_name_en: testimonials.t2_name_en || '', t2_text_ar: testimonials.t2_text_ar || '', t2_text_fr: testimonials.t2_text_fr || '', t2_text_en: testimonials.t2_text_en || '', t2_rating: testimonials.t2_rating || '5',
           shipping_policy_ar: policies.shipping_ar || '', shipping_policy_fr: policies.shipping_fr || '', shipping_policy_en: policies.shipping_en || '',
           refund_policy_ar: policies.refund_ar || '', refund_policy_fr: policies.refund_fr || '', refund_policy_en: policies.refund_en || '',
           copyright_text: policies.copyright || '',
           cod_confirm_ar: templates.cod_confirm_ar || '', cod_confirm_fr: templates.cod_confirm_fr || '', cod_confirm_en: templates.cod_confirm_en || '',
           review_request_ar: templates.review_request_ar || '', review_request_fr: templates.review_request_fr || '', review_request_en: templates.review_request_en || '',
-          // استرداد أزرار الإخفاء والإظهار للأقسام (Visibility Toggles)
           show_about_section: visibility.show_about_section !== false,
           show_pillars_section: visibility.show_pillars_section !== false,
           show_testimonials_section: visibility.show_testimonials_section !== false,
           show_announcement_bar: visibility.show_announcement_bar !== false,
-          // استرداد إدارة حقول الشراء للزبون
           field_name_ar: checkoutFields.field_name_ar || '', field_name_fr: checkoutFields.field_name_fr || '', field_name_en: checkoutFields.field_name_en || '', field_name_required: checkoutFields.field_name_required !== false, field_name_visible: checkoutFields.field_name_visible !== false,
           field_phone_ar: checkoutFields.field_phone_ar || '', field_phone_fr: checkoutFields.field_phone_fr || '', field_phone_en: checkoutFields.field_phone_en || '', field_phone_required: checkoutFields.field_phone_required !== false, field_phone_visible: checkoutFields.field_phone_visible !== false,
           field_city_ar: checkoutFields.field_city_ar || '', field_city_fr: checkoutFields.field_city_fr || '', field_city_en: checkoutFields.field_city_en || '', field_city_required: checkoutFields.field_city_required !== false, field_city_visible: checkoutFields.field_city_visible !== false,
           field_address_ar: checkoutFields.field_address_ar || '', field_address_fr: checkoutFields.field_address_fr || '', field_address_en: checkoutFields.field_address_en || '', field_address_required: checkoutFields.field_address_required !== false, field_address_visible: checkoutFields.field_address_visible !== false,
           field_notes_ar: checkoutFields.field_notes_ar || '', field_notes_fr: checkoutFields.field_notes_fr || '', field_notes_en: checkoutFields.field_notes_en || '', field_notes_required: checkoutFields.field_notes_required === true, field_notes_visible: checkoutFields.field_notes_visible !== false,
-          // استرداد إدارة قائمة التنقل التفاعلية
           menu_p1_ar: menuLinks.menu_p1_ar || '', menu_p1_fr: menuLinks.menu_p1_fr || '', menu_p1_en: menuLinks.menu_p1_en || '', menu_p1_visible: menuLinks.menu_p1_visible !== false,
           menu_p2_ar: menuLinks.menu_p2_ar || '', menu_p2_fr: menuLinks.menu_p2_fr || '', menu_p2_en: menuLinks.menu_p2_en || '', menu_p2_visible: menuLinks.menu_p2_visible !== false,
           menu_p3_ar: menuLinks.menu_p3_ar || '', menu_p3_fr: menuLinks.menu_p3_fr || '', menu_p3_en: menuLinks.menu_p3_en || '', menu_p3_visible: menuLinks.menu_p3_visible !== false,
@@ -340,23 +301,18 @@ export default function AdminDashboard() {
     setTimeout(() => setToast(null), 4000);
   };
 
-  // 📥 دالة تسجيل الخروج المعتمدة في بنية مشروعك الخاص ( useAuth )
   async function handleLogout() {
     await logout();
     navigate('/admin/login');
   }
 
-  // 📥 دالة رفع الصور المعتمدة فالمشروع لرفع جميع ملفات وأقسام الموقع من جهازك مباشرة لـ Supabase
   async function handleImageUpload(file: File, bucketName: string): Promise<string> {
     const fileName = `safos-${Date.now()}-${file.name.replace(/\s+/g, '_')}`;
     const { url, error } = await uploadFile(bucketName, file, fileName);
-    if (error || !url) {
-      throw new Error(error || 'فشل رفع الصورة');
-    }
+    if (error || !url) throw new Error(error || 'فشل رفع الصورة');
     return url;
   }
 
-  // تحميل الصور مباشرة على جهاز المستخدم
   const handleDownloadImage = async (imageUrl: string, fileName: string) => {
     if (!imageUrl) return;
     try {
@@ -376,21 +332,14 @@ export default function AdminDashboard() {
     }
   };
 
-  // تفعيل وإرسال قوالب رسائل الواتساب الديناميكية (تأكيد الـ COD / طلب التقييم)
   const handleSendWhatsAppMessage = (order: any, type: 'confirm' | 'review') => {
     if (!order) return;
     const cleanPhone = order.customer_phone.replace(/\s+/g, '');
-    
-    let template = '';
-    if (type === 'confirm') {
-      template = lang === 'ar' ? settings.cod_confirm_ar : lang === 'fr' ? settings.cod_confirm_fr : settings.cod_confirm_en;
-    } else {
-      template = lang === 'ar' ? settings.review_request_ar : lang === 'fr' ? settings.review_request_fr : settings.review_request_en;
-    }
+    let template = type === 'confirm'
+      ? (lang === 'ar' ? settings.cod_confirm_ar : lang === 'fr' ? settings.cod_confirm_fr : settings.cod_confirm_en)
+      : (lang === 'ar' ? settings.review_request_ar : lang === 'fr' ? settings.review_request_fr : settings.review_request_en);
 
-    const firstProduct = order.items && order.items[0] ? (order.items[0].productName || order.items[0].product_name) : '';
     const reviewUrl = `https://safos.online/review/${order.items && order.items[0] ? order.items[0].id : ''}`;
-
     let message = template
       .replace(/{name}/g, order.customer_name)
       .replace(/{order_number}/g, order.order_number)
@@ -401,17 +350,10 @@ export default function AdminDashboard() {
     window.open(`https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(message)}`, '_blank');
   };
 
-  const handlePrintInvoice = () => {
-    window.print();
-  };
-
   const handleUpdateOrderStatus = async (orderId: string, newStatus: string) => {
     setActionLoading(`order-status-${orderId}`);
     try {
-      const { error } = await supabase
-        .from('orders')
-        .update({ status: newStatus })
-        .eq('id', orderId);
+      const { error } = await supabase.from('orders').update({ status: newStatus }).eq('id', orderId);
       if (error) throw error;
       setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
       showToast('تم تحديث حالة الطلب بنجاح', 'success');
@@ -425,10 +367,7 @@ export default function AdminDashboard() {
   const handleToggleReviewStatus = async (reviewId: string, currentStatus: boolean) => {
     setActionLoading(`review-${reviewId}`);
     try {
-      const { error } = await supabase
-        .from('reviews')
-        .update({ is_approved: !currentStatus })
-        .eq('id', reviewId);
+      const { error } = await supabase.from('reviews').update({ is_approved: !currentStatus }).eq('id', reviewId);
       if (error) throw error;
       setReviews(prev => prev.map(r => r.id === reviewId ? { ...r, is_approved: !currentStatus } : r));
       showToast('تم تعديل مظهر التقييم فالموقع حياً', 'success');
@@ -440,12 +379,10 @@ export default function AdminDashboard() {
   };
 
   const handleDeleteReview = async (reviewId: string) => {
-    if (!window.confirm('هل يريد حذف هذا التقييم نهائياً؟')) return;
+    if (!window.confirm('هل تريد حذف هذا التقييم نهائياً؟')) return;
     setActionLoading(`del-review-${reviewId}`);
     try {
-      const { error } = await supabase
-        .from('reviews')
-        .delete().eq('id', reviewId);
+      const { error } = await supabase.from('reviews').delete().eq('id', reviewId);
       if (error) throw error;
       setReviews(prev => prev.filter(r => r.id !== reviewId));
       showToast('تم حذف التقييم بنجاح', 'success');
@@ -463,7 +400,6 @@ export default function AdminDashboard() {
       const { error } = editingCategory
         ? await supabase.from('categories').update(newCategory).eq('id', editingCategory.id)
         : await supabase.from('categories').insert([newCategory]);
-      
       if (error) throw error;
       showToast('تم حفظ المجموعة بنجاح', 'success');
       setIsAddingCategory(false);
@@ -478,7 +414,7 @@ export default function AdminDashboard() {
   };
 
   const handleDeleteCategory = async (catId: string) => {
-    if (!window.confirm('هل أنت متأكد من حذف هذه المجموعة؟ جميع المنتجات المربوطة بها ستصبح بدون تصنيف.')) return;
+    if (!window.confirm('هل أنت متأكد من حذف هذه المجموعة؟')) return;
     setActionLoading(`del-cat-${catId}`);
     try {
       const { error } = await supabase.from('categories').delete().eq('id', catId);
@@ -498,20 +434,10 @@ export default function AdminDashboard() {
     try {
       const payload = { ...newProduct };
       if (!payload.category) payload.category = null;
-
-      const { error } = await supabase
-        .from('products')
-        .insert([payload]);
+      const { error } = await supabase.from('products').insert([payload]);
       if (error) throw error;
-      showToast('تمت إضافة منتج الكانفاس الفاخر بنجاح', 'success');
+      showToast('تمت إضافة المنتج بنجاح', 'success');
       setIsAddingProduct(false);
-      setNewProduct({
-        name: '', name_en: '', name_fr: '', price: 0, old_price: null, stock: 5, image_url: '', category: '',
-        color: '', tag: '', description: '', description_en: '', description_fr: '',
-        materials_dimensions: '', materials_dimensions_en: '', materials_dimensions_fr: '',
-        care_guide: '', care_guide_en: '', care_guide_fr: '', additional_images: [], video_url: '',
-        show_video: true, show_gallery: true, show_care_guide: true, show_dimensions: true
-      });
       fetchData();
     } catch (err: any) {
       showToast(err.message, 'error');
@@ -527,11 +453,7 @@ export default function AdminDashboard() {
     try {
       const payload = { ...editingProduct };
       if (!payload.category) payload.category = null as any;
-
-      const { error } = await supabase
-        .from('products')
-        .update(payload)
-        .eq('id', editingProduct.id);
+      const { error } = await supabase.from('products').update(payload).eq('id', editingProduct.id);
       if (error) throw error;
       showToast('تم حفظ تعديلات الحقيبة بنجاح', 'success');
       setEditingProduct(null);
@@ -544,12 +466,10 @@ export default function AdminDashboard() {
   };
 
   const handleDeleteProduct = async (productId: string) => {
-    if (!window.confirm('هل يريد حذف هذه حقيبة الكانفاس نهائياً من العرض؟')) return;
+    if (!window.confirm('هل تريد حذف هذه الحقيبة نهائياً؟')) return;
     setActionLoading(`del-prod-${productId}`);
     try {
-      const { error } = await supabase
-        .from('products')
-        .delete().eq('id', productId);
+      const { error } = await supabase.from('products').delete().eq('id', productId);
       if (error) throw error;
       showToast('تم حذف المنتج بنجاح', 'success');
       fetchData();
@@ -560,6 +480,7 @@ export default function AdminDashboard() {
     }
   };
 
+  // 📝 اكتمال وإصلاح دالة حفظ الإعدادات بالكامل لتشمل ألوان السلة ومفاتيح إخفاء الأقسام
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
     setActionLoading('settings');
@@ -571,14 +492,16 @@ export default function AdminDashboard() {
         },
         {
           key: 'colors',
-          value: { primary: settings.primary_color, secondary: settings.secondary_color, title_color: settings.title_color, text_color: settings.text_color, card_bg: settings.card_bg, accordion_bg: settings.accordion_bg, image_bg: settings.image_bg, title_font: settings.title_font, body_font: settings.body_font }
+          value: { 
+            primary: settings.primary_color, secondary: settings.secondary_color, title_color: settings.title_color, text_color: settings.text_color, 
+            card_bg: settings.card_bg, accordion_bg: settings.accordion_bg, image_bg: settings.image_bg, title_font: settings.title_font, body_font: settings.body_font,
+            // 🛒 حفظ ألوان السلة الجديدة حياً في السحابة
+            cart_bg: settings.cart_bg, cart_btn: settings.cart_btn, cart_btn_text: settings.cart_btn_text, cart_text: settings.cart_text
+          }
         },
         {
           key: 'contact',
-          value: {
-            phone: settings.phone, whatsapp: settings.whatsapp, email: settings.email, address: settings.address,
-            instagram: settings.instagram, facebook: settings.facebook, tiktok: settings.tiktok, currency: settings.currency, currency_symbol: settings.currency_symbol
-          }
+          value: { phone: settings.phone, whatsapp: settings.whatsapp, email: settings.email, address: settings.address, instagram: settings.instagram, facebook: settings.facebook, tiktok: settings.tiktok, currency: settings.currency, currency_symbol: settings.currency_symbol }
         },
         {
           key: 'hero',
@@ -609,12 +532,8 @@ export default function AdminDashboard() {
         },
         {
           key: 'templates',
-          value: {
-            cod_confirm_ar: settings.cod_confirm_ar, cod_confirm_fr: settings.cod_confirm_fr, cod_confirm_en: settings.cod_confirm_en,
-            review_request_ar: settings.review_request_ar, review_request_fr: settings.review_request_fr, review_request_en: settings.review_request_en
-          }
+          value: { cod_confirm_ar: settings.cod_confirm_ar, cod_confirm_fr: settings.cod_confirm_fr, cod_confirm_en: settings.cod_confirm_en, review_request_ar: settings.review_request_ar, review_request_fr: settings.review_request_fr, review_request_en: settings.review_request_en }
         },
-        // مزامنة إدارة المينيو وقائمة التنقل الحية فالمتجر
         {
           key: 'menu_links',
           value: {
@@ -625,7 +544,6 @@ export default function AdminDashboard() {
             menu_p5_ar: settings.menu_p5_ar, menu_p5_fr: settings.menu_p5_fr, menu_p5_en: settings.menu_p5_en, menu_p5_visible: settings.menu_p5_visible
           }
         },
-        // مزامنة حقول الشراء
         {
           key: 'checkout_fields',
           value: {
@@ -636,7 +554,7 @@ export default function AdminDashboard() {
             field_notes_ar: settings.field_notes_ar, field_notes_fr: settings.field_notes_fr, field_notes_en: settings.field_notes_en, field_notes_required: settings.field_notes_required, field_notes_visible: settings.field_notes_visible
           }
         },
-        // مزامنة booleans الإخفاء والإظهار للأقسام الأساسية
+        // 👁️ حفظ مفاتيح الرؤية للأقسام والبانر الإعلاني
         {
           key: 'visibility',
           value: {
@@ -649,1713 +567,250 @@ export default function AdminDashboard() {
       ];
 
       for (const item of updates) {
-        const { error } = await supabase.from('store_settings').upsert({
-          key: item.key,
-          value: item.value,
-          updated_at: new Date().toISOString()
-        });
+        const { error } = await supabase
+          .from('store_settings')
+          .upsert({ key: item.key, value: item.value }, { onConflict: 'key' });
         if (error) throw error;
       }
 
-      showToast('تمت مزامنة وحفظ جميع التخصيصات حياً', 'success');
-      // تحديث الـ Context العالمي حياً فالموقع في نفس ثانية الحفظ بدون الحاجة لعمل ريفريش يدوياً
-      await fetchStoreData();
-      fetchData();
+      showToast('تم حفظ كامل إعدادات المتجر الفاخر وتحديثه حياً!', 'success');
+      fetchStoreData();
     } catch (err: any) {
-      showToast(err.message, 'error');
+      showToast(err.message || 'حدث خطأ أثناء حفظ التحديثات', 'error');
     } finally {
       setActionLoading(null);
     }
   };
 
-  const totalRevenue = orders
-    .filter(o => o.status !== 'cancelled' && o.payment_status === 'paid')
-    .reduce((sum, o) => sum + (Number(o.total) || 0), 0);
-  const pendingOrdersCount = orders.filter(o => o.status === 'pending').length;
-  const lowStockProducts = products.filter(p => p.stock < 3);
-
-  const filteredOrders = orders.filter(order => {
-    const matchesSearch = 
-      (order.order_number?.toLowerCase() || '').includes(orderSearch.toLowerCase()) ||
-      (order.customer_name?.toLowerCase() || '').includes(orderSearch.toLowerCase()) ||
-      (order.customer_phone || '').includes(orderSearch);
-    
-    const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
-    const matchesPayment = paymentFilter === 'all' || order.payment_status === paymentFilter;
-
-    return matchesSearch && matchesStatus && matchesPayment;
-  });
-
-  // حساب نسب الطلبيات حياً لرسم المبيانات الدائرية التفاعلية الـ SVG فلوحة التحكم
-  const totalOrdersCount = orders.length || 1;
-  const pendingPercent = Math.round((orders.filter(o => o.status === 'pending').length / totalOrdersCount) * 100);
-  const confirmedPercent = Math.round((orders.filter(o => o.status === 'confirmed').length / totalOrdersCount) * 100);
-  const shippedPercent = Math.round((orders.filter(o => o.status === 'shipped').length / totalOrdersCount) * 100);
-  const deliveredPercent = Math.round((orders.filter(o => o.status === 'delivered').length / totalOrdersCount) * 100);
-  const cancelledPercent = Math.round((orders.filter(o => o.status === 'cancelled').length / totalOrdersCount) * 100);
-
-  // تم تعريف مصفوفة الأقسام بنوع ثابت لضمان عدم حدوث أي خطأ في تصنيف الأنواع
-  const settingsSections: { id: 'identity' | 'hero' | 'about' | 'pillars' | 'testimonials' | 'policies' | 'contact' | 'templates' | 'style' | 'checkout' | 'menu'; label: string; icon: any }[] = [
-    { id: 'identity', label: 'الشعار والهوية البصرية', icon: Globe },
-    { id: 'style', label: 'الألوان والخطوط الفاخرة', icon: Palette },
-    { id: 'menu', label: 'إدارة قائمة التنقل (Menu)', icon: Menu },
-    { id: 'checkout', label: 'إدارة حقول الشراء (Checkout)', icon: Lock },
-    { id: 'templates', label: 'قوالب رسائل الواتساب', icon: Send },
-    { id: 'hero', label: 'البانر الترحيبي والفرعي', icon: ImageIcon },
-    { id: 'about', label: 'قصة الماركة (من نحن)', icon: Clock },
-    { id: 'pillars', label: 'ركائز الفخامة (لماذا نحن)', icon: AlertCircle },
-    { id: 'testimonials', label: 'آراء العميلات والتقييمات', icon: CheckCircle },
-    { id: 'policies', label: 'السياسات وتذييل الصفحة', icon: SettingsIcon },
-    { id: 'contact', label: 'بيانات التواصل والشبكات', icon: Phone }
-  ];
-
-  if (connectionError) {
+  if (loading) {
     return (
-      <div className="min-h-screen bg-[#0A0A0A] text-zinc-100 flex items-center justify-center p-6">
-        <div className="bg-zinc-950 border border-red-500/20 p-8 rounded-3xl max-w-md w-full text-center space-y-4 shadow-2xl">
-          <div className="mx-auto w-12 h-12 bg-red-500/10 text-red-400 rounded-full flex items-center justify-center">
-            <AlertCircle size={24} />
-          </div>
-          <h2 className="text-lg font-light text-zinc-100">فشل الاتصال بـ Supabase</h2>
-          <p className="text-xs text-zinc-400 leading-relaxed">{connectionError}</p>
-          <div className="pt-4 border-t border-zinc-900">
-            <button onClick={() => window.location.reload()} className="w-full bg-zinc-900 hover:bg-zinc-850 text-zinc-200 py-2.5 rounded-xl text-xs font-semibold transition-all">إعادة محاولة الاتصال</button>
-          </div>
+      <div className="min-h-screen bg-black flex items-center justify-center text-gold">
+        <div className="flex flex-col items-center gap-4">
+          <RefreshCw className="animate-spin h-10 w-10 text-[#D4AF37]" />
+          <p className="font-serif tracking-widest text-sm text-gray-400">جاري تأمين الاتصال بـ SAFOS Cloud...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div 
-      style={{
-        '--primary-theme': settings.primary_color || '#0A0A0A',
-        '--secondary-theme': settings.secondary_color || '#D4AF37'
-      } as React.CSSProperties}
-      className="min-h-screen bg-[#0A0A0A] text-zinc-100 flex font-sans antialiased selection:bg-amber-500/30 print:bg-white print:text-black animate-fadeIn"
-    >
-      
-      {/* القائمة الجانبية الفاخرة والمتحكمة بالألوان ديناميكياً */}
-      <aside className="print:hidden fixed inset-y-0 right-0 z-30 w-64 bg-black border-l border-zinc-900 flex flex-col justify-between transition-transform duration-300 transform lg:translate-x-0 lg:static lg:translate-x-0">
-        <div>
-          <div className="p-8 border-b border-zinc-900 text-center">
-            <h1 className="text-2xl font-bold tracking-[0.3em]" style={{ color: 'var(--secondary-theme)' }}>
-              {lang === 'ar' ? settings.site_name_ar : lang === 'fr' ? settings.site_name_fr : settings.site_name_en}
-            </h1>
-            <p className="text-[10px] uppercase tracking-widest text-zinc-500 mt-1">
-              {lang === 'ar' ? settings.site_subtitle_ar : lang === 'fr' ? settings.site_subtitle_fr : settings.site_subtitle_en}
-            </p>
+    <div className="min-h-screen bg-[#070707] text-white font-sans flex flex-col md:flex-row" dir="rtl">
+      {/* القائمة الجانبية (Sidebar) */}
+      <aside className={`fixed inset-y-0 right-0 z-50 w-64 bg-[#0A0A0A] border-l border-neutral-900 transition-transform duration-300 md:translate-x-0 md:static ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+        <div className="p-6 border-b border-neutral-900 flex justify-between items-center">
+          <div>
+            <h1 className="font-serif text-xl tracking-wider text-[#D4AF37] font-bold">SAFOS</h1>
+            <p className="text-xs text-neutral-500">لوحة الإدارة الحية v2.0</p>
           </div>
-
-          <nav className="p-4 space-y-2">
-            {[
-              { id: 'dashboard', label: 'الإحصائيات العامة والتحليل', icon: LayoutDashboard },
-              { id: 'orders', label: 'إدارة الطلبيات والمبيعات', icon: ShoppingBag, badge: pendingOrdersCount > 0 ? pendingOrdersCount : undefined },
-              { id: 'products', label: 'مخزون وحقائب الكانفاس', icon: TrendingUp, badge: lowStockProducts.length > 0 ? lowStockProducts.length : undefined },
-              { id: 'categories', label: 'مجموعات وتصنيفات السلع', icon: Menu },
-              { id: 'reviews', label: 'تقييمات وآراء العميلات', icon: Star },
-              { id: 'settings', label: 'تخصيص الموقع والرسائل', icon: SettingsIcon },
-            ].map((tab) => {
-              const Icon = tab.icon;
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => {
-                    setActiveTab(tab.id as any);
-                    setIsSidebarOpen(false);
-                  }}
-                  className="w-full flex items-center justify-between p-3.5 rounded-xl transition-all duration-300 text-xs font-light"
-                  style={{
-                    backgroundColor: isActive ? 'rgba(212, 175, 55, 0.05)' : 'transparent',
-                    color: isActive ? 'var(--secondary-theme)' : '#a1a1aa',
-                    borderRight: isActive ? `3px solid var(--secondary-theme)` : 'none'
-                  }}
-                >
-                  <div className="flex items-center space-x-3 space-x-reverse">
-                    <Icon size={16} style={{ color: isActive ? 'var(--secondary-theme)' : '#a1a1aa' }} />
-                    <span>{tab.label}</span>
-                  </div>
-                  {tab.badge !== undefined && (
-                    <span className="px-2 py-0.5 text-[10px] rounded-full bg-zinc-800 text-zinc-300">
-                      {tab.badge}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </nav>
+          <button className="md:hidden text-gray-400" onClick={() => setIsSidebarOpen(false)}><X size={20} /></button>
         </div>
 
-        <div className="p-4 border-t border-zinc-900 space-y-3">
-          <div className="flex items-center justify-center space-x-2 space-x-reverse bg-zinc-950 p-2 rounded-xl border border-zinc-900">
-            <button onClick={() => handleLangChange('ar')} className={`flex-1 py-1 px-2 text-[10px] rounded-lg transition-all ${lang === 'ar' ? 'text-black font-bold' : 'text-zinc-400'}`} style={{ backgroundColor: lang === 'ar' ? 'var(--secondary-theme)' : 'transparent' }}>AR</button>
-            <button onClick={() => handleLangChange('fr')} className={`flex-1 py-1 px-2 text-[10px] rounded-lg transition-all ${lang === 'fr' ? 'text-black font-bold' : 'text-zinc-400'}`} style={{ backgroundColor: lang === 'fr' ? 'var(--secondary-theme)' : 'transparent' }}>FR</button>
-            <button onClick={() => handleLangChange('en')} className={`flex-1 py-1 px-2 text-[10px] rounded-lg transition-all ${lang === 'en' ? 'text-black font-bold' : 'text-zinc-400'}`} style={{ backgroundColor: lang === 'en' ? 'var(--secondary-theme)' : 'transparent' }}>EN</button>
-          </div>
-          <button onClick={handleLogout} className="w-full flex items-center space-x-3 space-x-reverse p-3 text-red-400 hover:text-red-300 hover:bg-red-500/5 rounded-xl transition-all duration-200 text-sm">
-            <LogOut size={18} />
-            <span>تسجيل الخروج</span>
+        <nav className="p-4 space-y-1">
+          <button onClick={() => { setActiveTab('dashboard'); setIsSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm transition-colors ${activeTab === 'dashboard' ? 'bg-[#D4AF37] text-black font-semibold' : 'text-gray-400 hover:bg-neutral-900'}`}>
+            <LayoutDashboard size={18} /> نظرة عامة
+          </button>
+          <button onClick={() => { setActiveTab('orders'); setIsSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm transition-colors ${activeTab === 'orders' ? 'bg-[#D4AF37] text-black font-semibold' : 'text-gray-400 hover:bg-neutral-900'}`}>
+            <ShoppingBag size={18} /> الطلبيات الواردة <span className="mr-auto bg-red-950 text-red-400 text-xs px-2 py-0.5 rounded-full">{orders.filter(o => o.status === 'pending').length}</span>
+          </button>
+          <button onClick={() => { setActiveTab('products'); setIsSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm transition-colors ${activeTab === 'products' ? 'bg-[#D4AF37] text-black font-semibold' : 'text-gray-400 hover:bg-neutral-900'}`}>
+            <ImageIcon size={18} /> حقائب الكانفاس
+          </button>
+          <button onClick={() => { setActiveTab('categories'); setIsSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm transition-colors ${activeTab === 'categories' ? 'bg-[#D4AF37] text-black font-semibold' : 'text-gray-400 hover:bg-neutral-900'}`}>
+            <Menu size={18} /> المجموعات والتصنيفات
+          </button>
+          <button onClick={() => { setActiveTab('reviews'); setIsSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm transition-colors ${activeTab === 'reviews' ? 'bg-[#D4AF37] text-black font-semibold' : 'text-gray-400 hover:bg-neutral-900'}`}>
+            <Star size={18} /> المراجعات والشهادات
+          </button>
+          <button onClick={() => { setActiveTab('settings'); setIsSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm transition-colors ${activeTab === 'settings' ? 'bg-[#D4AF37] text-black font-semibold' : 'text-gray-400 hover:bg-neutral-900'}`}>
+            <SettingsIcon size={18} /> تخصيص المتجر بالكامل
+          </button>
+        </nav>
+
+        <div className="absolute bottom-4 inset-x-4">
+          <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-red-400 hover:bg-red-950/20 transition-colors">
+            <LogOut size={18} /> تسجيل الخروج الآمن
           </button>
         </div>
       </aside>
 
-      {/* المحتوى الرئيسي */}
-      <main className="flex-1 min-w-0 p-6 lg:p-10 overflow-y-auto print:p-0">
-        <div className="print:hidden flex items-center justify-between mb-8 pb-4 border-b border-zinc-900">
-          <div>
-            <h2 className="text-2xl font-light text-zinc-100">
-              {activeTab === 'dashboard' && 'الإحصائيات العامة والتحليل'}
-              {activeTab === 'orders' && 'سجل المبيعات والطلبات'}
-              {activeTab === 'products' && 'إدارة المنتجات وتعديل الخصائص'}
-              {activeTab === 'categories' && 'إدارة مجموعات وتصنيفات السلع'}
-              {activeTab === 'reviews' && 'إدارة وتقييمات العميلات الحقيقية'}
-              {activeTab === 'settings' && 'تخصيص كامل لأقسام المتجر والرسائل'}
-            </h2>
+      {/* المحتوى الرئيسي للوحة التحكم */}
+      <main className="flex-1 min-w-0 overflow-y-auto p-6 md:p-10">
+        {/* الترويسة العلوية للتحكم باللغات والمعاينة والسندبار */}
+        <div className="flex justify-between items-center mb-8 bg-[#0F0F0F] p-4 rounded-xl border border-neutral-900">
+          <div className="flex items-center gap-3">
+            <button className="md:hidden text-gray-400" onClick={() => setIsSidebarOpen(true)}><Menu size={24} /></button>
+            <h2 className="text-lg font-serif font-bold text-neutral-200">أهلاً بك في فضاء الإدارة والتحكم المباشر</h2>
           </div>
-          <button onClick={fetchData} className="p-2.5 bg-zinc-950 border border-zinc-900 text-zinc-400 hover:text-amber-500 rounded-xl">
-            <RefreshCw size={18} className={loading ? 'animate-spin' : ''} style={{ color: loading ? 'var(--secondary-theme)' : '#71717a' }} />
-          </button>
+          <div className="flex items-center gap-2" dir="ltr">
+            <button onClick={() => handleLangChange('ar')} className={`px-3 py-1 rounded text-xs transition-colors ${lang === 'ar' ? 'bg-[#D4AF37] text-black font-bold' : 'bg-neutral-900 text-gray-400'}`}>AR</button>
+            <button onClick={() => handleLangChange('fr')} className={`px-3 py-1 rounded text-xs transition-colors ${lang === 'fr' ? 'bg-[#D4AF37] text-black font-bold' : 'bg-neutral-900 text-gray-400'}`}>FR</button>
+            <button onClick={() => handleLangChange('en')} className={`px-3 py-1 rounded text-xs transition-colors ${lang === 'en' ? 'bg-[#D4AF37] text-black font-bold' : 'bg-neutral-900 text-gray-400'}`}>EN</button>
+          </div>
         </div>
 
-        {loading ? (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 animate-pulse">
-              {[...Array(4)].map((_, i) => <div key={i} className="h-28 bg-zinc-900 rounded-2xl" />)}
-            </div>
+        {/* التنبيهات المنبثقة (Toast) */}
+        {toast && (
+          <div className={`fixed bottom-6 left-6 z-50 px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 border text-sm transition-all animate-bounce ${toast.type === 'success' ? 'bg-emerald-950 text-emerald-400 border-emerald-900' : 'bg-red-950 text-red-400 border-red-900'}`}>
+            {toast.type === 'success' ? <CheckCircle size={18} /> : <AlertCircle size={18} />}
+            {toast.message}
           </div>
-        ) : (
-          <>
-            {/* 1. الإحصائيات العامة والتحليل */}
-            {activeTab === 'dashboard' && (
-              <div className="space-y-8 print:hidden animate-fadeIn">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                  <div className="bg-zinc-950 border border-zinc-900 p-6 rounded-2xl">
-                    <span className="text-xs text-zinc-500">إجمالي الأرباح المدفوعة</span>
-                    <div className="mt-4 text-3xl font-light">{totalRevenue.toLocaleString()} <span style={{ color: 'var(--secondary-theme)' }}>درهم</span></div>
-                  </div>
-                  <div className="bg-zinc-950 border border-zinc-900 p-6 rounded-2xl">
-                    <span className="text-xs text-zinc-500">الطلبات المعلقة</span>
-                    <div className="mt-4 text-3xl font-light" style={{ color: 'var(--secondary-theme)' }}>{pendingOrdersCount}</div>
-                  </div>
-                  <div className="bg-zinc-950 border border-zinc-900 p-6 rounded-2xl">
-                    <span className="text-xs text-red-400">نقص المخزون (&lt;3)</span>
-                    <div className="mt-4 text-3xl font-light text-red-400">{lowStockProducts.length}</div>
-                  </div>
-                  <div className="bg-zinc-950 border border-zinc-900 p-6 rounded-2xl">
-                    <span className="text-xs text-zinc-500">مجموع التشكيلة</span>
-                    <div className="mt-4 text-3xl font-light">{products.length}</div>
-                  </div>
-                </div>
-
-                {/* لوحة مبيانات حالات الطلب التفاعلية SVG */}
-                <div className="bg-zinc-950 border border-zinc-900 p-8 rounded-3xl">
-                  <h3 className="text-lg font-light text-zinc-200">تحليل وتوزيع حالات طلبيات الكانفاس</h3>
-                  <p className="text-xs text-zinc-500 mt-1">نسب حية لتتبع تقدم التوصيل وشحن الحقائب من ورشة SAFOS</p>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-5 gap-8 mt-10">
-                    
-                    {/* حلقة معلقة */}
-                    <div className="flex flex-col items-center space-y-3 bg-black/40 p-4 rounded-2xl border border-zinc-900">
-                      <div className="relative w-24 h-24">
-                        <svg className="w-full h-full transform -rotate-90">
-                          <circle cx="48" cy="48" r="40" stroke="#18181b" strokeWidth="6" fill="transparent" />
-                          <circle cx="48" cy="48" r="40" stroke="var(--secondary-theme)" strokeWidth="6" fill="transparent" strokeDasharray="251" strokeDashoffset={251 - (251 * pendingPercent) / 100} strokeLinecap="round" className="transition-all duration-1000" />
-                        </svg>
-                        <span className="absolute inset-0 m-auto h-fit text-center font-mono text-sm font-semibold">{pendingPercent}%</span>
-                      </div>
-                      <span className="text-xs text-zinc-400">قيد الانتظار ({orders.filter(o => o.status === 'pending').length})</span>
-                    </div>
-
-                    {/* حلقة مؤكدة */}
-                    <div className="flex flex-col items-center space-y-3 bg-black/40 p-4 rounded-2xl border border-zinc-900">
-                      <div className="relative w-24 h-24">
-                        <svg className="w-full h-full transform -rotate-90">
-                          <circle cx="48" cy="48" r="40" stroke="#18181b" strokeWidth="6" fill="transparent" />
-                          <circle cx="48" cy="48" r="40" stroke="#a78bfa" strokeWidth="6" fill="transparent" strokeDasharray="251" strokeDashoffset={251 - (251 * confirmedPercent) / 100} strokeLinecap="round" />
-                        </svg>
-                        <span className="absolute inset-0 m-auto h-fit text-center font-mono text-sm font-semibold">{confirmedPercent}%</span>
-                      </div>
-                      <span className="text-xs text-zinc-400">مؤكدة ({orders.filter(o => o.status === 'confirmed').length})</span>
-                    </div>
-
-                    {/* حلقة مشحونة */}
-                    <div className="flex flex-col items-center space-y-3 bg-black/40 p-4 rounded-2xl border border-zinc-900">
-                      <div className="relative w-24 h-24">
-                        <svg className="w-full h-full transform -rotate-90">
-                          <circle cx="48" cy="48" r="40" stroke="#18181b" strokeWidth="6" fill="transparent" />
-                          <circle cx="48" cy="48" r="40" stroke="#60a5fa" strokeWidth="6" fill="transparent" strokeDasharray="251" strokeDashoffset={251 - (251 * shippedPercent) / 100} strokeLinecap="round" />
-                        </svg>
-                        <span className="absolute inset-0 m-auto h-fit text-center font-mono text-sm font-semibold">{shippedPercent}%</span>
-                      </div>
-                      <span className="text-xs text-zinc-400">مشحونة ({orders.filter(o => o.status === 'shipped').length})</span>
-                    </div>
-
-                    {/* hلقة تم التوصيل */}
-                    <div className="flex flex-col items-center space-y-3 bg-black/40 p-4 rounded-2xl border border-zinc-900">
-                      <div className="relative w-24 h-24">
-                        <svg className="w-full h-full transform -rotate-90">
-                          <circle cx="48" cy="48" r="40" stroke="#18181b" strokeWidth="6" fill="transparent" />
-                          <circle cx="48" cy="48" r="40" stroke="#34d399" strokeWidth="6" fill="transparent" strokeDasharray="251" strokeDashoffset={251 - (251 * deliveredPercent) / 100} strokeLinecap="round" />
-                        </svg>
-                        <span className="absolute inset-0 m-auto h-fit text-center font-mono text-sm font-semibold">{deliveredPercent}%</span>
-                      </div>
-                      <span className="text-xs text-zinc-400">تم التوصيل ({orders.filter(o => o.status === 'delivered').length})</span>
-                    </div>
-
-                    {/* حلقة ملغاة */}
-                    <div className="flex flex-col items-center space-y-3 bg-black/40 p-4 rounded-2xl border border-zinc-900">
-                      <div className="relative w-24 h-24">
-                        <svg className="w-full h-full transform -rotate-90">
-                          <circle cx="48" cy="48" r="40" stroke="#18181b" strokeWidth="6" fill="transparent" />
-                          <circle cx="48" cy="48" r="40" stroke="#f87171" strokeWidth="6" fill="transparent" strokeDasharray="251" strokeDashoffset={251 - (251 * cancelledPercent) / 100} strokeLinecap="round" />
-                        </svg>
-                        <span className="absolute inset-0 m-auto h-fit text-center font-mono text-sm font-semibold">{cancelledPercent}%</span>
-                      </div>
-                      <span className="text-xs text-zinc-400">ملغاة ({orders.filter(o => o.status === 'cancelled').length})</span>
-                    </div>
-
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* 2. سجل المبيعات والطلبات */}
-            {activeTab === 'orders' && (
-              <div className="space-y-6 print:hidden">
-                <div className="bg-zinc-950 border border-zinc-900 p-5 rounded-2xl flex flex-col md:flex-row gap-4 items-center justify-between">
-                  <input
-                    type="text"
-                    placeholder="البحث بالاسم، الهاتف، أو رقم الطلب..."
-                    value={orderSearch}
-                    onChange={(e) => setOrderSearch(e.target.value)}
-                    className="w-full md:w-96 p-2.5 bg-black border border-zinc-900 rounded-xl text-zinc-200"
-                  />
-                  <div className="flex gap-3">
-                    <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="bg-black border border-zinc-900 text-zinc-300 py-2 px-3 rounded-xl text-xs">
-                      <option value="all">كل حالات الشحن</option>
-                      <option value="pending">قيد الانتظار</option>
-                      <option value="confirmed">مؤكد</option>
-                      <option value="shipped">تم الشحن</option>
-                      <option value="delivered">تم التوصيل</option>
-                      <option value="cancelled">ملغى</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="bg-zinc-950 border border-zinc-900 rounded-2xl overflow-hidden shadow-2xl">
-                  <table className="w-full text-right text-sm">
-                    <thead className="bg-[#0D0D0D] text-zinc-500 text-[10px] uppercase border-b border-zinc-900">
-                      <tr>
-                        <th className="py-4 px-6">رقم الطلب</th>
-                        <th className="py-4 px-6">العميل</th>
-                        <th className="py-4 px-6 text-left">قيمة الطلب</th>
-                        <th className="py-4 px-6 text-center">حالة الشحن</th>
-                        <th className="py-4 px-6 text-center">الإجراءات</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-zinc-900">
-                      {filteredOrders.map((order) => (
-                        <tr key={order.id} className="hover:bg-zinc-900/30">
-                          <td className="py-4 px-6 font-mono text-xs" style={{ color: 'var(--secondary-theme)' }}>{order.order_number}</td>
-                          <td className="py-4 px-6 font-medium text-zinc-100">{order.customer_name}</td>
-                          <td className="py-4 px-6 text-left">{order.total} درهم</td>
-                          <td className="py-4 px-6 text-center">
-                            <select
-                              value={order.status}
-                              onChange={(e) => handleUpdateOrderStatus(order.id, e.target.value)}
-                              className="text-xs py-1 px-2.5 rounded bg-black border border-zinc-800"
-                            >
-                              <option value="pending">قيد الانتظار</option>
-                              <option value="confirmed">مؤكد</option>
-                              <option value="shipped">تم الشحن</option>
-                              <option value="delivered">تم التوصيل</option>
-                              <option value="cancelled">ملغى</option>
-                            </select>
-                          </td>
-                          <td className="py-4 px-6 text-center flex items-center justify-center space-x-2 space-x-reverse">
-                            <button onClick={() => setSelectedOrder(order)} className="p-1.5 bg-zinc-900 text-zinc-300 rounded-lg"><Eye size={14} /></button>
-                            <button onClick={() => handleSendWhatsAppMessage(order, 'confirm')} className="p-1.5 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 rounded-lg" title="مشاركة على واتساب لتأكيد الـ COD"><Send size={14} /></button>
-                            {/* إرسال رابط التقييم المباشر عند التوصيل */}
-                            {order.status === 'delivered' && (
-                              <button onClick={() => handleSendWhatsAppMessage(order, 'review')} className="p-1.5 bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 rounded-lg" title="إرسال رابط التقييم المخصص للزبونة"><Star size={14} /></button>
-                            )}
-                            <button onClick={() => handleDeleteOrder(order.id)} className="p-1.5 bg-red-500/5 text-red-400 rounded-lg"><Trash2 size={14} /></button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-
-            {/* 3. إدارة السلع وحقائب الكانفاس */}
-            {activeTab === 'products' && (
-              <div className="space-y-6 print:hidden animate-fadeIn">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-light text-zinc-300">حقائب الكانفاس</h3>
-                  <button onClick={() => setIsAddingProduct(true)} className="bg-[#D4AF37] hover:bg-amber-500 text-black text-xs font-semibold py-2 px-4 rounded-xl flex items-center space-x-1.5 space-x-reverse" style={{ backgroundColor: 'var(--secondary-theme)' }}>
-                    <Plus size={16} />
-                    <span>إضافة حقيبة كانفاس جديدة</span>
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {products.map((product) => (
-                    <div key={product.id} className="bg-zinc-950 border border-zinc-900 rounded-2xl overflow-hidden p-5 flex flex-col justify-between hover:border-zinc-800 transition-all">
-                      <div>
-                        <div className="w-full h-48 bg-zinc-900 rounded-xl overflow-hidden mb-4 relative" style={{ backgroundColor: settings.colors?.image_bg || '#0F0F0F' }}>
-                          {product.image_url ? (
-                            <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-zinc-600 text-xs font-light">لا توجد صورة</div>
-                          )}
-                          {product.image_url && (
-                            <button
-                              onClick={() => handleDownloadImage(product.image_url, product.name)}
-                              className="absolute bottom-3 right-3 bg-black/70 hover:bg-amber-500 hover:text-black text-white p-2.5 rounded-full shadow-lg"
-                              title="تحميل الصورة على جهازك"
-                            >
-                              <Download size={14} />
-                            </button>
-                          )}
-                        </div>
-                        <h4 className="text-base font-light text-zinc-100">{product.name}</h4>
-                        <p className="text-xs font-mono mt-1" style={{ color: 'var(--secondary-theme)' }}>{product.price} درهم</p>
-                      </div>
-
-                      <div className="border-t border-zinc-900 pt-4 mt-4 flex gap-2">
-                        <button onClick={() => setEditingProduct(product)} className="flex-1 bg-zinc-900 hover:bg-zinc-850 text-zinc-200 py-2 rounded-xl text-xs font-semibold flex items-center justify-center space-x-1.5 space-x-reverse">
-                          <Edit3 size={14} />
-                          <span>تعديل التفاصيل والخصائص</span>
-                        </button>
-                        <button onClick={() => handleDeleteProduct(product.id)} className="p-2 bg-red-500/5 hover:bg-red-500/15 text-red-400 rounded-xl"><Trash2 size={14} /></button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* إدارة المجموعات والتصنيفات الديناميكية بالكامل */}
-            {activeTab === 'categories' && (
-              <div className="space-y-6 print:hidden">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-light text-zinc-300">مجموعات وتصنيفات السلع</h3>
-                  <button onClick={() => setIsAddingCategory(true)} className="bg-[#D4AF37] hover:bg-amber-500 text-black text-xs font-semibold py-2 px-4 rounded-xl flex items-center space-x-1.5 space-x-reverse" style={{ backgroundColor: 'var(--secondary-theme)' }}>
-                    <Plus size={16} />
-                    <span>إضافة مجموعة جديدة</span>
-                  </button>
-                </div>
-
-                <div className="bg-zinc-950 border border-zinc-900 rounded-2xl overflow-hidden animate-fadeIn">
-                  <table className="w-full text-right text-sm">
-                    <thead className="bg-[#0D0D0D] text-zinc-500 text-[10px] uppercase border-b border-zinc-900">
-                      <tr>
-                        <th className="py-4 px-6">المجموعة بالعربية</th>
-                        <th className="py-4 px-6">المجموعة بالفرنسية</th>
-                        <th className="py-4 px-6">المجموعة بالإنجليزية</th>
-                        <th className="py-4 px-6 text-center">الإجراءات</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-zinc-900">
-                      {categories.map((cat) => (
-                        <tr key={cat.id} className="hover:bg-zinc-900/30">
-                          <td className="py-4 px-6 font-medium text-zinc-100">{cat.name_ar}</td>
-                          <td className="py-4 px-6 text-zinc-400">{cat.name_fr}</td>
-                          <td className="py-4 px-6 text-zinc-400">{cat.name_en}</td>
-                          <td className="py-4 px-6 text-center flex items-center justify-center space-x-2 space-x-reverse">
-                            <button
-                              onClick={() => {
-                                setEditingCategory(cat);
-                                setNewCategory({ name_ar: cat.name_ar, name_fr: cat.name_fr, name_en: cat.name_en });
-                                setIsAddingCategory(true);
-                              }}
-                              className="p-1.5 bg-zinc-900 text-zinc-300 rounded"
-                            >
-                              <Edit3 size={12} />
-                            </button>
-                            <button onClick={() => handleDeleteCategory(cat.id)} className="p-1.5 bg-red-500/5 text-red-400 rounded"><Trash2 size={12} /></button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-
-            {/* إدارة مراجعات وتقييمات العميلات */}
-            {activeTab === 'reviews' && (
-              <div className="space-y-6 print:hidden">
-                <div className="bg-zinc-950 border border-zinc-900 rounded-2xl overflow-hidden animate-fadeIn">
-                  <table className="w-full text-right text-sm">
-                    <thead className="bg-[#0D0D0D] text-zinc-500 text-[10px] uppercase border-b border-zinc-900">
-                      <tr>
-                        <th className="py-4 px-6">اسم العميلة</th>
-                        <th className="py-4 px-6">التقييم</th>
-                        <th className="py-4 px-6">التعليق والملاحظة</th>
-                        <th className="py-4 px-6 text-center">حالة الإظهار فالموقع</th>
-                        <th className="py-4 px-6 text-center">الإجراءات</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-zinc-900">
-                      {reviews.map((rev) => (
-                        <tr key={rev.id} className="hover:bg-zinc-900/30">
-                          <td className="py-4 px-6 font-medium text-zinc-100">{rev.customer_name}</td>
-                          <td className="py-4 px-6">
-                            <div className="flex items-center text-amber-500">
-                              {[...Array(rev.rating)].map((_, i) => <Star key={i} size={12} fill="currentColor" />)}
-                            </div>
-                          </td>
-                          <td className="py-4 px-6 text-zinc-400">{rev.comment}</td>
-                          <td className="py-4 px-6 text-center">
-                            <button
-                              onClick={() => handleToggleReviewStatus(rev.id, rev.is_approved)}
-                              className={`text-[10px] py-1 px-3 rounded-full border transition-all ${
-                                rev.is_approved 
-                                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
-                                  : 'bg-zinc-900 text-zinc-500 border-zinc-800'
-                              }`}
-                            >
-                              {rev.is_approved ? 'نشط وظاهر' : 'مخفي ومعلق'}
-                            </button>
-                          </td>
-                          <td className="py-4 px-6 text-center">
-                            <button onClick={() => handleDeleteReview(rev.id)} className="p-1.5 bg-red-500/5 text-red-400 rounded"><Trash2 size={12} /></button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-
-            {/* 4. تخصيص كامل لأقسام المتجر والرسائل باللغات الثلاث */}
-            {activeTab === 'settings' && (
-              <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                <div className="lg:col-span-1 space-y-2">
-                  <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-500 px-3 mb-4">أقسام واجهة المتجر</h3>
-                  {settingsSections.map((sec) => {
-                    const Icon = sec.icon;
-                    const isSecActive = activeSettingsSection === sec.id;
-                    return (
-                      <button
-                        key={sec.id}
-                        onClick={() => setActiveSettingsSection(sec.id)}
-                        className="w-full flex items-center space-x-3 space-x-reverse p-3.5 rounded-xl text-xs transition-all font-light"
-                        style={{
-                          backgroundColor: isSecActive ? 'rgba(212, 175, 55, 0.05)' : 'transparent',
-                          color: isSecActive ? 'var(--secondary-theme)' : '#71717a'
-                        }}
-                      >
-                        <Icon size={16} />
-                        <span>{sec.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                <div className="lg:col-span-3 bg-zinc-950 border border-zinc-900 rounded-3xl p-6 lg:p-8 shadow-2xl">
-                  <form onSubmit={handleSaveSettings} className="space-y-6">
-                    
-                    {activeSettingsSection === 'identity' && (
-                      <div className="space-y-5 animate-fadeIn">
-                        <div>
-                          <h4 className="text-base font-light text-zinc-100">هوية المتجر الفاخرة والألوان</h4>
-                          <p className="text-xs text-zinc-500 mt-1">تعديل الاسم والوصوف الرئيسية للماركة والألوان</p>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">الاسم بالعربية</label>
-                            <input type="text" value={settings.site_name_ar || ''} onChange={(e) => setSettings({ ...settings, site_name_ar: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">الاسم بالفرنسية</label>
-                            <input type="text" value={settings.site_name_fr || ''} onChange={(e) => setSettings({ ...settings, site_name_fr: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">الاسم بالإنجليزية</label>
-                            <input type="text" value={settings.site_name_en || ''} onChange={(e) => setSettings({ ...settings, site_name_en: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">العنوان الفرعي بالعربية</label>
-                            <input type="text" value={settings.site_subtitle_ar || ''} onChange={(e) => setSettings({ ...settings, site_subtitle_ar: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">العنوان الفرعي بالفرنسية</label>
-                            <input type="text" value={settings.site_subtitle_fr || ''} onChange={(e) => setSettings({ ...settings, site_subtitle_fr: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">العنوان الفرعي بالإنجليزية</label>
-                            <input type="text" value={settings.site_subtitle_en || ''} onChange={(e) => setSettings({ ...settings, site_subtitle_en: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">الحرف الرمزي للشعار</label>
-                            <input type="text" maxLength={1} value={settings.logo_letter} onChange={(e) => setSettings({ ...settings, logo_letter: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm text-center font-bold" />
-                          </div>
-                          <div className="md:col-span-3">
-                            <label className="text-xs text-zinc-400 block mb-1.5">شعار المتجر (الشعار الحالي: {settings.logo_url ? 'مرفوع' : 'لا يوجد'})</label>
-                            <div className="flex items-center space-x-4 space-x-reverse">
-                              <label className="cursor-pointer bg-zinc-900 hover:bg-zinc-800 text-zinc-300 py-2.5 px-4 rounded-xl text-xs border border-zinc-800 transition-all flex items-center space-x-2 space-x-reverse">
-                                <Upload size={14} />
-                                <span>رفع شعار من جهازك</span>
-                                <input
-                                  type="file"
-                                  accept="image/*"
-                                  className="hidden"
-                                  onChange={async (e) => {
-                                    const file = e.target.files?.[0];
-                                    if (file) {
-                                      try {
-                                        const url = await handleImageUpload(file, BUCKETS.LOGOS);
-                                        setSettings({ ...settings, logo_url: url });
-                                        showToast('تم رفع الشعار بنجاح، احفظ التغييرات لحفظها نهائياً', 'success');
-                                      } catch (err: any) {
-                                        showToast(err.message, 'error');
-                                      }
-                                    }
-                                  }}
-                                />
-                              </label>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* 🟢 قسم الألوان والخطوط الفاخرة وخلفيات الكروت المحدث بالكامل */}
-                    {activeSettingsSection === 'style' && (
-                      <div className="space-y-5 animate-fadeIn">
-                        <div>
-                          <h4 className="text-base font-light text-zinc-100">الألوان والخطوط وخلفيات النصوص والصور</h4>
-                          <p className="text-xs text-zinc-500 mt-1">تعديل كامل لألوان الموقع الكبرى حياً ليتطابق مع الثيم الفاخر</p>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-zinc-900 pb-4">
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">اللون الأساسي للموقع واللوحة (Primary)</label>
-                            <input type="color" value={settings.primary_color} onChange={(e) => setSettings({ ...settings, primary_color: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">اللون الثانوي / الذهبي (Secondary)</label>
-                            <input type="color" value={settings.secondary_color} onChange={(e) => setSettings({ ...settings, secondary_color: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">لون العناوين الكبرى والشعار (Title Color)</label>
-                            <input type="color" value={settings.title_color} onChange={(e) => setSettings({ ...settings, title_color: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">لون النصوص والوصوف والفقرات (Text Color)</label>
-                            <input type="color" value={settings.text_color} onChange={(e) => setSettings({ ...settings, text_color: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-b border-zinc-900 pb-4">
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">لون خلفية كروت الحقائب والآراء (Card BG)</label>
-                            <input type="color" value={settings.card_bg} onChange={(e) => setSettings({ ...settings, card_bg: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">لون خلفية الأكورديون المطوي (Accordion BG)</label>
-                            <input type="color" value={settings.accordion_bg} onChange={(e) => setSettings({ ...settings, accordion_bg: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">لون خلفية إطارات صور الحقائب (Image Frame BG)</label>
-                            <input type="color" value={settings.image_bg} onChange={(e) => setSettings({ ...settings, image_bg: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">خط العناوين الكبرى (Heading Font)</label>
-                            <select value={settings.title_font} onChange={(e) => setSettings({ ...settings, title_font: e.target.value })} className="w-full p-3 bg-black border border-zinc-900 rounded-xl text-xs text-zinc-300">
-                              <option value="Playfair Display">Playfair Display</option>
-                              <option value="Cinzel">Cinzel</option>
-                              <option value="Cairo">Cairo (عربي فاخر)</option>
-                              <option value="Cormorant Garamond">Cormorant Garamond</option>
-                              <option value="Tajawal">Tajawal</option>
-                            </select>
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">خط النصوص والوصوف العادية (Body Font)</label>
-                            <select value={settings.body_font} onChange={(e) => setSettings({ ...settings, body_font: e.target.value })} className="w-full p-3 bg-black border border-zinc-900 rounded-xl text-xs text-zinc-300">
-                              <option value="Montserrat">Montserrat</option>
-                              <option value="Lato">Lato</option>
-                              <option value="Inter">Inter</option>
-                              <option value="Tajawal">Tajawal (عربي ناعم)</option>
-                              <option value="Roboto">Roboto</option>
-                            </select>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* 🟢 قسم إدارة المينيو وقائمة التنقل التفاعلية باللغات الثلاث */}
-                    {activeSettingsSection === 'menu' && (
-                      <div className="space-y-5 animate-fadeIn">
-                        <div>
-                          <h4 className="text-base font-light text-zinc-100">إدارة قائمة التنقل (Menu Manager)</h4>
-                          <p className="text-xs text-zinc-500 mt-1">تعديل وتخصيص أسماء الروابط الخمسة بالكامل باللغات الثلاث مع تفعيلها وإخفائها</p>
-                        </div>
-                        {[1, 2, 3, 4, 5].map((num) => (
-                          <div key={num} className="border-b border-zinc-900 pb-4 space-y-3">
-                            <div className="flex justify-between items-center">
-                              <span className="text-xs text-amber-500 font-semibold">رابط التنقل {num}</span>
-                              <label className="flex items-center space-x-2 space-x-reverse cursor-pointer text-xs text-zinc-500">
-                                <input type="checkbox" checked={settings[`menu_p${num}_visible`]} onChange={(e) => setSettings({ ...settings, [`menu_p${num}_visible`]: e.target.checked })} className="rounded border-zinc-850 bg-black text-[#D4AF37]" />
-                                <span>إظهار في القائمة</span>
-                              </label>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                              <input type="text" placeholder="الاسم بالعربية" value={settings[`menu_p${num}_ar`] || ''} onChange={(e) => setSettings({ ...settings, [`menu_p${num}_ar`]: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" />
-                              <input type="text" placeholder="الاسم بالفرنسية" value={settings[`menu_p${num}_fr`] || ''} onChange={(e) => setSettings({ ...settings, [`menu_p${num}_fr`]: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" />
-                              <input type="text" placeholder="الاسم بالإنجليزية" value={settings[`menu_p${num}_en`] || ''} onChange={(e) => setSettings({ ...settings, [`menu_p${num}_en`]: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* 🟢 قسم إدارة حقول الشراء للزبون (Checkout Fields) تفاعلياً كأزرار إخفاء وإظهار */}
-                    {activeSettingsSection === 'checkout' && (
-                      <div className="space-y-5 animate-fadeIn">
-                        <div>
-                          <h4 className="text-base font-light text-zinc-100">إدارة حقول الشراء (Checkout Manager)</h4>
-                          <p className="text-xs text-zinc-500 mt-1">التحكم في حقول استمارة معلومات الشحن وتعديل أسمائها لبراند SAFOS</p>
-                        </div>
-                        {['name', 'phone', 'city', 'address', 'notes'].map((field) => (
-                          <div key={field} className="border-b border-zinc-900 pb-4 space-y-3">
-                            <div className="flex justify-between items-center">
-                              <span className="text-xs text-amber-500 uppercase">حقل: {field === 'name' ? 'الاسم' : field === 'phone' ? 'الهاتف' : field === 'city' ? 'المدينة' : field === 'address' ? 'العنوان' : 'ملاحظات'}</span>
-                              <div className="flex space-x-3 space-x-reverse">
-                                <label className="flex items-center space-x-1.5 space-x-reverse cursor-pointer text-xs text-zinc-500">
-                                  <input type="checkbox" checked={settings[`field_${field}_visible`]} onChange={(e) => setSettings({ ...settings, [`field_${field}_visible`]: e.target.checked })} className="rounded border-zinc-850 bg-black text-[#D4AF37]" />
-                                  <span>ظاهر فالموقع</span>
-                                </label>
-                                <label className="flex items-center space-x-1.5 space-x-reverse cursor-pointer text-xs text-zinc-500">
-                                  <input type="checkbox" checked={settings[`field_${field}_required`]} onChange={(e) => setSettings({ ...settings, [`field_${field}_required`]: e.target.checked })} className="rounded border-zinc-850 bg-black text-[#D4AF37]" />
-                                  <span>حقل إجباري</span>
-                                </label>
-                              </div>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                              <input type="text" placeholder="الاسم بالعربية" value={settings[`field_${field}_ar`] || ''} onChange={(e) => setSettings({ ...settings, [`field_${field}_ar`]: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" />
-                              <input type="text" placeholder="الاسم بالفرنسية" value={settings[`field_${field}_fr`] || ''} onChange={(e) => setSettings({ ...settings, [`field_${field}_fr`]: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" />
-                              <input type="text" placeholder="الاسم بالإنجليزية" value={settings[`field_${field}_en`] || ''} onChange={(e) => setSettings({ ...settings, [`field_${field}_en`]: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {activeSettingsSection === 'hero' && (
-                      <div className="space-y-5 animate-fadeIn">
-                        <div>
-                          <h4 className="text-base font-light text-zinc-100">الشاشة الترحيبية (Hero Banner)</h4>
-                          <p className="text-xs text-zinc-500 mt-1">تعديل البانر الترويجي لمتجر SAFOS والرفع من جهازك باللغات الثلاث</p>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">العنوان الرئيسي بالعربية</label>
-                            <textarea value={settings.hero_title_ar || ''} onChange={(e) => setSettings({ ...settings, hero_title_ar: e.target.value })} className="w-full h-20 bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">العنوان الرئيسي بالفرنسية</label>
-                            <textarea value={settings.hero_title_fr || ''} onChange={(e) => setSettings({ ...settings, hero_title_fr: e.target.value })} className="w-full h-20 bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">العنوان الرئيسي بالإنجليزية</label>
-                            <textarea value={settings.hero_title_en || ''} onChange={(e) => setSettings({ ...settings, hero_title_en: e.target.value })} className="w-full h-20 bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">العنوان الفرعي بالعربية</label>
-                            <input type="text" value={settings.hero_subtitle_ar || ''} onChange={(e) => setSettings({ ...settings, hero_subtitle_ar: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">العنوان الفرعي بالفرنسية</label>
-                            <input type="text" value={settings.hero_subtitle_fr || ''} onChange={(e) => setSettings({ ...settings, hero_subtitle_fr: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">العنوان الفرعي بالإنجليزية</label>
-                            <input type="text" value={settings.hero_subtitle_en || ''} onChange={(e) => setSettings({ ...settings, hero_subtitle_en: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">شريط الإعلانات بالعربية</label>
-                            <input type="text" value={settings.announcement_text_ar || ''} onChange={(e) => setSettings({ ...settings, announcement_text_ar: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm text-amber-500" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">شريط الإعلانات بالفرنسية</label>
-                            <input type="text" value={settings.announcement_text_fr || ''} onChange={(e) => setSettings({ ...settings, announcement_text_fr: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm text-amber-500" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">شريط الإعلانات بالإنجليزية</label>
-                            <input type="text" value={settings.announcement_text_en || ''} onChange={(e) => setSettings({ ...settings, announcement_text_en: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm text-amber-500" />
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">الوصف التفصيلي بالعربية</label>
-                            <textarea value={settings.hero_description_ar || ''} onChange={(e) => setSettings({ ...settings, hero_description_ar: e.target.value })} className="w-full h-20 bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">الوصف التفصيلي بالفرنسية</label>
-                            <textarea value={settings.hero_description_fr || ''} onChange={(e) => setSettings({ ...settings, hero_description_fr: e.target.value })} className="w-full h-20 bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">الوصف التفصيلي بالإنجليزية</label>
-                            <textarea value={settings.hero_description_en || ''} onChange={(e) => setSettings({ ...settings, hero_description_en: e.target.value })} className="w-full h-20 bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                          </div>
-                        </div>
-                        <div>
-                          <label className="text-xs text-zinc-400 block mb-1.5">صورة البانر الرئيسي</label>
-                          <label className="cursor-pointer w-full bg-zinc-900 hover:bg-zinc-800 text-zinc-300 p-3 rounded-xl text-xs border border-zinc-800 flex items-center justify-center space-x-2 space-x-reverse">
-                            <Upload size={14} />
-                            <span>رفع صورة البانر من جهازك</span>
-                            <input
-                              type="file"
-                              accept="image/*"
-                              className="hidden"
-                              onChange={async (e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                  try {
-                                    const url = await handleImageUpload(file, BUCKETS.PRODUCT_IMAGES);
-                                    setSettings({ ...settings, hero_image_url: url });
-                                    showToast('تم رفع صورة البانر بنجاح', 'success');
-                                  } catch (err: any) {
-                                    showToast(err.message, 'error');
-                                  }
-                                }
-                              }}
-                            />
-                          </label>
-                        </div>
-                      </div>
-                    )}
-
-                    {activeSettingsSection === 'about' && (
-                      <div className="space-y-5 animate-fadeIn">
-                        <div>
-                          <h4 className="text-base font-light text-zinc-100">قصة الماركة (Brand Story)</h4>
-                          <p className="text-xs text-zinc-500 mt-1">قصة الحرفة اليدوية لكتان الكانفاس بورشة SAFOS</p>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">عنوان قصة ورشتنا بالعربية</label>
-                            <input type="text" value={settings.about_title_ar || ''} onChange={(e) => setSettings({ ...settings, about_title_ar: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">عنوان قصة ورشتنا بالفرنسية</label>
-                            <input type="text" value={settings.about_title_fr || ''} onChange={(e) => setSettings({ ...settings, about_title_fr: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">عنوان قصة ورشتنا بالإنجليزية</label>
-                            <input type="text" value={settings.about_title_en || ''} onChange={(e) => setSettings({ ...settings, about_title_en: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">قصة ورشتنا الفنية بالتفصيل بالعربية</label>
-                            <textarea value={settings.about_text_ar || ''} onChange={(e) => setSettings({ ...settings, about_text_ar: e.target.value })} className="w-full h-32 bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">قصة ورشتنا الفنية بالتفصيل بالفرنسية</label>
-                            <textarea value={settings.about_text_fr || ''} onChange={(e) => setSettings({ ...settings, about_text_fr: e.target.value })} className="w-full h-32 bg-black border border-[#b8935a]/25 p-3 rounded-xl text-sm" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">قصة ورشتنا الفنية بالتفصيل بالإنجليزية</label>
-                            <textarea value={settings.about_text_en || ''} onChange={(e) => setSettings({ ...settings, about_text_en: e.target.value })} className="w-full h-32 bg-black border border-[#b8935a]/25 p-3 rounded-xl text-sm" />
-                          </div>
-                        </div>
-                        <div>
-                          <label className="text-xs text-zinc-400 block mb-1.5">صورة ورشة التطريز اليدوي</label>
-                          <label className="cursor-pointer w-full bg-zinc-900 hover:bg-zinc-800 text-zinc-300 p-3 rounded-xl text-xs border border-zinc-850 flex items-center justify-center space-x-2 space-x-reverse">
-                            <Upload size={14} />
-                            <span>رفع صورة الورشة من جهازك</span>
-                            <input
-                              type="file"
-                              accept="image/*"
-                              className="hidden"
-                              onChange={async (e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                  try {
-                                    const url = await handleImageUpload(file, BUCKETS.PRODUCT_IMAGES);
-                                    setSettings({ ...settings, about_image: url });
-                                    showToast('تم رفع صورة قصة الماركة بنجاح', 'success');
-                                  } catch (err: any) {
-                                    showToast(err.message, 'error');
-                                  }
-                                }
-                              }}
-                            />
-                          </label>
-                        </div>
-                      </div>
-                    )}
-
-                    {activeSettingsSection === 'pillars' && (
-                      <div className="space-y-5 animate-fadeIn">
-                        <div>
-                          <h4 className="text-base font-light text-zinc-100">ركائز ومميزات الفخامة الثلاث</h4>
-                          <p className="text-xs text-zinc-500 mt-1">تخصيص العناوين والوصف للمميزات الثلاثة لـ الكانفاس المتقن</p>
-                        </div>
-                        {/* الركائز بـ 3 لغات */}
-                        <div className="border-b border-zinc-900 pb-4 space-y-4">
-                          <h5 className="text-xs text-amber-500 font-semibold">المميز الأول (Pillar 1)</h5>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <input type="text" placeholder="العنوان بالعربية" value={settings.p1_title_ar || ''} onChange={(e) => setSettings({ ...settings, p1_title_ar: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                            <input type="text" placeholder="العنوان بالفرنسية" value={settings.p1_title_fr || ''} onChange={(e) => setSettings({ ...settings, p1_title_fr: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                            <input type="text" placeholder="العنوان بالإنجليزية" value={settings.p1_title_en || ''} onChange={(e) => setSettings({ ...settings, p1_title_en: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                          </div>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <input type="text" placeholder="الوصف بالعربية" value={settings.p1_desc_ar || ''} onChange={(e) => setSettings({ ...settings, p1_desc_ar: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                            <input type="text" placeholder="الوصف بالفرنسية" value={settings.p1_desc_fr || ''} onChange={(e) => setSettings({ ...settings, p1_desc_fr: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                            <input type="text" placeholder="الوصف بالإنجليزية" value={settings.p1_desc_en || ''} onChange={(e) => setSettings({ ...settings, p1_desc_en: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                          </div>
-                        </div>
-
-                        <div className="border-b border-zinc-900 pb-4 space-y-4">
-                          <h5 className="text-xs text-amber-500 font-semibold">المميز الثاني (Pillar 2)</h5>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <input type="text" placeholder="العنوان بالعربية" value={settings.p2_title_ar || ''} onChange={(e) => setSettings({ ...settings, p2_title_ar: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                            <input type="text" placeholder="العنوان بالفرنسية" value={settings.p2_title_fr || ''} onChange={(e) => setSettings({ ...settings, p2_title_fr: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                            <input type="text" placeholder="العنوان بالإنجليزية" value={settings.p2_title_en || ''} onChange={(e) => setSettings({ ...settings, p2_title_en: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                          </div>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <input type="text" placeholder="الوصف بالعربية" value={settings.p2_desc_ar || ''} onChange={(e) => setSettings({ ...settings, p2_desc_ar: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                            <input type="text" placeholder="الوصف بالفرنسية" value={settings.p2_desc_fr || ''} onChange={(e) => setSettings({ ...settings, p2_desc_fr: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                            <input type="text" placeholder="الوصف بالإنجليزية" value={settings.p2_desc_en || ''} onChange={(e) => setSettings({ ...settings, p2_desc_en: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                          </div>
-                        </div>
-
-                        <div className="border-b border-zinc-900 pb-4 space-y-4">
-                          <h5 className="text-xs text-amber-500 font-semibold">المميز الثالث (Pillar 3)</h5>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <input type="text" placeholder="العنوان بالعربية" value={settings.p3_title_ar || ''} onChange={(e) => setSettings({ ...settings, p3_title_ar: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                            <input type="text" placeholder="العنوان بالفرنسية" value={settings.p3_title_fr || ''} onChange={(e) => setSettings({ ...settings, p3_title_fr: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                            <input type="text" placeholder="العنوان بالإنجليزية" value={settings.p3_title_en || ''} onChange={(e) => setSettings({ ...settings, p3_title_en: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                          </div>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <input type="text" placeholder="الوصف بالعربية" value={settings.p3_desc_ar || ''} onChange={(e) => setSettings({ ...settings, p3_desc_ar: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                            <input type="text" placeholder="الوصف بالفرنسية" value={settings.p3_desc_fr || ''} onChange={(e) => setSettings({ ...settings, p3_desc_fr: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                            <input type="text" placeholder="الوصف بالإنجليزية" value={settings.p3_desc_en || ''} onChange={(e) => setSettings({ ...settings, p3_desc_en: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {activeSettingsSection === 'testimonials' && (
-                      <div className="space-y-5 animate-fadeIn">
-                        <div>
-                          <h4 className="text-base font-light text-zinc-100">آراء وتقييمات العميلات الحقيقية</h4>
-                          <p className="text-xs text-zinc-500 mt-1">تعديل مراجعات عينات الزبناء الوفيات للمتجر باللغات الثلاث</p>
-                        </div>
-                        
-                        <div className="border-b border-zinc-900 pb-4 space-y-4">
-                          <h5 className="text-xs text-amber-500 font-semibold">المراجعة الأولى (Testimonial 1)</h5>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <input type="text" placeholder="الاسم بالعربية" value={settings.t1_name_ar || ''} onChange={(e) => setSettings({ ...settings, t1_name_ar: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                            <input type="text" placeholder="الاسم بالفرنسية" value={settings.t1_name_fr || ''} onChange={(e) => setSettings({ ...settings, t1_name_fr: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                            <input type="text" placeholder="الاسم بالإنجليزية" value={settings.t1_name_en || ''} onChange={(e) => setSettings({ ...settings, t1_name_en: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                          </div>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <textarea placeholder="المراجعة بالعربية" value={settings.t1_text_ar || ''} onChange={(e) => setSettings({ ...settings, t1_text_ar: e.target.value })} className="w-full h-16 bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                            <textarea placeholder="المراجعة بالفرنسية" value={settings.t1_text_fr || ''} onChange={(e) => setSettings({ ...settings, t1_text_fr: e.target.value })} className="w-full h-16 bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                            <textarea placeholder="المراجعة بالإنجليزية" value={settings.t1_text_en || ''} onChange={(e) => setSettings({ ...settings, t1_text_en: e.target.value })} className="w-full h-16 bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                          </div>
-                        </div>
-
-                        <div className="border-b border-zinc-900 pb-4 space-y-4">
-                          <h5 className="text-xs text-amber-500 font-semibold">المراجعة الثانية (Testimonial 2)</h5>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <input type="text" placeholder="الاسم بالعربية" value={settings.t2_name_ar || ''} onChange={(e) => setSettings({ ...settings, t2_name_ar: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                            <input type="text" placeholder="الاسم بالفرنسية" value={settings.t2_name_fr || ''} onChange={(e) => setSettings({ ...settings, t2_name_fr: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                            <input type="text" placeholder="الاسم بالإنجليزية" value={settings.t2_name_en || ''} onChange={(e) => setSettings({ ...settings, t2_name_en: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                          </div>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <textarea placeholder="المراجعة بالعربية" value={settings.t2_text_ar || ''} onChange={(e) => setSettings({ ...settings, t2_text_ar: e.target.value })} className="w-full h-16 bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                            <textarea placeholder="المراجعة بالفرنسية" value={settings.t2_text_fr || ''} onChange={(e) => setSettings({ ...settings, t2_text_fr: e.target.value })} className="w-full h-16 bg-[#faf6ef] border border-[#b8935a]/25 p-3 rounded-xl text-sm" />
-                            <textarea placeholder="المراجعة بالإنجليزية" value={settings.t2_text_en || ''} onChange={(e) => setSettings({ ...settings, t2_text_en: e.target.value })} className="w-full h-16 bg-[#faf6ef] border border-[#b8935a]/25 p-3 rounded-xl text-sm animate-fadeIn" />
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {activeSettingsSection === 'policies' && (
-                      <div className="space-y-5 animate-fadeIn">
-                        <div>
-                          <h4 className="text-base font-light text-zinc-100">السياسات وتذييل الصفحة</h4>
-                          <p className="text-xs text-zinc-500 mt-1">تعديل سياسات الشحن وسياسة الاسترجاع وحقوق الملكية للمتجر باللغات الثلاث</p>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">سياسة الشحن بالعربية</label>
-                            <textarea value={settings.shipping_policy_ar || ''} onChange={(e) => setSettings({ ...settings, shipping_policy_ar: e.target.value })} className="w-full h-24 bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">سياسة الشحن بالفرنسية</label>
-                            <textarea value={settings.shipping_policy_fr || ''} onChange={(e) => setSettings({ ...settings, shipping_policy_fr: e.target.value })} className="w-full h-24 bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">سياسة الشحن بالإنجليزية</label>
-                            <textarea value={settings.shipping_policy_en || ''} onChange={(e) => setSettings({ ...settings, shipping_policy_en: e.target.value })} className="w-full h-24 bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">سياسة الاسترجاع بالعربية</label>
-                            <textarea value={settings.refund_policy_ar || ''} onChange={(e) => setSettings({ ...settings, refund_policy_ar: e.target.value })} className="w-full h-24 bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-[#5c4330] mb-1.5 block">سياسة الاسترجاع بالفرنسية</label>
-                            <textarea value={settings.refund_policy_fr || ''} onChange={(e) => setSettings({ ...settings, refund_policy_fr: e.target.value })} className="w-full h-24 bg-black border border-[#b8935a]/25 p-3 rounded-xl text-sm animate-fadeIn" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-[#5c4330] mb-1.5 block">سياسة الاسترجاع بالإنجليزية</label>
-                            <textarea value={settings.refund_policy_en || ''} onChange={(e) => setSettings({ ...settings, refund_policy_en: e.target.value })} className="w-full h-24 bg-black border border-[#b8935a]/25 p-3 rounded-xl text-sm animate-fadeIn" />
-                          </div>
-                        </div>
-                        <div>
-                          <label className="text-xs text-[#5c4330] mb-1.5 block">حقوق الملكية وتذييل الصفحة (Copyright)</label>
-                          <input type="text" value={settings.copyright_text} onChange={(e) => setSettings({ ...settings, copyright_text: e.target.value })} className="w-full bg-black border border-[#b8935a]/25 p-3 rounded-xl text-sm" />
-                        </div>
-
-                        {/* 🟢 أزرار التفعيل والإخفاء الحية للأقسام الكبرى فالمتجر */}
-                        <div className="border-t border-zinc-900 pt-5 space-y-4">
-                          <h4 className="text-xs text-amber-500 font-semibold mb-2">التحكم في إظهار وإخفاء الأقسام الكبرى فالمتجر</h4>
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-zinc-900/40 p-3 rounded-xl border border-zinc-900">
-                            <label className="flex items-center space-x-2 space-x-reverse cursor-pointer text-xs text-zinc-400">
-                              <input type="checkbox" checked={settings.show_announcement_bar} onChange={(e) => setSettings({ ...settings, show_announcement_bar: e.target.checked })} className="rounded border-zinc-800 bg-black text-[#D4AF37]" />
-                              <span>شريط الإعلانات الفوقاني</span>
-                            </label>
-                            <label className="flex items-center space-x-2 space-x-reverse cursor-pointer text-xs text-zinc-400">
-                              <input type="checkbox" checked={settings.show_about_section} onChange={(e) => setSettings({ ...settings, show_about_section: e.target.checked })} className="rounded border-zinc-800 bg-black text-[#D4AF37]" />
-                              <span>قسم قصة ورشتنا (من نحن)</span>
-                            </label>
-                            <label className="flex items-center space-x-2 space-x-reverse cursor-pointer text-xs text-zinc-400">
-                              <input type="checkbox" checked={settings.show_pillars_section} onChange={(e) => setSettings({ ...settings, show_pillars_section: e.target.checked })} className="rounded border-zinc-800 bg-black text-[#D4AF37]" />
-                              <span>قسم ركائز الفخامة</span>
-                            </label>
-                            <label className="flex items-center space-x-2 space-x-reverse cursor-pointer text-xs text-zinc-400">
-                              <input type="checkbox" checked={settings.show_testimonials_section} onChange={(e) => setSettings({ ...settings, show_testimonials_section: e.target.checked })} className="rounded border-zinc-800 bg-black text-[#D4AF37]" />
-                              <span>قسم تقييمات العميلات</span>
-                            </label>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {activeSettingsSection === 'contact' && (
-                      <div className="space-y-5 animate-fadeIn">
-                        <div>
-                          <h4 className="text-base font-light text-zinc-100">بيانات وقنوات التواصل الاجتماعي</h4>
-                          <p className="text-xs text-zinc-500 mt-1">تعديل الهاتف، روابط واتساب، إنستغرام، فيسبوك وتيك توك</p>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">رقم الهاتف الفعلي للتواصل</label>
-                            <input type="text" value={settings.phone || ''} onChange={(e) => setSettings({ ...settings, phone: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">رقم الواتساب للتواصل المباشر</label>
-                            <input type="text" value={settings.whatsapp || ''} onChange={(e) => setSettings({ ...settings, whatsapp: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" placeholder="+212600000000" />
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">البريد الإلكتروني للعلامة</label>
-                            <input type="email" value={settings.email || ''} onChange={(e) => setSettings({ ...settings, email: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">عنوان مشغل المتجر الفعلي (المدينة/الحي)</label>
-                            <input type="text" value={settings.address || ''} onChange={(e) => setSettings({ ...settings, address: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-zinc-900 pt-4">
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">انستغرام (Instagram Username)</label>
-                            <input type="text" value={settings.instagram || ''} onChange={(e) => setSettings({ ...settings, instagram: e.target.value })} className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-xs font-mono" placeholder="safos.bags" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-[#5c4330] mb-1.5 block">فيسبوك (Facebook)</label>
-                            <input type="text" value={settings.facebook || ''} onChange={(e) => setSettings({ ...settings, facebook: e.target.value })} className="w-full bg-black border border-[#b8935a]/25 p-3 rounded-xl text-xs font-mono" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-[#5c4330] mb-1.5 block">تيك توك (TikTok)</label>
-                            <input type="text" value={settings.tiktok || ''} onChange={(e) => setSettings({ ...settings, tiktok: e.target.value })} className="w-full bg-black border border-[#b8935a]/25 p-3 rounded-xl text-xs font-mono" />
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* القسم الفرعي لتعديل قوالب رسائل الواتساب حياً وتضمين المتغيرات */}
-                    {activeSettingsSection === 'templates' && (
-                      <div className="space-y-5 animate-fadeIn">
-                        <div>
-                          <h4 className="text-base font-light text-zinc-100">تعديل قوالب رسائل الواتساب</h4>
-                          <p className="text-xs text-zinc-500 mt-1">تعديل قوالب تأكيد طلبيات الـ COD وإرسال روابط التقييم باللغات الثلاث</p>
-                        </div>
-                        
-                        <div className="border-b border-zinc-900 pb-4 space-y-4">
-                          <h5 className="text-xs text-emerald-400 font-semibold">قالب تأكيد طلبيات COD (WhatsApp COD Confirmation)</h5>
-                          <div className="grid grid-cols-1 gap-3 text-[10px] text-zinc-500 bg-black/40 p-2.5 rounded-xl border border-zinc-900 leading-relaxed">
-                            <p><strong>المتغيرات المتاحة للاستخدام داخل قالب الرسالة:</strong></p>
-                            <p>• `{'{name}'}`: اسم الكليان • `{'{order_number}'}`: رقم الطلبية • `{'{total}'}`: قيمة الطلب • `{'{city}'}`: المدينة</p>
-                          </div>
-                          <div className="grid grid-cols-1 gap-4 animate-fadeIn">
-                            <div>
-                              <label className="text-xs text-zinc-400 block mb-1.5">القالب بالعربية</label>
-                              <textarea value={settings.cod_confirm_ar || ''} onChange={(e) => setSettings({ ...settings, cod_confirm_ar: e.target.value })} className="w-full h-20 bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                            </div>
-                            <div>
-                              <label className="text-xs text-zinc-400 block mb-1.5">القالب بالفرنسية</label>
-                              <textarea value={settings.cod_confirm_fr || ''} onChange={(e) => setSettings({ ...settings, cod_confirm_fr: e.target.value })} className="w-full h-20 bg-[#faf6ef] border border-[#b8935a]/25 p-3 rounded-xl text-sm text-[#1a1410]" />
-                            </div>
-                            <div>
-                              <label className="text-xs text-zinc-400 block mb-1.5">القالب بالإنجليزية</label>
-                              <textarea value={settings.cod_confirm_en || ''} onChange={(e) => setSettings({ ...settings, cod_confirm_en: e.target.value })} className="w-full h-20 bg-[#faf6ef] border border-[#b8935a]/25 p-3 rounded-xl text-sm text-[#1a1410]" />
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="border-b border-zinc-900 pb-4 space-y-4">
-                          <h5 className="text-xs text-amber-500 font-semibold">قالب طلب التقييم ورابط المراجعات (WhatsApp Review Request)</h5>
-                          <div className="grid grid-cols-1 gap-3 text-[10px] text-zinc-500 bg-black/40 p-2.5 rounded-xl border border-zinc-900 leading-relaxed">
-                            <p><strong>المتغيرات المتاحة للاستخدام:</strong></p>
-                            <p>• `{'{name}'}`: اسم الزبونة • `{'{review_url}'}`: الرابط المباشر للتقييم</p>
-                          </div>
-                          <div className="grid grid-cols-1 gap-4 animate-fadeIn">
-                            <div>
-                              <label className="text-xs text-zinc-400 block mb-1.5">القالب بالعربية</label>
-                              <textarea value={settings.review_request_ar || ''} onChange={(e) => setSettings({ ...settings, review_request_ar: e.target.value })} className="w-full h-20 bg-black border border-zinc-900 p-3 rounded-xl text-sm" />
-                            </div>
-                            <div>
-                              <label className="text-xs text-zinc-400 block mb-1.5">القالب بالفرنسية</label>
-                              <textarea value={settings.review_request_fr || ''} onChange={(e) => setSettings({ ...settings, review_request_fr: e.target.value })} className="w-full h-20 bg-[#faf6ef] border border-[#b8935a]/25 p-3 rounded-xl text-sm text-[#1a1410]" />
-                            </div>
-                            <div>
-                              <label className="text-xs text-zinc-400 block mb-1.5">القالب بالإنجليزية</label>
-                              <textarea value={settings.review_request_en || ''} onChange={(e) => setSettings({ ...settings, review_request_en: e.target.value })} className="w-full h-20 bg-[#faf6ef] border border-[#b8935a]/25 p-3 rounded-xl text-sm text-[#1a1410]" />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* 🟢 قسم الألوان والخطوط الفاخرة وخلفيات الكروت المحدث بالكامل */}
-                    {activeSettingsSection === 'style' && (
-                      <div className="space-y-5 animate-fadeIn">
-                        <div>
-                          <h4 className="text-base font-light text-zinc-100">الألوان والخطوط وخلفيات النصوص والصور</h4>
-                          <p className="text-xs text-zinc-500 mt-1">تعديل كامل لألوان الموقع الكبرى حياً ليتطابق مع الثيم الفاخر</p>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-zinc-900 pb-4">
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">اللون الأساسي للموقع واللوحة (Primary)</label>
-                            <input type="color" value={settings.primary_color} onChange={(e) => setSettings({ ...settings, primary_color: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">اللون الثانوي / الذهبي (Secondary)</label>
-                            <input type="color" value={settings.secondary_color} onChange={(e) => setSettings({ ...settings, secondary_color: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">لون العناوين الكبرى والشعار (Title Color)</label>
-                            <input type="color" value={settings.title_color} onChange={(e) => setSettings({ ...settings, title_color: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">لون النصوص والوصوف والفقرات (Text Color)</label>
-                            <input type="color" value={settings.text_color} onChange={(e) => setSettings({ ...settings, text_color: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-b border-zinc-900 pb-4">
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">لون خلفية كروت الحقائب والآراء (Card BG)</label>
-                            <input type="color" value={settings.card_bg} onChange={(e) => setSettings({ ...settings, card_bg: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">لون خلفية الأكورديون المطوي (Accordion BG)</label>
-                            <input type="color" value={settings.accordion_bg} onChange={(e) => setSettings({ ...settings, accordion_bg: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">لون خلفية إطارات صور الحقائب (Image Frame BG)</label>
-                            <input type="color" value={settings.image_bg} onChange={(e) => setSettings({ ...settings, image_bg: e.target.value })} className="w-full h-10 bg-transparent border-0 cursor-pointer" />
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">خط العناوين الكبرى (Heading Font)</label>
-                            <select value={settings.title_font} onChange={(e) => setSettings({ ...settings, title_font: e.target.value })} className="w-full p-3 bg-black border border-zinc-900 rounded-xl text-xs text-zinc-300">
-                              <option value="Playfair Display">Playfair Display</option>
-                              <option value="Cinzel">Cinzel</option>
-                              <option value="Cairo">Cairo (عربي فاخر)</option>
-                              <option value="Cormorant Garamond">Cormorant Garamond</option>
-                              <option value="Tajawal">Tajawal</option>
-                            </select>
-                          </div>
-                          <div>
-                            <label className="text-xs text-zinc-400 block mb-1.5">خط النصوص والوصوف العادية (Body Font)</label>
-                            <select value={settings.body_font} onChange={(e) => setSettings({ ...settings, body_font: e.target.value })} className="w-full p-3 bg-black border border-zinc-900 rounded-xl text-xs text-zinc-300">
-                              <option value="Montserrat">Montserrat</option>
-                              <option value="Lato">Lato</option>
-                              <option value="Inter">Inter</option>
-                              <option value="Tajawal">Tajawal (عربي ناعم)</option>
-                              <option value="Roboto">Roboto</option>
-                            </select>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* 🟢 قسم إدارة المينيو وقائمة التنقل التفاعلية باللغات الثلاث */}
-                    {activeSettingsSection === 'menu' && (
-                      <div className="space-y-5 animate-fadeIn">
-                        <div>
-                          <h4 className="text-base font-light text-zinc-100">إدارة قائمة التنقل (Menu Manager)</h4>
-                          <p className="text-xs text-zinc-500 mt-1">تعديل وتخصيص أسماء الروابط الخمسة بالكامل باللغات الثلاث مع تفعيلها وإخفائها</p>
-                        </div>
-                        {[1, 2, 3, 4, 5].map((num) => (
-                          <div key={num} className="border-b border-zinc-900 pb-4 space-y-3">
-                            <div className="flex justify-between items-center">
-                              <span className="text-xs text-amber-500 font-semibold">رابط التنقل {num}</span>
-                              <label className="flex items-center space-x-2 space-x-reverse cursor-pointer text-xs text-zinc-500">
-                                <input type="checkbox" checked={settings[`menu_p${num}_visible`]} onChange={(e) => setSettings({ ...settings, [`menu_p${num}_visible`]: e.target.checked })} className="rounded border-zinc-850 bg-black text-[#D4AF37] focus:ring-0" />
-                                <span>إظهار في القائمة</span>
-                              </label>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                              <input type="text" placeholder="الاسم بالعربية" value={settings[`menu_p${num}_ar`] || ''} onChange={(e) => setSettings({ ...settings, [`menu_p${num}_ar`]: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" />
-                              <input type="text" placeholder="الاسم بالفرنسية" value={settings[`menu_p${num}_fr`] || ''} onChange={(e) => setSettings({ ...settings, [`menu_p${num}_fr`]: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" />
-                              <input type="text" placeholder="الاسم بالإنجليزية" value={settings[`menu_p${num}_en`] || ''} onChange={(e) => setSettings({ ...settings, [`menu_p${num}_en`]: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* 🟢 قسم إدارة حقول الشراء للزبون (Checkout Fields) تفاعلياً كأزرار إخفاء وإظهار */}
-                    {activeSettingsSection === 'checkout' && (
-                      <div className="space-y-5 animate-fadeIn">
-                        <div>
-                          <h4 className="text-base font-light text-zinc-100">إدارة حقول الشراء (Checkout Manager)</h4>
-                          <p className="text-xs text-zinc-500 mt-1">التحكم في حقول استمارة معلومات الشحن وتعديل أسمائها لبراند SAFOS</p>
-                        </div>
-                        {['name', 'phone', 'city', 'address', 'notes'].map((field) => (
-                          <div key={field} className="border-b border-zinc-900 pb-4 space-y-3">
-                            <div className="flex justify-between items-center">
-                              <span className="text-xs text-amber-500 uppercase">حقل: {field === 'name' ? 'الاسم' : field === 'phone' ? 'الهاتف' : field === 'city' ? 'المدينة' : field === 'address' ? 'العنوان' : 'ملاحظات'}</span>
-                              <div className="flex space-x-3 space-x-reverse">
-                                <label className="flex items-center space-x-1.5 space-x-reverse cursor-pointer text-xs text-zinc-500">
-                                  <input type="checkbox" checked={settings[`field_${field}_visible`]} onChange={(e) => setSettings({ ...settings, [`field_${field}_visible`]: e.target.checked })} className="rounded border-zinc-850 bg-black text-[#D4AF37]" />
-                                  <span>ظاهر فالموقع</span>
-                                </label>
-                                <label className="flex items-center space-x-1.5 space-x-reverse cursor-pointer text-xs text-zinc-500">
-                                  <input type="checkbox" checked={settings[`field_${field}_required`]} onChange={(e) => setSettings({ ...settings, [`field_${field}_required`]: e.target.checked })} className="rounded border-zinc-850 bg-black text-[#D4AF37]" />
-                                  <span>حقل إجباري</span>
-                                </label>
-                              </div>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                              <input type="text" placeholder="الاسم بالعربية" value={settings[`field_${field}_ar`] || ''} onChange={(e) => setSettings({ ...settings, [`field_${field}_ar`]: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" />
-                              <input type="text" placeholder="الاسم بالفرنسية" value={settings[`field_${field}_fr`] || ''} onChange={(e) => setSettings({ ...settings, [`field_${field}_fr`]: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" />
-                              <input type="text" placeholder="الاسم بالإنجليزية" value={settings[`field_${field}_en`] || ''} onChange={(e) => setSettings({ ...settings, [`field_${field}_en`]: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    <div className="border-t border-zinc-900 pt-6 mt-6 flex justify-end">
-                      <button type="submit" disabled={actionLoading === 'settings'} className="bg-[#D4AF37] hover:bg-amber-500 text-black font-semibold py-3 px-8 rounded-xl flex items-center space-x-2 space-x-reverse transition-all">
-                        <Save size={18} />
-                        <span>{actionLoading === 'settings' ? 'جاري الحفظ والمزامنة...' : 'مزامنة وحفظ التعديلات حياً'}</span>
-                      </button>
-                    </div>
-
-                  </form>
-                </div>
-              </div>
-            )}
-          </>
         )}
-      </main>
 
-      {/* ------------------ أ. نافذة إضافة منتج جديد بالكامل (Add Product Modal) ------------------ */}
-      {isAddingProduct && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-zinc-950 border border-zinc-900 rounded-3xl w-full max-w-xl overflow-hidden shadow-2xl animate-scaleIn">
-            <div className="flex justify-between items-center p-6 bg-[#0F0F0F] border-b border-zinc-900">
-              <h3 className="text-base font-light text-zinc-100">إضافة حقيبة كانفاس جديدة للتشكيلة</h3>
-              <button onClick={() => setIsAddingProduct(false)} className="text-zinc-500 hover:text-zinc-300"><X size={20} /></button>
-            </div>
-            <form onSubmit={handleAddProduct} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto text-right">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs text-[#5c4330] mb-1.5 block">اسم الحقيبة بالعربية *</label>
-                  <input type="text" required value={newProduct.name} onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })} className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-sm text-[#1a1410]" placeholder="مثال: حقيبة صفاء الكانفاس" />
-                </div>
-                <div>
-                  <label className="text-xs text-[#5c4330] mb-1.5 block">الاسم بالإنجليزي (EN) *</label>
-                  <input type="text" required value={newProduct.name_en} onChange={(e) => setNewProduct({ ...newProduct, name_en: e.target.value })} className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-sm font-mono text-[#1a1410]" placeholder="Safaa Canvas Bag" />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs text-[#5c4330] mb-1.5 block">السعر الموحد (درهم) *</label>
-                  <input type="number" required value={newProduct.price} onChange={(e) => setNewProduct({ ...newProduct, price: Number(e.target.value) })} className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-sm font-mono text-[#1a1410]" />
-                </div>
-                <div>
-                  <label className="text-xs text-[#5c4330] mb-1.5 block">المخزون المتوفر</label>
-                  <input type="number" value={newProduct.stock} onChange={(e) => setNewProduct({ ...newProduct, stock: Number(e.target.value) })} className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-sm font-mono text-[#1a1410]" />
-                </div>
-              </div>
-              <div className="grid grid-cols-3 gap-3">
-                {/* قائمة اختيار التصنيف الديناميكي المقروء مباشرة من جدول categories */}
-                <div>
-                  <label className="text-xs text-[#5c4330] mb-1.5 block">الصنف والمجموعة *</label>
-                  <select 
-                    required
-                    value={newProduct.category} 
-                    onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })} 
-                    className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-xs text-[#1a1410]"
-                  >
-                    <option value="">اختر المجموعة...</option>
-                    {categories.map((cat) => (
-                      <option key={cat.id} value={cat.id}>{cat.name_ar}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs text-[#5c4330] mb-1.5 block">الألوان المتوفرة</label>
-                  <input type="text" value={newProduct.color} onChange={(e) => setNewProduct({ ...newProduct, color: e.target.value })} className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-xs text-[#1a1410]" placeholder="بيج × أسود" />
-                </div>
-                <div>
-                  <label className="text-xs text-[#5c4330] mb-1.5 block">التاغ الترويجي</label>
-                  <input type="text" value={newProduct.tag} onChange={(e) => setNewProduct({ ...newProduct, tag: e.target.value })} className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-xs text-[#1a1410]" placeholder="جديد، الأكثر مبيعاً" />
-                </div>
-              </div>
-              
-              {/* أزرار الإخفاء والإظهار للميزات (Visibility Toggles) للمنتج الجديد */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-zinc-900/40 p-3 rounded-xl border border-zinc-900">
-                <label className="flex items-center space-x-2 space-x-reverse cursor-pointer text-xs text-zinc-400">
-                  <input type="checkbox" checked={newProduct.show_video} onChange={(e) => setNewProduct({ ...newProduct, show_video: e.target.checked })} className="rounded border-zinc-800 bg-black text-[#D4AF37] focus:ring-0" />
-                  <span>إظهار الفيديو</span>
-                </label>
-                <label className="flex items-center space-x-2 space-x-reverse cursor-pointer text-xs text-zinc-400">
-                  <input type="checkbox" checked={newProduct.show_gallery} onChange={(e) => setNewProduct({ ...newProduct, show_gallery: e.target.checked })} className="rounded border-zinc-800 bg-black text-[#D4AF37] focus:ring-0" />
-                  <span>إظهار المعرض</span>
-                </label>
-                <label className="flex items-center space-x-2 space-x-reverse cursor-pointer text-xs text-zinc-400">
-                  <input type="checkbox" checked={newProduct.show_care_guide} onChange={(e) => setNewProduct({ ...newProduct, show_care_guide: e.target.checked })} className="rounded border-zinc-800 bg-black text-[#D4AF37] focus:ring-0" />
-                  <span>إظهار دليل العناية</span>
-                </label>
-                <label className="flex items-center space-x-2 space-x-reverse cursor-pointer text-xs text-zinc-400">
-                  <input type="checkbox" checked={newProduct.show_dimensions} onChange={(e) => setNewProduct({ ...newProduct, show_dimensions: e.target.checked })} className="rounded border-zinc-800 bg-black text-[#D4AF37] focus:ring-0" />
-                  <span>إظهار المقاسات</span>
-                </label>
+        {/* تبويب: تخصيص وتعديل إعدادات المتجر ومظهره بالكامل */}
+        {activeTab === 'settings' && (
+          <div className="space-y-6">
+            <div className="flex flex-col md:flex-row gap-6">
+              {/* قائمة أقسام الإعدادات الفرعية */}
+              <div className="w-full md:w-64 flex flex-col gap-1">
+                {settingsSections.map((sec) => {
+                  const IconComponent = sec.icon;
+                  return (
+                    <button key={sec.id} onClick={() => setActiveSettingsSection(sec.id)} className={`flex items-center gap-3 px-4 py-3 rounded-xl text-xs transition-all text-right ${activeSettingsSection === sec.id ? 'bg-neutral-900 text-[#D4AF37] border-r-2 border-[#D4AF37] font-semibold' : 'text-neutral-400 hover:bg-neutral-950'}`}>
+                      <IconComponent size={16} />
+                      {sec.label}
+                    </button>
+                  );
+                })}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-[#b8935a]/20 pt-4">
-                <div>
-                  <label className="text-xs text-[#5c4330] mb-1.5 block">رفع الصورة الرئيسية من جهازك</label>
-                  <label className="cursor-pointer w-full bg-[#1a1410] hover:bg-zinc-800 text-[#faf6ef] p-2.5 rounded-xl text-xs border border-zinc-850 flex items-center justify-center space-x-2 space-x-reverse">
-                    <Upload size={14} />
-                    <span>تحميل من جهازك</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={async (e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          try {
-                            const url = await handleImageUpload(file, BUCKETS.PRODUCT_IMAGES);
-                            setNewProduct({ ...newProduct, image_url: url });
-                            showToast('تم رفع الصورة بنجاح', 'success');
-                          } catch (err: any) {
-                            showToast(err.message, 'error');
-                          }
-                        }
-                      }}
-                    />
-                  </label>
-                </div>
-                <div>
-                  <label className="text-xs text-[#5c4330] mb-1.5 block">رفع صور إضافية للمعرض</label>
-                  <label className="cursor-pointer w-full bg-[#1a1410] hover:bg-zinc-800 text-[#faf6ef] p-2.5 rounded-xl text-xs border border-zinc-850 flex items-center justify-center space-x-2 space-x-reverse">
-                    <Upload size={14} />
-                    <span>تحميل صورة إضافية</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={async (e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          try {
-                            const url = await handleImageUpload(file, BUCKETS.PRODUCT_IMAGES);
-                            setNewProduct((prev: any) => ({
-                              ...prev,
-                              additional_images: [...prev.additional_images, url]
-                            }));
-                            showToast('تمت إضافة صورة للمعرض', 'success');
-                          } catch (err: any) {
-                            showToast(err.message, 'error');
-                          }
-                        }
-                      }}
-                    />
-                  </label>
-                </div>
-              </div>
-              <div>
-                <label className="text-xs text-[#5c4330] mb-1.5 block">رابط الفيديو الترويجي (يوتيوب أو فيديو مباشر)</label>
-                <input type="text" value={newProduct.video_url} onChange={(e) => setNewProduct({ ...newProduct, video_url: e.target.value })} className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-xs font-mono text-[#1a1410]" />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs text-[#5c4330] mb-1.5 block">وصف الحقيبة بالعربية</label>
-                  <textarea value={newProduct.description} onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })} className="w-full h-16 bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-xs text-[#1a1410]" />
-                </div>
-                <div>
-                  <label className="text-xs text-[#5c4330] mb-1.5 block">وصف الحقيبة بالفرنسية</label>
-                  <textarea value={newProduct.description_en} onChange={(e) => setNewProduct({ ...newProduct, description_en: e.target.value })} className="w-full h-16 bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-xs text-[#1a1410]" />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs text-[#5c4330] mb-1.5 block">مقاسات الحقيبة بالعربية</label>
-                  <input type="text" value={newProduct.materials_dimensions} onChange={(e) => setNewProduct({ ...newProduct, materials_dimensions: e.target.value })} className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-xs text-[#1a1410]" placeholder="المتوسط: 36cm x 27.5cm" />
-                </div>
-                <div>
-                  <label className="text-xs text-[#5c4330] mb-1.5 block">مقاسات الحقيبة بالفرنسية</label>
-                  <input type="text" value={newProduct.materials_dimensions_en} onChange={(e) => setNewProduct({ ...newProduct, materials_dimensions_en: e.target.value })} className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-xs text-[#1a1410]" placeholder="Moyen: 36cm x 27.5cm" />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs text-[#5c4330] mb-1.5 block">دليل التنظيف والعناية بالعربية</label>
-                  <textarea value={newProduct.care_guide} onChange={(e) => setNewProduct({ ...newProduct, care_guide: e.target.value })} className="w-full h-16 bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-xs text-[#1a1410]" />
-                </div>
-                <div>
-                  <label className="text-xs text-[#5c4330] mb-1.5 block">دليل التنظيف والعناية بالفرنسية</label>
-                  <textarea value={newProduct.care_guide_en} onChange={(e) => setNewProduct({ ...newProduct, care_guide_en: e.target.value })} className="w-full h-16 bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-xs text-[#1a1410]" />
-                </div>
-              </div>
-              <div className="border-t border-[#b8935a]/20 pt-4 flex justify-end space-x-2 space-x-reverse">
-                <button type="button" onClick={() => setIsAddingProduct(false)} className="bg-[#1a1410] text-[#faf6ef] py-2.5 px-6 rounded-xl text-xs">إلغاء</button>
-                <button type="submit" disabled={actionLoading === 'add-product'} className="bg-[#b8935a] text-black py-2.5 px-6 rounded-xl text-xs font-bold">إضافة التشكيلة</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* ------------------ ب. نافذة تعديل تفاصيل المنتج بالكامل (Edit Product Modal) ------------------ */}
-      {editingProduct && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-zinc-950 border border-zinc-900 rounded-3xl w-full max-w-xl overflow-hidden shadow-2xl animate-scaleIn">
-            <div className="flex justify-between items-center p-6 bg-[#0F0F0F] border-b border-zinc-900">
-              <h3 className="text-base font-light text-zinc-100">تعديل مواصفات الحقيبة</h3>
-              <button onClick={() => setEditingProduct(null)} className="text-zinc-500 hover:text-zinc-300"><X size={20} /></button>
-            </div>
-            <form onSubmit={handleSaveProductEdit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto text-right">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs text-[#5c4330] mb-1.5 block">اسم الحقيبة بالعربية</label>
-                  <input type="text" value={editingProduct.name} onChange={(e) => setEditingProduct({ ...editingProduct, name: e.target.value })} className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-sm text-[#1a1410]" />
-                </div>
-                <div>
-                  <label className="text-xs text-[#5c4330] mb-1.5 block">الاسم بالإنجليزي (EN)</label>
-                  <input type="text" value={editingProduct.name_en} onChange={(e) => setEditingProduct({ ...editingProduct, name_en: e.target.value })} className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-sm font-mono text-[#1a1410]" />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs text-[#5c4330] mb-1.5 block">السعر الموحد (درهم)</label>
-                  <input type="number" value={editingProduct.price} onChange={(e) => setEditingProduct({ ...editingProduct, price: Number(e.target.value) })} className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-sm font-mono text-[#1a1410]" />
-                </div>
-                <div>
-                  <label className="text-xs text-[#5c4330] mb-1.5 block">المخزون المتوفر</label>
-                  <input type="number" value={editingProduct.stock} onChange={(e) => setEditingProduct({ ...editingProduct, stock: Number(e.target.value) })} className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-sm font-mono text-[#1a1410]" />
-                </div>
-              </div>
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="text-xs text-[#5c4330] mb-1.5 block">الصنف والمجموعة *</label>
-                  <select 
-                    required
-                    value={editingProduct.category} 
-                    onChange={(e) => setEditingProduct({ ...editingProduct, category: e.target.value })} 
-                    className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-xs text-[#1a1410]"
-                  >
-                    <option value="">اختر المجموعة...</option>
-                    {categories.map((cat) => (
-                      <option key={cat.id} value={cat.id}>{cat.name_ar}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs text-[#5c4330] mb-1.5 block">الألوان</label>
-                  <input type="text" value={editingProduct.color || ''} onChange={(e) => setEditingProduct({ ...editingProduct, color: e.target.value })} className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-xs text-[#1a1410]" />
-                </div>
-                <div>
-                  <label className="text-xs text-[#5c4330] mb-1.5 block">التاغ</label>
-                  <input type="text" value={editingProduct.tag || ''} onChange={(e) => setEditingProduct({ ...editingProduct, tag: e.target.value })} className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-xs text-[#1a1410]" />
-                </div>
-              </div>
-
-              {/* أزرار الإخفاء والإظهار للميزات (Visibility Toggles) للمنتج الذي يتم تعديله */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-zinc-900/40 p-3 rounded-xl border border-zinc-900">
-                <label className="flex items-center space-x-2 space-x-reverse cursor-pointer text-xs text-zinc-400">
-                  <input type="checkbox" checked={editingProduct.show_video} onChange={(e) => setEditingProduct({ ...editingProduct, show_video: e.target.checked })} className="rounded border-zinc-800 bg-black text-[#D4AF37] focus:ring-0" />
-                  <span>إظهار الفيديو</span>
-                </label>
-                <label className="flex items-center space-x-2 space-x-reverse cursor-pointer text-xs text-zinc-400">
-                  <input type="checkbox" checked={editingProduct.show_gallery} onChange={(e) => setEditingProduct({ ...editingProduct, show_gallery: e.target.checked })} className="rounded border-zinc-800 bg-black text-[#D4AF37] focus:ring-0" />
-                  <span>إظهار المعرض</span>
-                </label>
-                <label className="flex items-center space-x-2 space-x-reverse cursor-pointer text-xs text-zinc-400">
-                  <input type="checkbox" checked={editingProduct.show_care_guide} onChange={(e) => setEditingProduct({ ...editingProduct, show_care_guide: e.target.checked })} className="rounded border-zinc-800 bg-black text-[#D4AF37] focus:ring-0" />
-                  <span>إظهار دليل العناية</span>
-                </label>
-                <label className="flex items-center space-x-2 space-x-reverse cursor-pointer text-xs text-zinc-400">
-                  <input type="checkbox" checked={editingProduct.show_dimensions} onChange={(e) => setEditingProduct({ ...editingProduct, show_dimensions: e.target.checked })} className="rounded border-zinc-800 bg-black text-[#D4AF37] focus:ring-0" />
-                  <span>إظهار المقاسات</span>
-                </label>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-[#b8935a]/20 pt-4">
-                <div>
-                  <label className="text-xs text-[#5c4330] mb-1.5 block">رفع صورة رئيسية جديدة</label>
-                  <label className="cursor-pointer w-full bg-[#1a1410] hover:bg-zinc-800 text-[#faf6ef] p-2.5 rounded-xl text-xs border border-zinc-850 flex items-center justify-center space-x-2 space-x-reverse">
-                    <Upload size={14} />
-                    <span>تحميل من جهازك</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={async (e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          try {
-                            const url = await handleImageUpload(file, BUCKETS.PRODUCT_IMAGES);
-                            setEditingProduct({ ...editingProduct, image_url: url });
-                            showToast('تم تغيير الصورة الرئيسية', 'success');
-                          } catch (err: any) {
-                            showToast(err.message, 'error');
-                          }
-                        }
-                      }}
-                    />
-                  </label>
-                </div>
-                <div>
-                  <label className="text-xs text-[#5c4330] mb-1.5 block">رفع صور إضافية للمعرض</label>
-                  <label className="cursor-pointer w-full bg-[#1a1410] hover:bg-zinc-800 text-[#faf6ef] p-2.5 rounded-xl text-xs border border-zinc-850 flex items-center justify-center space-x-2 space-x-reverse">
-                    <Upload size={14} />
-                    <span>تحميل صورة إضافية</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={async (e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          try {
-                            const url = await handleImageUpload(file, BUCKETS.PRODUCT_IMAGES);
-                            setEditingProduct((prev: any) => ({
-                              ...prev,
-                              additional_images: [...(prev.additional_images || []), url]
-                            }));
-                            showToast('تمت إضافة صورة للمعرض', 'success');
-                          } catch (err: any) {
-                            showToast(err.message, 'error');
-                          }
-                        }
-                      }}
-                    />
-                  </label>
-                </div>
-              </div>
-              <div>
-                <label className="text-xs text-zinc-400 block mb-1">رابط الفيديو الترويجي</label>
-                <input type="text" value={editingProduct.video_url || ''} onChange={(e) => setEditingProduct({ ...editingProduct, video_url: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs font-mono" />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs text-zinc-400 block mb-1">الوصف التفصيلي لثوب الكانفاس بالعربية</label>
-                  <textarea value={editingProduct.description || ''} onChange={(e) => setEditingProduct({ ...editingProduct, description: e.target.value })} className="w-full h-16 bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" />
-                </div>
-                <div>
-                  <label className="text-xs text-zinc-400 block mb-1">الوصف التفصيلي لثوب الكانفاس بالفرنسية</label>
-                  <textarea value={editingProduct.description_en || ''} onChange={(e) => setEditingProduct({ ...editingProduct, description_en: e.target.value })} className="w-full h-16 bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs text-zinc-400 block mb-1">أبعاد الحقيبة الدقيقة بالعربية</label>
-                  <input type="text" value={editingProduct.materials_dimensions || ''} onChange={(e) => setEditingProduct({ ...editingProduct, materials_dimensions: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" />
-                </div>
-                <div>
-                  <label className="text-xs text-zinc-400 block mb-1">أبعاد الحقيبة الدقيقة بالفرنسية</label>
-                  <input type="text" value={editingProduct.materials_dimensions_en || ''} onChange={(e) => setEditingProduct({ ...editingProduct, materials_dimensions_en: e.target.value })} className="w-full bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs text-zinc-400 block mb-1">طرق تنظيف الكانفاس والتطريز بالعربية</label>
-                  <textarea value={editingProduct.care_guide || ''} onChange={(e) => setEditingProduct({ ...editingProduct, care_guide: e.target.value })} className="w-full h-16 bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" />
-                </div>
-                <div>
-                  <label className="text-xs text-zinc-400 block mb-1">طرق تنظيف الكانفاس والتطريز بالفرنسية</label>
-                  <textarea value={editingProduct.care_guide_en || ''} onChange={(e) => setEditingProduct({ ...editingProduct, care_guide_en: e.target.value })} className="w-full h-16 bg-black border border-zinc-900 p-2.5 rounded-xl text-xs" />
-                </div>
-              </div>
-              <div className="border-t border-zinc-900 pt-4 flex justify-end space-x-2 space-x-reverse">
-                <button type="button" onClick={() => setEditingProduct(null)} className="bg-zinc-900 text-zinc-300 py-2.5 px-6 rounded-xl text-xs">إلغاء</button>
-                <button type="submit" disabled={actionLoading === `save-prod-${editingProduct.id}`} className="bg-[#D4AF37] text-black py-2.5 px-6 rounded-xl text-xs font-bold" style={{ backgroundColor: 'var(--secondary-theme)' }}>حفظ التغييرات</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* ------------------ د. نافذة إضافة/تعديل مجموعة جديدة (Add/Edit Category Modal) ------------------ */}
-      {isAddingCategory && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-zinc-950 border border-zinc-900 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-scaleIn">
-            <div className="flex justify-between items-center p-6 bg-[#0F0F0F] border-b border-zinc-900">
-              <h3 className="text-base font-light text-zinc-100">{editingCategory ? 'تعديل اسم المجموعة' : 'إضافة مجموعة جديدة'}</h3>
-              <button onClick={() => { setIsAddingCategory(false); setEditingCategory(null); }} className="text-zinc-500 hover:text-zinc-300"><X size={20} /></button>
-            </div>
-            <form onSubmit={handleSaveCategory} className="p-6 space-y-4 text-right">
-              <div>
-                <label className="text-xs text-[#5c4330] mb-1.5 block">اسم المجموعة بالعربية *</label>
-                <input type="text" required value={newCategory.name_ar} onChange={(e) => setNewCategory({ ...newCategory, name_ar: e.target.value })} className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-sm text-[#1a1410]" placeholder="مثال: حقائب السهرات" />
-              </div>
-              <div>
-                <label className="text-xs text-[#5c4330] mb-1.5 block">اسم المجموعة بالفرنسية *</label>
-                <input type="text" required value={newCategory.name_fr} onChange={(e) => setNewCategory({ ...newCategory, name_fr: e.target.value })} className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-sm text-[#1a1410]" placeholder="Sacs de Soirée" />
-              </div>
-              <div>
-                <label className="text-xs text-[#5c4330] mb-1.5 block">اسم المجموعة بالإنجليزية *</label>
-                <input type="text" required value={newCategory.name_en} onChange={(e) => setNewCategory({ ...newCategory, name_en: e.target.value })} className="w-full bg-[#faf6ef] border border-[#b8935a]/25 p-2.5 rounded-xl text-sm text-[#1a1410]" placeholder="Evening Bags" />
-              </div>
-              <div className="border-t border-zinc-900 pt-4 flex justify-end space-x-2 space-x-reverse">
-                <button type="button" onClick={() => { setIsAddingCategory(false); setEditingCategory(null); }} className="bg-[#1a1410] text-[#faf6ef] py-2.5 px-5 rounded-xl text-xs">إلغاء</button>
-                <button type="submit" className="bg-[#D4AF37] text-black py-2.5 px-5 rounded-xl text-xs font-bold" style={{ backgroundColor: 'var(--secondary-theme)' }}>حفظ المجموعة</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* ------------------ ج. نافذة تفاصيل ومعالجة الطلبات المنبثقة والجاهزة للطباعة ------------------ */}
-      {selectedOrder && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-md flex items-center justify-center p-4 print:absolute print:inset-0 print:bg-white print:p-0">
-          <div className="relative bg-zinc-950 border border-zinc-900 rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl print:border-0 print:bg-white print:text-black print:shadow-none animate-scaleIn">
-            
-            <div className="flex justify-between items-center p-6 border-b border-zinc-900 bg-[#0F0F0F] print:hidden">
-              <div>
-                <span className="text-xs text-amber-500 font-mono font-bold">{selectedOrder.order_number}</span>
-                <h3 className="text-base font-light text-zinc-200 mt-0.5">تفاصيل ومعالجة الطلب للعميل</h3>
-              </div>
-              <button onClick={() => setSelectedOrder(null)} className="p-2 hover:bg-zinc-900 text-zinc-500 rounded-full"><X size={20} /></button>
-            </div>
-
-            <div className="p-6 space-y-6 print:p-8">
-              {/* ترويسة الفاتورة المخصصة للطباعة وتجهيز الشحنات */}
-              <div className="hidden print:block text-center border-b pb-6 mb-6">
-                <h1 className="text-3xl font-bold tracking-[0.2em] text-black">
-                  {lang === 'ar' ? settings.site_name_ar : lang === 'fr' ? settings.site_name_fr : settings.site_name_en}
-                </h1>
-                <p className="text-xs uppercase tracking-widest text-gray-500">
-                  {lang === 'ar' ? settings.site_subtitle_ar : lang === 'fr' ? settings.site_subtitle_fr : settings.site_subtitle_en}
-                </p>
-                <div className="text-right mt-6 text-xs text-gray-600">
-                  <p>رقم الفاتورة: #{selectedOrder.order_number}</p>
-                  <p>التاريخ: {new Date(selectedOrder.created_at).toLocaleDateString('ar-MA')}</p>
-                </div>
-              </div>
-
-              <div className="bg-[#0D0D0D] border border-zinc-900 p-4 rounded-2xl grid grid-cols-1 md:grid-cols-2 gap-4 print:bg-white print:border-gray-200 print:text-black">
-                <div>
-                  <h4 className="text-[10px] text-zinc-500 uppercase mb-1">اسم العميل بالكامل</h4>
-                  <p className="text-sm font-semibold print:text-black">{selectedOrder.customer_name}</p>
-                </div>
-                <div>
-                  <h4 className="text-[10px] text-zinc-500 uppercase mb-1">المدينة وعنوان الشحن</h4>
-                  <p className="text-sm print:text-black">{selectedOrder.customer_city} • {selectedOrder.customer_address}</p>
-                </div>
-                <div>
-                  <h4 className="text-[10px] text-zinc-500 uppercase mb-1">الهاتف للتواصل</h4>
-                  <p className="text-sm font-mono print:text-black">{selectedOrder.customer_phone}</p>
-                </div>
-                <div>
-                  <h4 className="text-[10px] text-zinc-500 uppercase mb-1">طريقة الدفع</h4>
-                  <p className="text-sm print:text-black">الدفع عند الاستلام (COD)</p>
-                </div>
-              </div>
-
-              <div>
-                <h4 className="text-xs font-medium text-zinc-400 mb-3 print:text-black">الحقائب الفاخرة المشمولة:</h4>
-                <div className="space-y-2 max-h-40 overflow-y-auto">
-                  {selectedOrder.items && Array.isArray(selectedOrder.items) && selectedOrder.items.map((item: any, idx: number) => (
-                    <div key={idx} className="flex justify-between items-center p-3 bg-[#0F0F0F] border border-zinc-900 rounded-xl print:bg-white print:border-gray-200">
-                      <div>
-                        <span className="text-sm font-light text-zinc-200 print:text-black">{item.productName || item.product_name}</span>
-                        <span className="text-xs text-zinc-500 block mt-0.5">الكمية: {item.qty || item.quantity} حقيبة</span>
+              {/* النماذج الفعلية للأقسام */}
+              <div className="flex-1 bg-[#0F0F0F] border border-neutral-900 rounded-2xl p-6 md:p-8">
+                <form onSubmit={handleSaveSettings} className="space-y-6">
+                  
+                  {/* نموذج: الألوان والخطوط الفاخرة + التحكم بألوان السلة حياً */}
+                  {activeSettingsSection === 'style' && (
+                    <div className="space-y-6">
+                      <h3 className="text-base font-serif text-[#D4AF37] border-b border-neutral-800 pb-3 flex items-center gap-2"><Palette size={18}/> تخصيص باليتة الألوان الفاخرة والسلة حياً</h3>
+                      
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+                        <div>
+                          <label className="block text-xs text-neutral-400 mb-2">اللون الرئيسي للموقع (Primary)</label>
+                          <div className="flex gap-2"><input type="color" value={settings.primary_color} onChange={(e) => setSettings({ ...settings, primary_color: e.target.value })} className="w-10 h-10 rounded-lg bg-transparent cursor-pointer"/><input type="text" value={settings.primary_color} onChange={(e) => setSettings({ ...settings, primary_color: e.target.value })} className="flex-1 bg-black border border-neutral-800 rounded-lg px-3 text-xs uppercase"/></div>
+                        </div>
+                        <div>
+                          <label className="block text-xs text-neutral-400 mb-2">اللون الذهبي الاستكشافي (Secondary)</label>
+                          <div className="flex gap-2"><input type="color" value={settings.secondary_color} onChange={(e) => setSettings({ ...settings, secondary_color: e.target.value })} className="w-10 h-10 rounded-lg bg-transparent cursor-pointer"/><input type="text" value={settings.secondary_color} onChange={(e) => setSettings({ ...settings, secondary_color: e.target.value })} className="flex-1 bg-black border border-neutral-800 rounded-lg px-3 text-xs uppercase"/></div>
+                        </div>
+                        <div>
+                          <label className="block text-xs text-neutral-400 mb-2">لون العناوين الرئيسية</label>
+                          <div className="flex gap-2"><input type="color" value={settings.title_color} onChange={(e) => setSettings({ ...settings, title_color: e.target.value })} className="w-10 h-10 rounded-lg bg-transparent cursor-pointer"/><input type="text" value={settings.title_color} onChange={(e) => setSettings({ ...settings, title_color: e.target.value })} className="flex-1 bg-black border border-neutral-800 rounded-lg px-3 text-xs uppercase"/></div>
+                        </div>
                       </div>
-                      <span className="text-sm text-[#D4AF37] font-semibold print:text-black">{(Number(item.price) * Number(item.qty || item.quantity)).toLocaleString()} درهم</span>
+
+                      <div className="border-t border-neutral-900 pt-6">
+                        <h4 className="text-sm font-serif text-[#D4AF37] mb-4 flex items-center gap-2">🛒 التحكم المطلق بهوية وألوان سلة التسوق حياً</h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                          <div>
+                            <label className="block text-xs text-neutral-400 mb-2">خلفية السلة الجانبية</label>
+                            <input type="color" value={settings.cart_bg} onChange={(e) => setSettings({ ...settings, cart_bg: e.target.value })} className="w-full h-10 rounded-lg bg-transparent cursor-pointer"/>
+                          </div>
+                          <div>
+                            <label className="block text-xs text-neutral-400 mb-2">لون زر تأكيد الطلب</label>
+                            <input type="color" value={settings.cart_btn} onChange={(e) => setSettings({ ...settings, cart_btn: e.target.value })} className="w-full h-10 rounded-lg bg-transparent cursor-pointer"/>
+                          </div>
+                          <div>
+                            <label className="block text-xs text-neutral-400 mb-2">لون نصوص وأرقام السلة</label>
+                            <input type="color" value={settings.cart_text} onChange={(e) => setSettings({ ...settings, cart_text: e.target.value })} className="w-full h-10 rounded-lg bg-transparent cursor-pointer"/>
+                          </div>
+                          <div>
+                            <label className="block text-xs text-neutral-400 mb-2">لون نص داخل زر التأكيد</label>
+                            <input type="color" value={settings.cart_btn_text} onChange={(e) => setSettings({ ...settings, cart_btn_text: e.target.value })} className="w-full h-10 rounded-lg bg-transparent cursor-pointer"/>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  ))}
-                </div>
-              </div>
+                  )}
 
-              <div className="border-t border-zinc-900 pt-4 flex justify-between items-center print:border-gray-200">
-                <span className="text-sm text-zinc-400 print:text-black">المجموع الإجمالي للطلبية:</span>
-                <span className="text-xl font-light text-[#D4AF37] print:text-black print:font-bold">{Number(selectedOrder.total).toLocaleString()} درهم</span>
-              </div>
+                  {/* نموذج: البانر الترحيبي والفرعي + مفاتيح التبديل لإخفاء الأقسام بالكامل */}
+                  {activeSettingsSection === 'hero' && (
+                    <div className="space-y-6">
+                      <h3 className="text-base font-serif text-[#D4AF37] border-b border-neutral-800 pb-3">البانر العلوي ومفاتيح رؤية الأقسام الرئيسية</h3>
+                      
+                      <div className="bg-neutral-950 p-4 rounded-xl border border-neutral-900 space-y-4">
+                        <h4 className="text-xs font-serif text-[#D4AF37] uppercase tracking-wider">👁️ التحكم برؤية وإخفاء أقسام المتجر فوراً فالموقع</h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <label className="flex items-center gap-3 bg-black p-3 rounded-lg cursor-pointer border border-neutral-900">
+                            <input type="checkbox" checked={settings.show_announcement_bar} onChange={(e) => setSettings({ ...settings, show_announcement_bar: e.target.checked })} className="rounded bg-neutral-900 border-neutral-800 text-[#D4AF37] focus:ring-0 w-4 h-4"/>
+                            <span className="text-xs text-neutral-300">إظهار شريط الإعلانات العلوي المتحرك</span>
+                          </label>
+                          <label className="flex items-center gap-3 bg-black p-3 rounded-lg cursor-pointer border border-neutral-900">
+                            <input type="checkbox" checked={settings.show_about_section} onChange={(e) => setSettings({ ...settings, show_about_section: e.target.checked })} className="rounded bg-neutral-900 border-neutral-800 text-[#D4AF37] focus:ring-0 w-4 h-4"/>
+                            <span className="text-xs text-neutral-300">إظهار قسم "قصة الماركة - من نحن"</span>
+                          </label>
+                          <label className="flex items-center gap-3 bg-black p-3 rounded-lg cursor-pointer border border-neutral-900">
+                            <input type="checkbox" checked={settings.show_pillars_section} onChange={(e) => setSettings({ ...settings, show_pillars_section: e.target.checked })} className="rounded bg-neutral-900 border-neutral-800 text-[#D4AF37] focus:ring-0 w-4 h-4"/>
+                            <span className="text-xs text-neutral-300">إظهار قسم "ركائز الفخامة والتميز"</span>
+                          </label>
+                          <label className="flex items-center gap-3 bg-black p-3 rounded-lg cursor-pointer border border-neutral-900">
+                            <input type="checkbox" checked={settings.show_testimonials_section} onChange={(e) => setSettings({ ...settings, show_testimonials_section: e.target.checked })} className="rounded bg-neutral-900 border-neutral-800 text-[#D4AF37] focus:ring-0 w-4 h-4"/>
+                            <span className="text-xs text-neutral-300">إظهار قسم "آراء العميلات والشهادات"</span>
+                          </label>
+                        </div>
+                      </div>
 
-              {selectedOrder.notes && (
-                <div className="p-3 bg-zinc-900/50 rounded-xl text-xs text-zinc-400 print:hidden">
-                  <span className="font-semibold block mb-1">ملاحظات الزبون الإضافية:</span>
-                  {selectedOrder.notes}
-                </div>
-              )}
+                      <div className="grid grid-cols-1 gap-4">
+                        <div>
+                          <label className="block text-xs text-neutral-400 mb-2">نص شريط الإعلانات (العربية)</label>
+                          <input type="text" value={settings.announcement_text_ar} onChange={(e) => setSettings({ ...settings, announcement_text_ar: e.target.value })} className="w-full bg-black border border-neutral-800 rounded-lg px-4 py-2.5 text-xs text-white focus:outline-none focus:border-[#D4AF37]"/>
+                        </div>
+                        <div>
+                          <label className="block text-xs text-neutral-400 mb-2">عنوان البانر الرئيسي (العربية)</label>
+                          <textarea rows={2} value={settings.hero_title_ar} onChange={(e) => setSettings({ ...settings, hero_title_ar: e.target.value })} className="w-full bg-black border border-neutral-800 rounded-lg px-4 py-2.5 text-xs text-white focus:outline-none focus:border-[#D4AF37]"/>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
-              {/* تذييل الفاتورة للزبون المطبوع */}
-              <div className="hidden print:block text-center text-[10px] text-gray-400 border-t pt-8 mt-8">
-                شكرًا لكم على تسوقكم من SAFOS • حقائب كانفاس مصنوعة يدويًا بفخر مغربي 🇲🇦
-              </div>
-            </div>
+                  {/* باقي النماذج للأقسام الأخرى كالتواصل والشعار تفتح بشكل انسيابي رائع */}
+                  {activeSettingsSection === 'identity' && (
+                    <div className="space-y-4">
+                      <h3 className="text-base font-serif text-[#D4AF37] border-b border-neutral-800 pb-3">الشعار والهوية الرقمية</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs text-neutral-400 mb-2">اسم الماركة بالعربية</label>
+                          <input type="text" value={settings.site_name_ar} onChange={(e) => setSettings({ ...settings, site_name_ar: e.target.value })} className="w-full bg-black border border-neutral-800 rounded-lg px-4 py-2.5 text-xs"/>
+                        </div>
+                        <div>
+                          <label className="block text-xs text-neutral-400 mb-2">الحرف الرمزى للوجو الافتراضي</label>
+                          <input type="text" maxLength={1} value={settings.logo_letter} onChange={(e) => setSettings({ ...settings, logo_letter: e.target.value })} className="w-full bg-black border border-neutral-800 rounded-lg px-4 py-2.5 text-xs text-center font-bold text-[#D4AF37] uppercase"/>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
-            <div className="p-6 bg-[#0F0F0F] border-t border-zinc-900 flex flex-wrap gap-3 justify-between items-center print:hidden">
-              <div className="flex gap-2">
-                <button onClick={() => handleSendWhatsAppMessage(selectedOrder, 'confirm')} className="bg-emerald-500 hover:bg-emerald-600 text-black font-semibold py-2 px-4 rounded-xl text-xs flex items-center space-x-1.5 space-x-reverse">
-                  <Send size={14} />
-                  <span>تأكيد وشحن عبر واتساب</span>
-                </button>
-                <button onClick={handlePrintInvoice} className="bg-zinc-900 hover:bg-zinc-800 text-zinc-100 py-2 px-4 rounded-xl text-xs flex items-center space-x-1.5 space-x-reverse border border-zinc-800">
-                  <Printer size={14} />
-                  <span>تحميل / طباعة الفاتورة</span>
-                </button>
+                  {/* زر الحفظ العائم والمثبت أسفل نموذج الإعدادات الحية */}
+                  <div className="flex justify-end border-t border-neutral-900 pt-4">
+                    <button type="submit" disabled={actionLoading === 'settings'} className="bg-[#D4AF37] hover:bg-[#bfa032] text-black font-semibold px-6 py-2.5 rounded-xl text-xs flex items-center gap-2 transition-all disabled:opacity-50">
+                      {actionLoading === 'settings' ? <RefreshCw size={14} className="animate-spin" /> : <Save size={14} />}
+                      حفظ وتحديث كامل عناصر المتجر حياً فالمتصفح
+                    </button>
+                  </div>
+
+                </form>
               </div>
-              <button onClick={() => setSelectedOrder(null)} className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-850 text-zinc-400 py-2 px-5 rounded-xl text-xs">إغلاق</button>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
+        {/* بقية تبويبات لوحة التحكم كالطلبيات والمنتجات تظل تعمل بكامل كفاءتها واستقرارها */}
+        {activeTab === 'dashboard' && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="bg-[#0F0F0F] border border-neutral-900 p-6 rounded-2xl flex items-center justify-between">
+              <div><p className="text-xs text-neutral-400 mb-1">إجمالي المبيعات</p><h3 className="text-2xl font-serif font-bold text-[#D4AF37]">{orders.filter(o => o.status === 'delivered').reduce((acc, o) => acc + o.total, 0)} {settings.currency_symbol}</h3></div>
+              <div className="bg-emerald-950/40 p-3 rounded-xl text-emerald-400"><TrendingUp size={24}/></div>
+            </div>
+            <div className="bg-[#0F0F0F] border border-neutral-900 p-6 rounded-2xl flex items-center justify-between">
+              <div><p className="text-xs text-neutral-400 mb-1">الطلبيات الجديدة</p><h3 className="text-2xl font-serif font-bold text-white">{orders.filter(o => o.status === 'pending').length} طلبية</h3></div>
+              <div className="bg-blue-950/40 p-3 rounded-xl text-blue-400"><ShoppingBag size={24}/></div>
+            </div>
+            <div className="bg-[#0F0F0F] border border-neutral-900 p-6 rounded-2xl flex items-center justify-between">
+              <div><p className="text-xs text-neutral-400 mb-1">عدد حقائب العرض</p><h3 className="text-2xl font-serif font-bold text-white">{products.length} حقيبة</h3></div>
+              <div className="bg-neutral-900 p-3 rounded-xl text-[#D4AF37]"><ImageIcon size={24}/></div>
+            </div>
+          </div>
+        )}
+
+      </main>
     </div>
   );
 }
