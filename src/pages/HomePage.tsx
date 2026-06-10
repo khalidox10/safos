@@ -452,15 +452,7 @@ export default function HomePage() {
         </div>
       </footer>
 
-      {/* أيقونات التواصل الاجتماعي العائمة والتفاعلية في الزاوية */}
-      <div className="fixed bottom-6 left-6 z-40 flex flex-col space-y-3 print:hidden">
-        {settings.contact?.whatsapp && (
-          <a 
-            href={`https://api.whatsapp.com/send?phone=${settings.contact.whatsapp.replace(/\s+/g, '')}`} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="w-12 h-12 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 transform hover:scale-105 animate-bounce"
-            title="تواصل معنا عبر واتساب"
+    
           >
             <MessageCircle size={24} />
           </a>
