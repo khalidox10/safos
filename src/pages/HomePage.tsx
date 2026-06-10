@@ -118,20 +118,21 @@ export default function HomePage() {
     : products.filter(p => p.category === selectedCategory);
 
   return (
-    <div 
-      style={{
-        '--primary-theme': primaryTheme,
-        '--secondary-theme': secondaryTheme,
-        '--title-color': titleColor,
-        '--text-color': textColor,
-        '--card-bg-theme': cardBgColor,
-        '--image-bg-theme': imageBgColor,
-        '--title-font': titleFont,
-        '--body-font': bodyFont
-      } as React.CSSProperties}
-      className="min-h-screen antialiased selection:bg-amber-500/30"
-      style={{ fontFamily: 'var(--body-font)', backgroundColor: 'var(--primary-theme)' }}
-    >
+  <div  
+    style={{
+      '--primary-theme': primaryTheme,
+      '--secondary-theme': secondaryTheme,
+      '--title-color': titleColor,
+      '--text-color': textColor,
+      '--card-bg-theme': cardBgColor,
+      '--image-bg-theme': imageBgColor,
+      '--title-font': titleFont,
+      '--body-font': bodyFont,
+      fontFamily: 'var(--body-font)',
+      backgroundColor: 'var(--primary-theme)'
+    } as React.CSSProperties}
+    className="min-h-screen antialiased selection:bg-amber-500/30"
+  >
       
       {/* 🟢 شريط الإعلانات الفوقاني (Announcement Bar) */}
       {settings.hero?.announcement_ar && settings.visibility?.show_announcement_bar !== false && (
