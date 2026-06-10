@@ -452,8 +452,6 @@ export default function HomePage() {
         </div>
       </footer>
 
-    
-          >
             <MessageCircle size={24} />
           </a>
         )}
