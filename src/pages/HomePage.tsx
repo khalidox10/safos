@@ -118,21 +118,20 @@ export default function HomePage() {
     : products.filter(p => p.category === selectedCategory);
 
   return (
-  <div  
-    style={{
-      '--primary-theme': primaryTheme,
-      '--secondary-theme': secondaryTheme,
-      '--title-color': titleColor,
-      '--text-color': textColor,
-      '--card-bg-theme': cardBgColor,
-      '--image-bg-theme': imageBgColor,
-      '--title-font': titleFont,
-      '--body-font': bodyFont,
-      fontFamily: 'var(--body-font)',
-      backgroundColor: 'var(--primary-theme)'
-    } as React.CSSProperties}
-    className="min-h-screen antialiased selection:bg-amber-500/30"
-  >
+    <div 
+      style={{
+        '--primary-theme': primaryTheme,
+        '--secondary-theme': secondaryTheme,
+        '--title-color': titleColor,
+        '--text-color': textColor,
+        '--card-bg-theme': cardBgColor,
+        '--image-bg-theme': imageBgColor,
+        '--title-font': titleFont,
+        '--body-font': bodyFont
+      } as React.CSSProperties}
+      className="min-h-screen antialiased selection:bg-amber-500/30"
+      style={{ fontFamily: 'var(--body-font)', backgroundColor: 'var(--primary-theme)' }}
+    >
       
       {/* 🟢 شريط الإعلانات الفوقاني (Announcement Bar) */}
       {settings.hero?.announcement_ar && settings.visibility?.show_announcement_bar !== false && (
@@ -452,9 +451,8 @@ export default function HomePage() {
         </div>
       </footer>
 
-            <MessageCircle size={24} />
-          </a>
-        )}
+      {/* أيقونات التواصل الاجتماعي العائمة والتفاعلية في الزاوية */}
+      <div className="fixed bottom-6 left-6 z-40 flex flex-col space-y-3 print:hidden">
         {settings.contact?.instagram && (
           <a 
             href={`https://instagram.com/${settings.contact.instagram}`} 
