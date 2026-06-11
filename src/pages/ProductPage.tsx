@@ -9,7 +9,7 @@ import {
 
 const translations = {
   ar: {
-    thankYou: "تم تسجيل طلبكِ بنجاح، سنتواصل معكِ قريباً لتأكيد طلبيتك",
+    thankYou: "لقد تلقينا طلبك بنجاح، وسنتواصل معك قريباً لتأكيد طلبكم",
     orderSuccess: "شكراً لثقتكم بـ SAFOS",
     atc: "إضافة إلى السلة",
     buyNow: "اضغطي هنا لتأكيد الطلب السريع",
@@ -420,16 +420,17 @@ export default function ProductPage() {
       </main>
 
       {/* قسم إدخال معلومات الشحن والتحقق من رقم الهاتف بدقة لـ COD المغرب */}
+      {/* 🛠️ تعديل: جعل خلفية الاستمارة والخانات بيضاء أنيقة تماماً وتوضيح النصوص لسهولة القراءة */}
       <section id="checkout-form" className="bg-zinc-950 border-t border-b border-zinc-900 py-12 px-6">
-        <div className="max-w-2xl mx-auto space-y-6">
+        <div className="max-w-2xl mx-auto bg-white rounded-3xl p-6 md:p-10 border border-zinc-200/80 shadow-2xl text-zinc-900 space-y-6">
           <div className="text-center">
-            <h3 className="text-xl font-light text-zinc-100">{t.checkoutTitle}</h3>
-            <p className="text-xs text-zinc-500 mt-1">تعبئة البيانات تأخذ أقل من دقيقة، التوصيل مجاني لجميع المدن المغربية</p>
+            <h3 className="text-2xl font-semibold text-zinc-950">{t.checkoutTitle}</h3>
+            <p className="text-xs text-zinc-600 mt-1">تعبئة البيانات تأخذ أقل من دقيقة، التوصيل مجاني لجميع المدن المغربية</p>
           </div>
 
           <form onSubmit={handlePlaceOrder} className="space-y-4">
             {errorMessage && (
-              <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-xs flex items-center space-x-2 space-x-reverse animate-shake">
+              <div className="p-4 bg-red-50 border border-red-200 text-red-600 rounded-xl text-xs flex items-center space-x-2 space-x-reverse animate-shake">
                 <AlertCircle size={16} />
                 <span>{errorMessage}</span>
               </div>
@@ -437,98 +438,98 @@ export default function ProductPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-xs text-zinc-400 block mb-1.5">{t.fullName}</label>
+                <label className="text-xs text-zinc-700 font-semibold block mb-1.5">{t.fullName}</label>
                 <input 
                   type="text" 
                   value={name} 
                   onChange={(e) => setName(e.target.value)} 
                   required
                   placeholder="لالة فاطمة العمراني" 
-                  className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm focus:outline-none focus:border-[#D4AF37]" 
+                  className="w-full bg-white text-zinc-900 border border-zinc-300 p-3 rounded-xl text-sm focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] placeholder-zinc-400" 
                 />
               </div>
               <div>
-                <label className="text-xs text-zinc-400 block mb-1.5">{t.phone}</label>
+                <label className="text-xs text-zinc-700 font-semibold block mb-1.5">{t.phone}</label>
                 <input 
                   type="tel" 
                   value={phone} 
                   onChange={(e) => setPhone(e.target.value)} 
                   required
                   placeholder="0612345678" 
-                  className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm font-mono focus:outline-none focus:border-[#D4AF37]" 
+                  className="w-full bg-white text-zinc-900 border border-zinc-300 p-3 rounded-xl text-sm font-mono focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] placeholder-zinc-400" 
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-xs text-zinc-400 block mb-1.5">{t.city}</label>
+                <label className="text-xs text-zinc-700 font-semibold block mb-1.5">{t.city}</label>
                 <input 
                   type="text" 
                   value={city} 
                   onChange={(e) => setCity(e.target.value)} 
                   required
                   placeholder="الدار البيضاء، مراكش، طنجة..." 
-                  className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm focus:outline-none focus:border-[#D4AF37]" 
+                  className="w-full bg-white text-zinc-900 border border-zinc-300 p-3 rounded-xl text-sm focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] placeholder-zinc-400" 
                 />
               </div>
               <div>
-                <label className="text-xs text-zinc-400 block mb-1.5">{t.address}</label>
+                <label className="text-xs text-zinc-700 font-semibold block mb-1.5">{t.address}</label>
                 <input 
                   type="text" 
                   value={address} 
                   onChange={(e) => setAddress(e.target.value)} 
                   required
                   placeholder="الحي، رقم الدار والشارع..." 
-                  className="w-full bg-black border border-zinc-900 p-3 rounded-xl text-sm focus:outline-none focus:border-[#D4AF37]" 
+                  className="w-full bg-white text-zinc-900 border border-zinc-300 p-3 rounded-xl text-sm focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] placeholder-zinc-400" 
                 />
               </div>
             </div>
 
-            {/* 🟢 تفعيل تحديد الكمية مع حساب السعر حياً داخل نموذج معلومات الشحن */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center border p-4 rounded-2xl" style={{ backgroundColor: 'var(--card-bg-theme)', borderColor: 'border-zinc-900/60' }}>
+            {/* ميزة تحديد الكمية وسعر المجموع بتصميم رمادي أنيق هادئ يتناسب مع الخلفية البيضاء */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center border border-zinc-200 p-4 rounded-2xl bg-zinc-50">
               <div className="flex items-center space-x-4 space-x-reverse justify-end">
-                <span className="text-xs text-zinc-400">{t.quantity}:</span>
-                <div className="flex items-center bg-zinc-950 border border-zinc-900 rounded-xl overflow-hidden">
-                  <button type="button" onClick={() => setQty(Math.max(1, quantity - 1))} className="px-3.5 py-2 hover:bg-zinc-900 text-zinc-400">-</button>
-                  <span className="px-4 font-mono text-sm text-zinc-200">{quantity}</span>
-                  <button type="button" onClick={() => setQty(quantity + 1)} className="px-3.5 py-2 hover:bg-zinc-900 text-zinc-400">+</button>
+                <span className="text-xs text-zinc-500 font-semibold">{t.quantity}:</span>
+                <div className="flex items-center bg-white border border-zinc-200 rounded-xl overflow-hidden">
+                  <button type="button" onClick={() => setQty(Math.max(1, quantity - 1))} className="px-3.5 py-2 hover:bg-zinc-100 text-zinc-500 font-bold">-</button>
+                  <span className="px-4 font-mono text-sm text-zinc-800 font-bold">{quantity}</span>
+                  <button type="button" onClick={() => setQty(quantity + 1)} className="px-3.5 py-2 hover:bg-zinc-100 text-zinc-500 font-bold">+</button>
                 </div>
               </div>
-              <div className="text-left font-light text-sm" style={{ color: 'var(--secondary-theme)' }}>
+              <div className="text-left text-sm font-semibold" style={{ color: 'var(--secondary-theme, #D4AF37)' }}>
                 <span>{t.total}: </span>
-                <span className="font-mono font-semibold">{(product.price * quantity).toLocaleString()}</span>
+                <span className="font-mono font-bold text-lg">{(product.price * quantity).toLocaleString()}</span>
                 <span> درهم</span>
               </div>
             </div>
 
             <div>
-              <label className="text-xs text-zinc-400 block mb-1.5">{t.notes}</label>
+              <label className="text-xs text-zinc-700 font-semibold block mb-1.5">{t.notes}</label>
               <textarea 
                 value={notes} 
                 onChange={(e) => setNotes(e.target.value)} 
                 placeholder="مثال: يفضل التوصيل بعد الساعة الرابعة مساءً..." 
-                className="w-full h-20 bg-black border border-zinc-900 p-3 rounded-xl text-sm focus:outline-none focus:border-[#D4AF37]" 
+                className="w-full h-20 bg-white text-zinc-900 border border-zinc-300 p-3 rounded-xl text-sm focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] placeholder-zinc-400" 
               />
             </div>
 
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-4 text-black font-semibold rounded-xl transition-all text-sm disabled:opacity-50"
+              className="w-full py-4 text-black font-semibold rounded-xl transition-all text-sm disabled:opacity-50 hover:opacity-90 active:scale-[0.99] shadow-md"
               style={{ backgroundColor: 'var(--secondary-theme, #D4AF37)' }}
             >
               {isSubmitting ? 'جاري إرسال الطلب...' : t.buyNow}
             </button>
 
-            {/* 🟢 زر الطلب المباشر الإضافي عبر الواتساب أسفل نموذج الشحن لزيادة نسبة المبيعات */}
+            {/* زر الطلب المباشر عبر الواتساب */}
             {settings.contact?.whatsapp && (
               <a 
                 href={`https://api.whatsapp.com/send?phone=${settings.contact.whatsapp.replace(/\s+/g, '')}&text=${encodeURIComponent(`السلام عليكم فريق SAFOS، أريد طلب حقيبة الكانفاس الفاخرة *${product.name}* (الكمية: ${quantity}) المتوفرة بسعر ${product.price} درهم. أرجو التواصل معي لتأكيد تفاصيل الشحن والطلب.`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full py-4 text-emerald-400 font-semibold rounded-xl flex items-center justify-center space-x-2 space-x-reverse transition-all text-sm border border-emerald-500/20"
-                style={{ backgroundColor: 'transparent' }}
+                className="w-full py-4 text-emerald-600 font-semibold rounded-xl flex items-center justify-center space-x-2 space-x-reverse transition-all text-sm border border-emerald-500/30 bg-emerald-50 hover:bg-emerald-100"
+                style={{ backgroundColor: '' }}
               >
                 <Phone size={16} />
                 <span>{lang === 'ar' ? 'أو اطلبي مباشرة بنقرة واحدة عبر الواتساب' : lang === 'fr' ? 'Ou commander directement via WhatsApp' : 'Or order directly via WhatsApp'}</span>
@@ -539,7 +540,7 @@ export default function ProductPage() {
         </div>
       </section>
 
-      {/* 🟢 قسم المراجعات والتقييمات الحية الخاص بكل منتج أسفل الصفحة */}
+      {/* قسم المراجعات الحية */}
       {reviews.length > 0 && (
         <section className="py-16 max-w-4xl mx-auto px-6 border-b border-zinc-900/40">
           <h3 className="text-lg font-light text-zinc-200 mb-8 text-center" style={{ fontFamily: 'var(--title-font)' }}>{t.reviewsTitle}</h3>
@@ -564,6 +565,43 @@ export default function ProductPage() {
       <footer className="py-8 px-6 text-center text-xs text-zinc-600 border-t border-zinc-900">
         <p>{settings.policies?.copyright || 'جميع الحقوق محفوظة لعلامة SAFOS الفاخرة © 2026'}</p>
       </footer>
+
+      {/* 🟢 نافذة رسالة الشكر المنبثقة الراقية والكاملة (Modal) وبدون إظهار رقم الطلب */}
+      {orderSuccess && (
+        <div className="fixed inset-0 bg-neutral-950/75 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
+          <div className="bg-white rounded-3xl p-8 max-w-sm w-full text-center border border-neutral-100 shadow-2xl animate-in zoom-in-95 duration-200">
+            {/* أيقونة علامة الصح بالذهبي الفاخر */}
+            <div className="flex justify-center mb-4">
+              <CheckCircle size={64} className="text-[#D4AF37]" />
+            </div>
+            
+            <h3 className="text-2xl font-bold text-neutral-950 mb-3" style={{ fontFamily: 'var(--body-font)' }}>
+              {lang === 'ar' ? 'شكراً لكِ!' : lang === 'fr' ? 'Merci!' : 'Thank you!'}
+            </h3>
+            
+            {/* رسالة الشكر المخصصة بالكامل وبدون رقم الطلب */}
+            <p className="text-neutral-600 leading-relaxed text-sm mb-6" style={{ fontFamily: 'var(--body-font)' }}>
+              {t.thankYou}
+            </p>
+
+            {/* زر العودة للتسوق اللي كيسد النافذة والاستمارة */}
+            <button 
+              onClick={() => {
+                setOrderSuccess(false);
+                setName('');
+                setPhone('');
+                setCity('');
+                setAddress('');
+                setNotes('');
+              }}
+              className="w-full py-3 rounded-xl font-bold text-black bg-[#D4AF37] hover:opacity-90 active:scale-[0.99] transition-all"
+              style={{ fontFamily: 'var(--body-font)' }}
+            >
+              {lang === 'ar' ? 'العودة للتسوق' : lang === 'fr' ? 'Retour à la boutique' : 'Continue Shopping'}
+            </button>
+          </div>
+        </div>
+      )}
 
     </div>
   );
