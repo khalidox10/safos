@@ -8,8 +8,8 @@ import AdminLogin from './pages/AdminLogin'; // استيراد صفحة الدخ
 
 // 🟢 مكون أزرار التواصل الاجتماعي العائمة المحدثة (واتساب الرسمي + إنستغرام)
 function FloatingSocialIcons() {
-  const whatsappNumber = "212612345678"; // 📞 يمكنكِ تعديل رقم الواتساب الخاص بكِ هنا مستقبلاً
-  const instagramUsername = "safos.marrakech"; // 📸 يمكنكِ تعديل اسم حساب الإنستغرام هنا مستقبلاً
+  const whatsappNumber = "212774785984"; // 📞 يمكنكِ تعديل رقم الواتساب الخاص بكِ هنا مستقبلاً
+  const instagramUsername = "safos__1"; // 📸 يمكنكِ تعديل اسم حساب الإنستغرام هنا مستقبلاً
 
   return (
     <div className="fixed bottom-6 left-6 z-50 flex flex-col gap-3 items-center pointer-events-auto">
