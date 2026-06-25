@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { StoreProvider } from './context/StoreContext';
 import AdminDashboard from './pages/AdminDashboard';
 import ProductPage from './pages/ProductPage';
 import HomePage from './pages/HomePage'; // استيراد الصفحة الرئيسية الفاخرة للزبناء
 import AdminLogin from './pages/AdminLogin'; // استيراد صفحة الدخول لحل مشكلة توجيه الهاتف
+import { initFacebookPixel, trackPageView } from './facebook';
 
 // 🟢 مكون أزرار التواصل الاجتماعي العائمة المحدثة (واتساب الرسمي + إنستغرام)
 function FloatingSocialIcons() {
@@ -85,6 +86,12 @@ function AppContent() {
 }
 
 export default function App() {
+
+  useEffect(() => {
+    initFacebookPixel();
+    trackPageView();
+  }, []);
+
   return (
     <StoreProvider>
       <Router>
