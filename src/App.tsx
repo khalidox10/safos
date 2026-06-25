@@ -5,7 +5,8 @@ import AdminDashboard from './pages/AdminDashboard';
 import ProductPage from './pages/ProductPage';
 import HomePage from './pages/HomePage'; // استيراد الصفحة الرئيسية الفاخرة للزبناء
 import AdminLogin from './pages/AdminLogin'; // استيراد صفحة الدخول لحل مشكلة توجيه الهاتف
-import { initFacebookPixel, trackPageView } from './facebook';
+import { initFacebookPixel, trackPageView } from './lib
+/analytics/facebook';
 
 // 🟢 مكون أزرار التواصل الاجتماعي العائمة المحدثة (واتساب الرسمي + إنستغرام)
 function FloatingSocialIcons() {
