@@ -234,7 +234,17 @@ export default function ProductPage() {
       }]);
 
       if (error) throw error;
-      setOrderSuccess(true);
+
+// 🟢 Meta Pixel Purchase Event
+track("Purchase", {
+  content_ids: [product.id],
+  content_name: product.name,
+  content_type: "product",
+  value: product.price * quantity,
+  currency: "MAD",
+});
+
+setOrderSuccess(true);
     } catch (err: any) {
       setErrorMessage(err.message || 'فشل إرسال الطلب');
     } finally {
