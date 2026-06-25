@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 import { supabase } from '../lib/supabase';
+import { track } from '../lib/analytics/facebook';
 import { 
   Star, Heart, Shield, Truck, RotateCcw, ChevronLeft, ChevronRight, X, 
   Phone, MapPin, User, CheckCircle, AlertCircle, ShoppingBag, Globe, Play 
@@ -148,16 +149,26 @@ export default function ProductPage() {
     link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(titleFont)}:wght@300;400;700&family=${encodeURIComponent(bodyFont)}:wght@300;400;500;700&display=swap`;
   }, [settings]);
 
-  useEffect(() => {
-    if (products.length > 0 && id) {
-      const found = products.find(p => p.id === id);
-      if (found) {
-        setProduct(found);
-        setActiveImage(found.image_url);
-        fetchProductReviews(found.id);
-      }
+ useEffect(() => {
+  if (products.length > 0 && id) {
+    const found = products.find(p => p.id === id);
+
+    if (found) {
+      setProduct(found);
+      setActiveImage(found.image_url);
+      fetchProductReviews(found.id);
+
+      // 🔵 Meta Pixel - ViewContent
+      track("ViewContent", {
+        content_name: found.name,
+        content_ids: [found.id],
+        content_type: "product",
+        value: found.price,
+        currency: "MAD",
+      });
     }
-  }, [products, id]);
+  }
+}, [products, id]);
 
   const fetchProductReviews = async (productId: string) => {
     try {
