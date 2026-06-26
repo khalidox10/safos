@@ -189,13 +189,23 @@ export default function ProductPage() {
   };
 
   // 🟢 ميزة الهبوط الانسيابي والسلس للأسفل عند الضغط على "اطلبي الآن"
-  const scrollToCheckoutForm = () => {
-    const element = document.getElementById('checkout-form');
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
+const scrollToCheckoutForm = () => {
 
+  // 🟢 Meta Pixel - InitiateCheckout
+  track("InitiateCheckout", {
+    content_ids: [product.id],
+    content_name: product.name,
+    content_type: "product",
+    value: product.price,
+    currency: "MAD",
+  });
+
+  const element = document.getElementById('checkout-form');
+
+  if (element) {
+    element.scrollIntoView({ behavior: 'smooth' });
+  }
+};
   // معالجة وفحص رقم الهاتف بدقة بـ 10 أرقام مغربية قبل إرسال الطلب
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
